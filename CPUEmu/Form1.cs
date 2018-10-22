@@ -22,6 +22,7 @@ namespace CPUEmu
         private Task _execution;
         private bool _abort;
         private bool _stopped;
+        private bool _doStep;
 
         public Form1()
         {
@@ -57,15 +58,18 @@ namespace CPUEmu
              {
                  while (!_emu.IsFinished && !_abort)
                  {
-                     if (!_stopped)
+                     if (!_stopped || _doStep)
                      {
+                         if (_doStep)
+                             _doStep = false;
+
                          _emu.ExecuteNextInstruction();
 
                          UpdateFlags();
                          UpdateRegisters();
                      }
 
-                     Thread.Sleep(1000);
+                     //Thread.Sleep(1000);
                  }
 
                  Log("Finished.");
@@ -124,10 +128,16 @@ namespace CPUEmu
         private void btnStop_Click(object sender, EventArgs e)
         {
             _stopped = !_stopped;
+            btnStep.Enabled = _stopped;
             if (_stopped)
                 btnStop.Text = "Continue Execution";
             else
                 btnStop.Text = "Stop Execution";
+        }
+
+        private void btnStep_Click(object sender, EventArgs e)
+        {
+            _doStep = true;
         }
     }
 }

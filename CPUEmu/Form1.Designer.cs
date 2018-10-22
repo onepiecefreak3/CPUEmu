@@ -37,6 +37,7 @@
             this.btnStop = new System.Windows.Forms.Button();
             this.txtFlags = new System.Windows.Forms.TextBox();
             this.txtRegs = new System.Windows.Forms.TextBox();
+            this.btnStep = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -128,11 +129,23 @@
             this.txtRegs.Size = new System.Drawing.Size(91, 250);
             this.txtRegs.TabIndex = 6;
             // 
+            // btnStep
+            // 
+            this.btnStep.Enabled = false;
+            this.btnStep.Location = new System.Drawing.Point(364, 118);
+            this.btnStep.Name = "btnStep";
+            this.btnStep.Size = new System.Drawing.Size(115, 23);
+            this.btnStep.TabIndex = 7;
+            this.btnStep.Text = "Do Step";
+            this.btnStep.UseVisualStyleBackColor = true;
+            this.btnStep.Click += new System.EventHandler(this.btnStep_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnStep);
             this.Controls.Add(this.txtRegs);
             this.Controls.Add(this.txtFlags);
             this.Controls.Add(this.btnStop);
@@ -161,6 +174,7 @@
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.TextBox txtFlags;
         private System.Windows.Forms.TextBox txtRegs;
+        private System.Windows.Forms.Button btnStep;
     }
 }
 
