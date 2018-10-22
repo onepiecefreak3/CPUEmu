@@ -46,10 +46,10 @@ namespace CPUEmu
         private void OpenEmulator(string file)
         {
             //TODO: Use MEF for loading emulators from plugins
-            _emu = new AARCH32();
-            _emu.Open(File.OpenRead(file));
+            _emu = new AARCH32(File.OpenRead(file));
 
             _emu.Log += OnEmulatorLog;
+            _emu.Print += OnEmulatorPrint;
         }
 
         private void StartExecution()
@@ -63,6 +63,7 @@ namespace CPUEmu
                          if (_doStep)
                              _doStep = false;
 
+                         _emu.PrintCurrentInstruction();
                          _emu.ExecuteNextInstruction();
 
                          UpdateFlags();
@@ -118,6 +119,18 @@ namespace CPUEmu
         }
 
         private void OnEmulatorLog(object sender, string message) => Log(message + Environment.NewLine);
+        #endregion
+
+        #region Disassembling
+        private void Print(string message)
+        {
+            if (txtPrint.InvokeRequired)
+                txtPrint.Invoke(new Action(() => txtPrint.AppendText(message)));
+            else
+                txtPrint.AppendText(message);
+        }
+
+        private void OnEmulatorPrint(object sender, string message) => Print(message + Environment.NewLine);
         #endregion
 
         private void btnAbort_Click(object sender, EventArgs e)
