@@ -19,6 +19,7 @@ namespace CPUEmu
     public partial class Form1 : Form
     {
         private Emulator _emu;
+        private string _currentFile;
         private Task _execution;
         private bool _abort;
         private bool _stopped;
@@ -34,13 +35,37 @@ namespace CPUEmu
             var ofd = new OpenFileDialog();
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                if (!File.Exists(ofd.FileName))
-                    throw new FileNotFoundException(ofd.FileName);
-
-                OpenEmulator(ofd.FileName);
-                consoleLog.Clear();
-                StartExecution();
+                OpenFile(ofd.FileName);
             }
+        }
+
+        private void OpenFile(string file)
+        {
+            if (!File.Exists(file))
+                throw new FileNotFoundException(file);
+            _currentFile = file;
+
+            OpenEmulator(file);
+            ResetUI();
+            StartExecution();
+        }
+
+        private void ResetUI()
+        {
+            consoleLog.Clear();
+            txtPrint.Clear();
+
+            _stopped = false;
+            btnStop.Text = "Stop Execution";
+
+            _doStep = false;
+            btnStep.Enabled = false;
+
+            _abort = false;
+            btnAbort.Enabled = true;
+            btnStop.Enabled = true;
+
+            ToggleReExecBtn(false);
         }
 
         private void OpenEmulator(string file)
@@ -48,74 +73,88 @@ namespace CPUEmu
             //TODO: Use MEF for loading emulators from plugins
             _emu = new AARCH32(File.OpenRead(file));
 
-            _emu.Log += OnEmulatorLog;
-            _emu.Print += OnEmulatorPrint;
+            if (_printToggle)
+            {
+                _emu.Log += OnEmulatorLog;
+                _emu.Print += OnEmulatorPrint;
+            }
         }
 
         private void StartExecution()
         {
-            _execution = Task.Factory.StartNew(() =>
-             {
-                 while (!_emu.IsFinished && !_abort)
-                 {
-                     if (!_stopped || _doStep)
-                     {
-                         if (_doStep)
-                             _doStep = false;
-
-                         _emu.PrintCurrentInstruction();
-                         _emu.ExecuteNextInstruction();
-
-                         UpdateFlags();
-                         UpdateRegisters();
-                     }
-
-                     //Thread.Sleep(1000);
-                 }
-
-                 Log("Finished.");
-             });
+            _execution = Task.Factory.StartNew(() => ExecuteEmulator());
         }
 
-        private void UpdateFlags()
+        private void ExecuteEmulator()
         {
-            var flags = _emu.RetrieveFlags();
+            while (!_emu.IsFinished && !_abort)
+            {
+                if (!_stopped || _doStep)
+                {
+                    if (_doStep)
+                        _doStep = false;
 
-            if (txtFlags.InvokeRequired)
-                txtFlags.Invoke(new Action(() => txtFlags.Clear()));
-            else
-                txtFlags.Clear();
+                    _emu.PrintCurrentInstruction();
+                    _emu.ExecuteNextInstruction();
 
-            foreach (var entry in flags)
-                if (txtFlags.InvokeRequired)
-                    txtFlags.Invoke(new Action(() => txtFlags.Text += $"{entry.Key}: 0x{entry.Value:X8}" + Environment.NewLine));
-                else
-                    txtFlags.Text += $"{entry.Key}: 0x{entry.Value:X8}" + Environment.NewLine;
+                    RefreshFlags();
+                    RefreshRegisters();
+                }
+
+                Thread.Sleep(1000);
+            }
+
+            if (_printToggle) Log("Finished.");
+            FinishExecution();
         }
 
-        private void UpdateRegisters()
+        private void FinishExecution()
         {
-            var regs = _emu.RetrieveRegisters();
+            MultipleThreadControlExec(btnReExec, new Action<Control>((c) => c.Enabled = true));
+            MultipleThreadControlExec(btnStop, new Action<Control>((c) => c.Enabled = false));
+            MultipleThreadControlExec(btnStep, new Action<Control>((c) => c.Enabled = false));
+            MultipleThreadControlExec(btnAbort, new Action<Control>((c) => c.Enabled = false));
 
-            if (txtRegs.InvokeRequired)
-                txtRegs.Invoke(new Action(() => txtRegs.Clear()));
+            _abort = false;
+            _doStep = false;
+            _stopped = false;
+        }
+
+        private void MultipleThreadControlExec(Control control, Action<Control> action)
+        {
+            if (control.InvokeRequired)
+                control.Invoke(new Action(() => action(control)));
             else
-                txtRegs.Clear();
+                action(control);
+        }
 
-            foreach (var entry in regs)
-                if (txtRegs.InvokeRequired)
-                    txtRegs.Invoke(new Action(() => txtRegs.Text += $"{entry.Key}: 0x{entry.Value:X8}" + Environment.NewLine));
-                else
-                    txtRegs.Text += $"{entry.Key}: 0x{entry.Value:X8}" + Environment.NewLine;
+        private void ToggleReExecBtn(bool state)
+        {
+            MultipleThreadControlExec(btnReExec, new Action<Control>((c) => c.Enabled = state));
+        }
+
+        private void RefreshTable(Dictionary<string, long> table, TextBoxBase box, Action<TextBoxBase, string, long> addEntry)
+        {
+            MultipleThreadControlExec(box, new Action<Control>((c) => (c as TextBoxBase).Clear()));
+
+            foreach (var entry in table)
+                MultipleThreadControlExec(box, new Action<Control>((c) => addEntry(c as TextBoxBase, entry.Key, entry.Value)));
+        }
+
+        private void RefreshFlags()
+        {
+            RefreshTable(_emu.RetrieveFlags(), txtFlags, new Action<TextBoxBase, string, long>((box, s, l) => box.Text += $"{s}: 0x{l:X8}" + Environment.NewLine));
+        }
+
+        private void RefreshRegisters()
+        {
+            RefreshTable(_emu.RetrieveRegisters(), txtRegs, new Action<TextBoxBase, string, long>((box, s, l) => box.Text += $"{s}: 0x{l:X8}" + Environment.NewLine));
         }
 
         #region Logging
         private void Log(string message)
         {
-            if (consoleLog.InvokeRequired)
-                consoleLog.Invoke(new Action(() => consoleLog.AppendText(message)));
-            else
-                consoleLog.AppendText(message);
+            MultipleThreadControlExec(consoleLog, new Action<Control>((c) => (c as TextBoxBase).AppendText(message)));
         }
 
         private void OnEmulatorLog(object sender, string message) => Log(message + Environment.NewLine);
@@ -124,13 +163,10 @@ namespace CPUEmu
         #region Disassembling
         private void Print(string message)
         {
-            if (txtPrint.InvokeRequired)
-                txtPrint.Invoke(new Action(() => txtPrint.AppendText(message)));
-            else
-                txtPrint.AppendText(message);
+            MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as TextBoxBase).AppendText(message)));
         }
 
-        private void OnEmulatorPrint(object sender, string message) => Print(message + Environment.NewLine);
+        private void OnEmulatorPrint(object sender, string message) => Print(message);
         #endregion
 
         private void btnAbort_Click(object sender, EventArgs e)
@@ -151,6 +187,35 @@ namespace CPUEmu
         private void btnStep_Click(object sender, EventArgs e)
         {
             _doStep = true;
+        }
+
+        private bool _printToggle = true;
+        private void btnPrintToggle_Click(object sender, EventArgs e)
+        {
+            if (_printToggle)
+            {
+                btnPrintToggle.Text = "Enable Printing";
+                if (_emu != null)
+                {
+                    _emu.Log -= OnEmulatorLog;
+                    _emu.Print -= OnEmulatorPrint;
+                }
+            }
+            else
+            {
+                btnPrintToggle.Text = "Disable Printing";
+                if (_emu != null)
+                {
+                    _emu.Log += OnEmulatorLog;
+                    _emu.Print += OnEmulatorPrint;
+                }
+            }
+            _printToggle = !_printToggle;
+        }
+
+        private void btnReExec_Click(object sender, EventArgs e)
+        {
+            OpenFile(_currentFile);
         }
     }
 }

@@ -39,6 +39,8 @@
             this.txtRegs = new System.Windows.Forms.TextBox();
             this.btnStep = new System.Windows.Forms.Button();
             this.txtPrint = new System.Windows.Forms.RichTextBox();
+            this.btnPrintToggle = new System.Windows.Forms.Button();
+            this.btnReExec = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -91,6 +93,7 @@
             // 
             // btnAbort
             // 
+            this.btnAbort.Enabled = false;
             this.btnAbort.Location = new System.Drawing.Point(364, 60);
             this.btnAbort.Name = "btnAbort";
             this.btnAbort.Size = new System.Drawing.Size(115, 23);
@@ -101,6 +104,7 @@
             // 
             // btnStop
             // 
+            this.btnStop.Enabled = false;
             this.btnStop.Location = new System.Drawing.Point(364, 89);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(115, 23);
@@ -154,11 +158,34 @@
             this.txtPrint.TabIndex = 8;
             this.txtPrint.Text = "";
             // 
+            // btnPrintToggle
+            // 
+            this.btnPrintToggle.Location = new System.Drawing.Point(485, 89);
+            this.btnPrintToggle.Name = "btnPrintToggle";
+            this.btnPrintToggle.Size = new System.Drawing.Size(115, 23);
+            this.btnPrintToggle.TabIndex = 10;
+            this.btnPrintToggle.Text = "Disable Printing";
+            this.btnPrintToggle.UseVisualStyleBackColor = true;
+            this.btnPrintToggle.Click += new System.EventHandler(this.btnPrintToggle_Click);
+            // 
+            // btnReExec
+            // 
+            this.btnReExec.Enabled = false;
+            this.btnReExec.Location = new System.Drawing.Point(485, 60);
+            this.btnReExec.Name = "btnReExec";
+            this.btnReExec.Size = new System.Drawing.Size(115, 23);
+            this.btnReExec.TabIndex = 11;
+            this.btnReExec.Text = "Execute anew";
+            this.btnReExec.UseVisualStyleBackColor = true;
+            this.btnReExec.Click += new System.EventHandler(this.btnReExec_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnReExec);
+            this.Controls.Add(this.btnPrintToggle);
             this.Controls.Add(this.txtPrint);
             this.Controls.Add(this.btnStep);
             this.Controls.Add(this.txtRegs);
@@ -191,6 +218,8 @@
         private System.Windows.Forms.TextBox txtRegs;
         private System.Windows.Forms.Button btnStep;
         private System.Windows.Forms.RichTextBox txtPrint;
+        private System.Windows.Forms.Button btnPrintToggle;
+        private System.Windows.Forms.Button btnReExec;
     }
 }
 
