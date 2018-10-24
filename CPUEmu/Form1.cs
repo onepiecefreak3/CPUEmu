@@ -71,7 +71,7 @@ namespace CPUEmu
         private void OpenEmulator(string file)
         {
             //TODO: Use MEF for loading emulators from plugins
-            _emu = new AARCH32(File.OpenRead(file));
+            _emu = new AARCH32(File.ReadAllBytes(file), 0x100000, 0x1000000, 0x100000);
 
             if (_printToggle)
             {

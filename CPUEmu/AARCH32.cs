@@ -12,7 +12,7 @@ namespace CPUEmu
 {
     public class AARCH32 : Emulator
     {
-        private byte[] _mem = ArrayPool<byte>.Shared.Rent(0x100000);  //1MB Memory
+        private const uint UndefinedInstruction = 0xE6000010;
 
         private bool _z;
         private bool _c;
@@ -29,11 +29,21 @@ namespace CPUEmu
         private long _currentInstrOffset;
         private bool _currentlyPrinting;
 
+        private uint _binaryEntry;
+        private uint _binarySize;
+
         Queue<uint> _instrBuffer = new Queue<uint>();
 
         #region Abstract
-        public AARCH32(Stream input) : base(input)
+        public AARCH32(byte[] input, int binaryEntry, int stackAddress, int stackSize) : base(input, binaryEntry, stackAddress, stackSize)
         {
+            _pc = (uint)binaryEntry;
+            _sp = (uint)stackAddress;
+
+            _binaryEntry = (uint)binaryEntry;
+            _binarySize = (uint)input.Length;
+
+            //Buffer next 2 instructions
             ReadNextInstruction();
             ReadNextInstruction();
         }
@@ -66,22 +76,20 @@ namespace CPUEmu
         {
             _currentlyPrinting = true;
 
-            var binaryPos = _binary.BaseStream.Position;
-            _binary.BaseStream.Position = offset;
-
-            for (int i = 0; i < count; i++)
+            for (uint i = (uint)offset; i < offset + count * 4; i += 4)
             {
-                _currentInstrOffset = _binary.BaseStream.Position;
-                Print?.Invoke(this, $"{_currentInstrOffset:X4}: ");
+                if (i >= _binaryEntry && i < _binaryEntry + _binarySize)
+                {
+                    _currentInstrOffset = i;
+                    Print?.Invoke(this, $"{i:X4}: ");
 
-                var instr = _binary.ReadUInt32();
-                CheckConditions((byte)(instr >> 28));
-                HandleInstructionType(instr);
+                    var instruction = ReadUInt32(i);
+                    CheckConditions((byte)(instruction >> 28));
+                    HandleInstructionType(instruction);
 
-                Print?.Invoke(this, Environment.NewLine);
+                    Print?.Invoke(this, Environment.NewLine);
+                }
             }
-
-            _binary.BaseStream.Position = binaryPos;
         }
 
         public override Dictionary<string, long> RetrieveFlags()
@@ -306,16 +314,20 @@ namespace CPUEmu
             SoftwareInterrupt
         }
 
+        private uint ReadUInt32(uint offset) => (uint)(_mem[offset] | (_mem[offset + 1] << 8) | (_mem[offset + 2] << 16) | (_mem[offset + 3] << 24));
+
         private void ReadNextInstruction()
         {
-            if (_binary.BaseStream.Position < _binary.BaseStream.Length)
-                _instrBuffer.Enqueue(_binary.ReadUInt32());
-            _pc += 4;
+            if (_pc >= _binaryEntry && _pc < _binaryEntry + _binarySize)
+            {
+                _instrBuffer.Enqueue(ReadUInt32(_pc));
+                _pc += 4;
+            }
         }
 
         private void SetPC(uint offset)
         {
-            _binary.BaseStream.Position = _pc = offset;
+            _pc = offset;
 
             _instrBuffer.Clear();
 

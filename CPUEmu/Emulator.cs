@@ -9,11 +9,16 @@ namespace CPUEmu
 {
     public abstract class Emulator
     {
-        protected BinaryReader _binary;
+        protected byte[] _mem;
 
-        protected Emulator(Stream input)
+        protected Emulator(byte[] input, int binaryEntry, int stackAddress, int stackSize)
         {
-            _binary = new BinaryReader(input);
+            var maxSize = Math.Max(binaryEntry + input.Length, stackAddress + stackSize);
+            if (maxSize > Int32.MaxValue)
+                throw new InsufficientMemoryException();
+
+            _mem = new byte[maxSize];
+            Array.Copy(input, 0, _mem, binaryEntry, input.Length);
         }
 
         public delegate void LogEventHandler(object sender, string message);
