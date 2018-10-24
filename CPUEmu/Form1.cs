@@ -24,10 +24,24 @@ namespace CPUEmu
         private bool _abort;
         private bool _stopped;
         private bool _doStep;
+        private bool _updating;
+
+        System.Timers.Timer _timer;
 
         public Form1()
         {
             InitializeComponent();
+            _timer = new System.Timers.Timer(16.666);
+            _timer.Elapsed += RefreshUI;
+        }
+
+        private void RefreshUI(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (_updating)
+            {
+                RefreshFlags();
+                RefreshRegisters();
+            }
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -47,7 +61,11 @@ namespace CPUEmu
 
             OpenEmulator(file);
             ResetUI();
+
             StartExecution();
+
+            _updating = true;
+            _timer.Start();
         }
 
         private void ResetUI()
@@ -80,32 +98,34 @@ namespace CPUEmu
             }
         }
 
-        private void StartExecution()
+        private async void StartExecution()
         {
-            _execution = Task.Factory.StartNew(() => ExecuteEmulator());
-        }
-
-        private void ExecuteEmulator()
-        {
-            while (!_emu.IsFinished && !_abort)
-            {
-                if (!_stopped || _doStep)
-                {
-                    if (_doStep)
-                        _doStep = false;
-
-                    _emu.PrintCurrentInstruction();
-                    _emu.ExecuteNextInstruction();
-
-                    RefreshFlags();
-                    RefreshRegisters();
-                }
-
-                Thread.Sleep(1000);
-            }
+            var res = await ExecuteEmulator();
 
             if (_printToggle) Log("Finished.");
             FinishExecution();
+        }
+
+        private Task<bool> ExecuteEmulator()
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                while (!_emu.IsFinished && !_abort)
+                {
+                    if (!_stopped || _doStep)
+                    {
+                        if (_doStep)
+                            _doStep = false;
+
+                        _emu.PrintCurrentInstruction();
+                        _emu.ExecuteNextInstruction();
+                    }
+
+                    Thread.Sleep(200);
+                }
+
+                return true;
+            });
         }
 
         private void FinishExecution()
@@ -118,6 +138,7 @@ namespace CPUEmu
             _abort = false;
             _doStep = false;
             _stopped = false;
+            _updating = false;
         }
 
         private void MultipleThreadControlExec(Control control, Action<Control> action)
@@ -133,22 +154,25 @@ namespace CPUEmu
             MultipleThreadControlExec(btnReExec, new Action<Control>((c) => c.Enabled = state));
         }
 
-        private void RefreshTable(Dictionary<string, long> table, TextBoxBase box, Action<TextBoxBase, string, long> addEntry)
+        private void RefreshTable(Dictionary<string, long> table, TextBoxBase box, Func<string, string, long, string> addEntry)
         {
-            MultipleThreadControlExec(box, new Action<Control>((c) => (c as TextBoxBase).Clear()));
+            //MultipleThreadControlExec(box, new Action<Control>((c) => (c as TextBoxBase).Clear()));
 
+            var str = "";
             foreach (var entry in table)
-                MultipleThreadControlExec(box, new Action<Control>((c) => addEntry(c as TextBoxBase, entry.Key, entry.Value)));
+                str=addEntry(str, entry.Key, entry.Value);
+
+            MultipleThreadControlExec(box, new Action<Control>((c) => (c as TextBoxBase).Text = str));
         }
 
         private void RefreshFlags()
         {
-            RefreshTable(_emu.RetrieveFlags(), txtFlags, new Action<TextBoxBase, string, long>((box, s, l) => box.Text += $"{s}: 0x{l:X8}" + Environment.NewLine));
+            RefreshTable(_emu.RetrieveFlags(), txtFlags, new Func<string, string, long, string>((s1, s2, l) => s1 + $"{s2}: 0x{l:X8}" + Environment.NewLine));
         }
 
         private void RefreshRegisters()
         {
-            RefreshTable(_emu.RetrieveRegisters(), txtRegs, new Action<TextBoxBase, string, long>((box, s, l) => box.Text += $"{s}: 0x{l:X8}" + Environment.NewLine));
+            RefreshTable(_emu.RetrieveRegisters(), txtRegs, new Func<string, string, long, string>((s1, s2, l) => s1 + $"{s2}: 0x{l:X8}" + Environment.NewLine));
         }
 
         #region Logging
