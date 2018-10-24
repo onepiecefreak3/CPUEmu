@@ -319,10 +319,8 @@ namespace CPUEmu
         private void ReadNextInstruction()
         {
             if (_pc >= _binaryEntry && _pc < _binaryEntry + _binarySize)
-            {
                 _instrBuffer.Enqueue(ReadUInt32(_pc));
-                _pc += 4;
-            }
+            _pc += 4;
         }
 
         private void SetPC(uint offset)
