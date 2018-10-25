@@ -116,22 +116,22 @@
             // txtFlags
             // 
             this.txtFlags.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtFlags.Location = new System.Drawing.Point(697, 62);
+            this.txtFlags.Location = new System.Drawing.Point(680, 62);
             this.txtFlags.Multiline = true;
             this.txtFlags.Name = "txtFlags";
             this.txtFlags.ReadOnly = true;
-            this.txtFlags.Size = new System.Drawing.Size(91, 120);
+            this.txtFlags.Size = new System.Drawing.Size(108, 120);
             this.txtFlags.TabIndex = 5;
             // 
             // txtRegs
             // 
             this.txtRegs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtRegs.Location = new System.Drawing.Point(697, 188);
+            this.txtRegs.Location = new System.Drawing.Point(680, 188);
             this.txtRegs.Multiline = true;
             this.txtRegs.Name = "txtRegs";
             this.txtRegs.ReadOnly = true;
-            this.txtRegs.Size = new System.Drawing.Size(91, 250);
+            this.txtRegs.Size = new System.Drawing.Size(108, 250);
             this.txtRegs.TabIndex = 6;
             // 
             // btnStep
@@ -154,7 +154,7 @@
             this.txtPrint.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtPrint.Location = new System.Drawing.Point(364, 148);
             this.txtPrint.Name = "txtPrint";
-            this.txtPrint.Size = new System.Drawing.Size(327, 290);
+            this.txtPrint.Size = new System.Drawing.Size(310, 290);
             this.txtPrint.TabIndex = 8;
             this.txtPrint.Text = "";
             // 

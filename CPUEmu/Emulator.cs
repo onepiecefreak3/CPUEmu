@@ -25,9 +25,9 @@ namespace CPUEmu
 
         public abstract event LogEventHandler Log;
 
-        public delegate void PrintEventHandler(object sender, string print);
+        public delegate void DisassembleEventHandler(object sender, long address, string source);
 
-        public abstract event PrintEventHandler Print;
+        public abstract event DisassembleEventHandler Disassemble;
 
         public abstract string Name { get; }
 
@@ -37,19 +37,37 @@ namespace CPUEmu
 
         public abstract long CurrentInstructionOffset { get; }
 
-        public void PrintCurrentInstruction()
+        public void DisassembleCurrentInstruction()
         {
-            PrintInstructions(CurrentInstructionOffset, 1);
+            DisassembleInstructions(CurrentInstructionOffset, 1);
         }
 
-        public abstract void PrintInstructions(long offset, int count);
+        public abstract void DisassembleInstructions(long offset, int count);
 
         public abstract void ExecuteNextInstruction();
 
         public abstract bool IsFinished { get; }
 
-        public abstract Dictionary<string, long> RetrieveFlags();
+        public abstract List<(string flagName, long value)> RetrieveFlags();
 
-        public abstract Dictionary<string, long> RetrieveRegisters();
+        public abstract List<(string registerName, long value)> RetrieveRegisters();
+
+        public void SetMemoryByte(long address, byte value)
+        {
+            _mem[address] = value;
+        }
+
+        public byte GetMemoryByte(long address)
+        {
+            return _mem[address];
+        }
+
+        public byte[] GetMemoryRange(long address, int count)
+        {
+            count = (int)Math.Min(count, _mem.Length - address);
+            var buffer = new byte[count];
+            Array.Copy(_mem, address, buffer, 0, count);
+            return buffer;
+        }
     }
 }

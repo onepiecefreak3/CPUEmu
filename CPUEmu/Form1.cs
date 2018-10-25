@@ -94,7 +94,7 @@ namespace CPUEmu
             if (_printToggle)
             {
                 _emu.Log += OnEmulatorLog;
-                _emu.Print += OnEmulatorPrint;
+                _emu.Disassemble += OnEmulatorDisassemble;
             }
         }
 
@@ -117,7 +117,7 @@ namespace CPUEmu
                         if (_doStep)
                             _doStep = false;
 
-                        _emu.PrintCurrentInstruction();
+                        _emu.DisassembleCurrentInstruction();
                         _emu.ExecuteNextInstruction();
                     }
 
@@ -154,13 +154,13 @@ namespace CPUEmu
             MultipleThreadControlExec(btnReExec, new Action<Control>((c) => c.Enabled = state));
         }
 
-        private void RefreshTable(Dictionary<string, long> table, TextBoxBase box, Func<string, string, long, string> addEntry)
+        private void RefreshTable(List<(string name, long value)> table, TextBoxBase box, Func<string, string, long, string> addEntry)
         {
             //MultipleThreadControlExec(box, new Action<Control>((c) => (c as TextBoxBase).Clear()));
 
             var str = "";
             foreach (var entry in table)
-                str=addEntry(str, entry.Key, entry.Value);
+                str = addEntry(str, entry.name, entry.value);
 
             MultipleThreadControlExec(box, new Action<Control>((c) => (c as TextBoxBase).Text = str));
         }
@@ -185,12 +185,12 @@ namespace CPUEmu
         #endregion
 
         #region Disassembling
-        private void Print(string message)
+        private void Disassemble(long address, string source)
         {
-            MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as TextBoxBase).AppendText(message)));
+            MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as TextBoxBase).AppendText($"{address:X4}: {source}" + Environment.NewLine)));
         }
 
-        private void OnEmulatorPrint(object sender, string message) => Print(message);
+        private void OnEmulatorDisassemble(object sender, long address, string source) => Disassemble(address, source);
         #endregion
 
         private void btnAbort_Click(object sender, EventArgs e)
@@ -222,7 +222,7 @@ namespace CPUEmu
                 if (_emu != null)
                 {
                     _emu.Log -= OnEmulatorLog;
-                    _emu.Print -= OnEmulatorPrint;
+                    _emu.Disassemble -= OnEmulatorDisassemble;
                 }
             }
             else
@@ -231,7 +231,7 @@ namespace CPUEmu
                 if (_emu != null)
                 {
                     _emu.Log += OnEmulatorLog;
-                    _emu.Print += OnEmulatorPrint;
+                    _emu.Disassemble += OnEmulatorDisassemble;
                 }
             }
             _printToggle = !_printToggle;
