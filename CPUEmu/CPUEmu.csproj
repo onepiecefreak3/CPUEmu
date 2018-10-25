@@ -59,14 +59,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AARCH32.cs" />
+    <Compile Include="AARCH32\AARCH32.cs" />
+    <Compile Include="AARCH32\BarrelShifter.cs" />
+    <Compile Include="AARCH32\Branch.cs" />
+    <Compile Include="AARCH32\Conditions.cs" />
+    <Compile Include="AARCH32\InstructionType.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Emulator.cs" />
+    <Compile Include="Contract\Emulator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">

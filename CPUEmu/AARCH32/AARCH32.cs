@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CPUEmu.Contract;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CPUEmu
 {
-    public class AARCH32 : Emulator
+    public partial class AARCH32 : Emulator
     {
         private bool _z;
         private bool _c;
@@ -19,27 +20,22 @@ namespace CPUEmu
 
         private uint[] _reg = new uint[16];
 
-        private uint _pc { get => _reg[15]; set => _reg[15] = value; }
-        private uint _lr { get => _reg[14]; set => _reg[14] = value; }
         private uint _sp { get => _reg[13]; set => _reg[13] = value; }
-
-        private string _currentCondition;
-        private long _currentInstrOffset;
-        private bool _currentlyPrinting;
-
-        private uint _binaryEntry;
-        private uint _binarySize;
+        private uint _lr { get => _reg[14]; set => _reg[14] = value; }
+        private uint _pc { get => _reg[15]; set => _reg[15] = value; }
 
         Queue<uint> _instrBuffer = new Queue<uint>();
 
-        #region Abstract
-        public AARCH32(byte[] input, int binaryEntry, int stackAddress, int stackSize) : base(input, binaryEntry, stackAddress, stackSize)
-        {
-            _pc = (uint)binaryEntry;
-            _sp = (uint)stackAddress;
+        #region Disassembling related
+        private string _currentCondition;
+        private long _currentInstrOffset;
+        #endregion
 
-            _binaryEntry = (uint)binaryEntry;
-            _binarySize = (uint)input.Length;
+        #region Abstracts
+        public AARCH32(byte[] payload, long payloadOffset, long stackOffset, int stackSize) : base(payload, payloadOffset, stackOffset, stackSize)
+        {
+            _pc = (uint)payloadOffset;
+            _sp = (uint)stackOffset;
 
             //Buffer next 2 instructions
             ReadNextInstruction();
@@ -57,37 +53,33 @@ namespace CPUEmu
         public override bool IsFinished => !_instrBuffer.Any();
 
         public override event LogEventHandler Log;
-        public override event DisassembleEventHandler Disassemble;
 
         public override void ExecuteNextInstruction()
         {
-            _currentlyPrinting = false;
             var instruction = _instrBuffer.Dequeue();
 
             if (CheckConditions((byte)(instruction >> 28)))
-                HandleInstructionType(instruction);
+                ExecuteInstructionType(instruction);
 
             ReadNextInstruction();
         }
 
-        public override void DisassembleInstructions(long offset, int count)
+        public override IEnumerable<(long, string)> DisassembleInstructions(long offset, int count)
         {
-            _currentlyPrinting = true;
-
-            for (uint i = (uint)offset; i < offset + count * 4; i += 4)
+            for (var i = offset; i < offset + count * 4; i += 4)
             {
-                if (i >= _binaryEntry && i < _binaryEntry + _binarySize)
+                if (i >= PayloadOffset && i < PayloadOffset + PayloadLength)
                 {
                     _currentInstrOffset = i;
 
                     var instruction = ReadUInt32(i);
-                    CheckConditions((byte)(instruction >> 28));
-                    HandleInstructionType(instruction);
+                    DisassembleConditions((byte)(instruction >> 28));
+                    yield return (_currentInstrOffset, DisassembleInstructionType(instruction));
                 }
             }
         }
 
-        public override List<(string flagName, long value)> RetrieveFlags()
+        public override IEnumerable<(string flagName, long value)> RetrieveFlags()
         {
             return new List<(string flagName, long value)>
             {
@@ -98,7 +90,7 @@ namespace CPUEmu
             };
         }
 
-        public override List<(string registerName, long value)> RetrieveRegisters()
+        public override IEnumerable<(string registerName, long value)> RetrieveRegisters()
         {
             return new List<(string registerName, long value)>
             {
@@ -122,207 +114,20 @@ namespace CPUEmu
         }
         #endregion
 
-        private bool CheckConditions(byte condition)
-        {
-            switch (condition)
-            {
-                case 0:
-                    _currentCondition = "EQ";
-                    return _z;
-                case 1:
-                    _currentCondition = "NE";
-                    return !_z;
-                case 2:
-                    _currentCondition = "CS";
-                    return _c;
-                case 3:
-                    _currentCondition = "CC";
-                    return !_c;
-                case 4:
-                    _currentCondition = "MI";
-                    return _n;
-                case 5:
-                    _currentCondition = "PL";
-                    return !_n;
-                case 6:
-                    _currentCondition = "VS";
-                    return _v;
-                case 7:
-                    _currentCondition = "VC";
-                    return !_v;
-                case 8:
-                    _currentCondition = "HI";
-                    return _c && !_z;
-                case 9:
-                    _currentCondition = "LS";
-                    return !_c || _z;
-                case 10:
-                    _currentCondition = "GE";
-                    return _n == _v;
-                case 11:
-                    _currentCondition = "LT";
-                    return _n != _v;
-                case 12:
-                    _currentCondition = "GT";
-                    return !_z && (_n == _v);
-                case 13:
-                    _currentCondition = "LE";
-                    return _z || (_n != _v);
-                case 14:
-                    _currentCondition = "";
-                    return true;
-
-                default:
-                    _currentCondition = "";
-                    Log?.Invoke(this, $"Unknown condition 0x{condition:X1}. Ignore instruction.");
-                    return false;
-            }
-        }
-
-        private void HandleInstructionType(uint instruction)
-        {
-            switch (GetInstructionType(instruction))
-            {
-                case InstructionType.DataProcessing:
-                    DataProcessing(instruction);
-                    if (!_currentlyPrinting) Log?.Invoke(this, "Data Processing");
-                    break;
-
-                case InstructionType.Multiply:
-                    break;
-
-                case InstructionType.MultiplyLong:
-                    break;
-
-                case InstructionType.SingleDataSwap:
-                    break;
-
-                case InstructionType.BranchExchange:
-                    BranchExchange(instruction);
-                    if (!_currentlyPrinting) Log?.Invoke(this, "Branch and Exchange");
-                    break;
-
-                case InstructionType.HalfwordDataTransferReg:
-                    break;
-
-                case InstructionType.HalfwordDataTransferImm:
-                    break;
-
-                case InstructionType.SingleDataTransfer:
-                    SingleDataTransfer(instruction);
-                    if (!_currentlyPrinting) Log?.Invoke(this, "Single Data Transfer");
-                    break;
-
-                case InstructionType.BlockDataTransfer:
-                    BlockDataTransfer(instruction);
-                    if (!_currentlyPrinting) Log?.Invoke(this, "Block Data Transfer");
-                    break;
-
-                case InstructionType.Branch:
-                    Branch(instruction);
-                    if (!_currentlyPrinting) Log?.Invoke(this, "Branch");
-                    break;
-
-                case InstructionType.CoprocessorDataTransfer:
-                    break;
-
-                case InstructionType.CoprocessorDataOperation:
-                    break;
-
-                case InstructionType.CoprocessorRegTransfer:
-                    break;
-
-                case InstructionType.SoftwareInterrupt:
-                    if (!_currentlyPrinting) Log?.Invoke(this, $"Software interrupt at PC 0x{_pc - 4:X8}");
-                    break;
-
-                case InstructionType.Undefined:
-                default:
-                    if (!_currentlyPrinting) Log?.Invoke(this, $"Instruction 0x{instruction:X8} undefined at PC 0x{_pc - 4:X8}");
-                    break;
-            }
-        }
-
-        private InstructionType GetInstructionType(uint instruction)
-        {
-            var check = instruction & 0x0C000000;
-            if (check == 0x0)
-            {
-                if ((instruction & 0x03FFFFF0) == 0x012FFF10)
-                    return InstructionType.BranchExchange;
-                if ((instruction & 0x03B00FF0) == 0x01000090)
-                    return InstructionType.SingleDataSwap;
-                if ((instruction & 0x02400F90) == 0x00000090)
-                    return InstructionType.HalfwordDataTransferReg;
-                if ((instruction & 0x03C00090) == 0x00000090)
-                    return InstructionType.Multiply;
-                if ((instruction & 0x03800090) == 0x00800090)
-                    return InstructionType.MultiplyLong;
-                if ((instruction & 0x02400090) == 0x00400090)
-                    return InstructionType.HalfwordDataTransferImm;
-
-                return InstructionType.DataProcessing;
-            }
-            if (check == 0x04000000)
-            {
-                if ((instruction & 0x02000010) == 0x02000010)
-                    return InstructionType.Undefined;
-
-                return InstructionType.SingleDataTransfer;
-            }
-            if (check == 0x08000000)
-            {
-                if ((instruction & 0x02000000) == 0x0)
-                    return InstructionType.BlockDataTransfer;
-
-                return InstructionType.Branch;
-            }
-            if (check == 0x0C000000)
-            {
-                if ((instruction & 0x02000000) == 0x0)
-                    return InstructionType.CoprocessorDataTransfer;
-                if ((instruction & 0x03000010) == 0x02000000)
-                    return InstructionType.CoprocessorDataOperation;
-                if ((instruction & 0x03000010) == 0x02000010)
-                    return InstructionType.CoprocessorRegTransfer;
-
-                return InstructionType.SoftwareInterrupt;
-            }
-
-            return InstructionType.Undefined;
-        }
-
-        private enum InstructionType
-        {
-            DataProcessing,
-            Multiply,
-            MultiplyLong,
-            SingleDataSwap,
-            BranchExchange,
-            HalfwordDataTransferReg,
-            HalfwordDataTransferImm,
-            SingleDataTransfer,
-            Undefined,
-            BlockDataTransfer,
-            Branch,
-            CoprocessorDataTransfer,
-            CoprocessorDataOperation,
-            CoprocessorRegTransfer,
-            SoftwareInterrupt
-        }
-
-        private uint ReadUInt32(uint offset) => (uint)(_mem[offset] | (_mem[offset + 1] << 8) | (_mem[offset + 2] << 16) | (_mem[offset + 3] << 24));
-        private void WriteUInt32(uint offset, uint value)
+        #region Helper
+        private uint ReadUInt32(long offset) => (uint)(_mem[offset] | (_mem[offset + 1] << 8) | (_mem[offset + 2] << 16) | (_mem[offset + 3] << 24));
+        private void WriteUInt32(long offset, uint value)
         {
             _mem[offset] = (byte)value;
             _mem[offset + 1] = (byte)(value >> 8);
             _mem[offset + 2] = (byte)(value >> 16);
             _mem[offset + 3] = (byte)(value >> 24);
         }
+        #endregion
 
         private void ReadNextInstruction()
         {
-            if (_pc >= _binaryEntry && _pc < _binaryEntry + _binarySize)
+            if (_pc >= PayloadOffset && _pc < PayloadOffset + PayloadLength)
                 _instrBuffer.Enqueue(ReadUInt32(_pc));
             _pc += 4;
         }
@@ -362,7 +167,7 @@ namespace CPUEmu
                 //AND
                 case 0:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"AND{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"AND{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         _reg[rd] = _reg[rn] & op2v;
@@ -374,7 +179,7 @@ namespace CPUEmu
                 //EOR
                 case 1:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"EOR{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"EOR{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         _reg[rd] = _reg[rn] ^ op2v;
@@ -386,7 +191,7 @@ namespace CPUEmu
                 //SUB
                 case 2:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"SUB{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"SUB{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         _reg[rd] = _reg[rn] - op2v;
@@ -398,7 +203,7 @@ namespace CPUEmu
                 //RSB
                 case 3:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"RSB{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}, R{rn}");
+                        Disassemble(_currentInstrOffset, $"RSB{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}, R{rn}");
                     else
                     {
                         _reg[rd] = op2v - _reg[rn];
@@ -410,7 +215,7 @@ namespace CPUEmu
                 //ADD
                 case 4:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"ADD{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"ADD{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         _reg[rd] = _reg[rn] + op2v;
@@ -422,7 +227,7 @@ namespace CPUEmu
                 //ADC
                 case 5:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"ADC{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"ADC{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         _reg[rd] = _reg[rn] + op2v;
@@ -435,7 +240,7 @@ namespace CPUEmu
                 //SBC
                 case 6:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"SBC{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"SBC{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         _reg[rd] = _reg[rn] - op2v;
@@ -448,7 +253,7 @@ namespace CPUEmu
                 //RSC
                 case 7:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"RSC{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}, R{rn}");
+                        Disassemble(_currentInstrOffset, $"RSC{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}, R{rn}");
                     else
                     {
                         _reg[rd] = op2v - _reg[rn];
@@ -461,7 +266,7 @@ namespace CPUEmu
                 //TST
                 case 8:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"TST{_currentCondition} R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"TST{_currentCondition} R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         var res = _reg[rn] & op2v;
@@ -472,7 +277,7 @@ namespace CPUEmu
                 //TEQ
                 case 9:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"TEQ{_currentCondition} R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"TEQ{_currentCondition} R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         var res = _reg[rn] ^ op2v;
@@ -483,7 +288,7 @@ namespace CPUEmu
                 //CMP
                 case 10:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"CMP{_currentCondition} R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"CMP{_currentCondition} R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         var res = _reg[rn] - op2v;
@@ -494,7 +299,7 @@ namespace CPUEmu
                 //CMN
                 case 11:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"CMN{_currentCondition} R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"CMN{_currentCondition} R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         var res = _reg[rn] + op2v;
@@ -505,7 +310,7 @@ namespace CPUEmu
                 //ORR
                 case 12:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"ORR{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"ORR{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         _reg[rd] = _reg[rn] | op2v;
@@ -517,7 +322,7 @@ namespace CPUEmu
                 //MOV
                 case 13:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"MOV{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"MOV{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         _reg[rd] = op2v;
@@ -529,7 +334,7 @@ namespace CPUEmu
                 //BIC
                 case 14:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"BIC{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"BIC{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, R{rn}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         _reg[rd] = _reg[rn] & ~op2v;
@@ -541,7 +346,7 @@ namespace CPUEmu
                 //MVN
                 case 15:
                     if (_currentlyPrinting)
-                        Disassemble?.Invoke(this, _currentInstrOffset, $"MVN{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
+                        Disassemble(_currentInstrOffset, $"MVN{(s == 1 ? "S" : "")}{_currentCondition} R{rd}, {(i == 1 ? $"#{op2v}" : $"R{op2 & 0xF}")}");
                     else
                     {
                         _reg[rd] = ~op2v;
@@ -602,9 +407,9 @@ namespace CPUEmu
 
             if (_currentlyPrinting)
                 if (offset != 0)
-                    Disassemble?.Invoke(this, _currentInstrOffset, $"{(l == 1 ? "LDR" : "STR")}{(b == 1 ? "B" : "")}{_currentCondition} R{rd}, [R{rn}{(i == 1 ? $", #{offset}]" : (p == 1 ? $", #{offset}]!" : $"], #{offset}"))}");
+                    Disassemble(_currentInstrOffset, $"{(l == 1 ? "LDR" : "STR")}{(b == 1 ? "B" : "")}{_currentCondition} R{rd}, [R{rn}{(i == 1 ? $", #{offset}]" : (p == 1 ? $", #{offset}]!" : $"], #{offset}"))}");
                 else
-                    Disassemble?.Invoke(this, _currentInstrOffset, $"{(l == 1 ? "LDR" : "STR")}{(b == 1 ? "B" : "")}{_currentCondition} R{rd}, [R{rn}]{(p == 1 ? "!" : "")}");
+                    Disassemble(_currentInstrOffset, $"{(l == 1 ? "LDR" : "STR")}{(b == 1 ? "B" : "")}{_currentCondition} R{rd}, [R{rn}]{(p == 1 ? "!" : "")}");
             else
             {
 
@@ -681,70 +486,6 @@ namespace CPUEmu
                     if (p == 0 || u == 0)
                         address += 4;
                 }
-            }
-        }
-        #endregion
-
-        #region Branch
-        private void Branch(uint instruction)
-        {
-            var offset = (instruction & 0xFFFFFF) << 2;
-            var l = (instruction >> 24) & 0x1;
-
-            //sign extend offset
-            var sign = (offset >> 25) & 0x1;
-            for (int i = 26; i < 32; i++) offset |= sign << i;
-
-            if (_currentlyPrinting)
-                Disassemble?.Invoke(this, _currentInstrOffset, $"B{(l == 1 ? "L" : "")}{_currentCondition} 0x{_currentInstrOffset + 8 + offset:X2}");
-            else
-            {
-                if (l == 1)
-                    _lr = _pc - 4;
-
-                SetPC((uint)((int)_pc + (int)offset));
-            }
-        }
-
-        private void BranchExchange(uint instruction)
-        {
-
-        }
-        #endregion
-
-        #region Shifter
-        private uint ROR(uint value, int rot) => (uint)((value >> rot) | ((value & ((1 << rot) - 1)) << (32 - rot)));
-
-        private uint Shift(uint value, uint type, uint count, bool s)
-        {
-            switch (type)
-            {
-                //LSL
-                case 0:
-                    if (count != 0 && s)
-                        _c = (((int)value >> (int)(32 - count)) & 0x1) == 1;
-                    return value << (int)count;
-
-                //LSR
-                case 1:
-                    if (count != 0 && s)
-                        _c = (((int)value >> (int)(count - 1)) & 0x1) == 1;
-                    return value >> (int)count;
-
-                //ASR
-                case 2:
-                    if (count != 0 && s)
-                        _c = (((int)value >> (int)(count - 1)) & 0x1) == 1;
-                    return (uint)((int)value >> (int)count);
-
-                //ROR
-                case 3:
-                    if (count != 0 && s)
-                        _c = (((int)value >> (int)(count - 1)) & 0x1) == 1;
-                    return ROR(value, (int)count);
-
-                default:
-                    return 0;
             }
         }
         #endregion

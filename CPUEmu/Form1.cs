@@ -20,19 +20,21 @@ namespace CPUEmu
     {
         private Emulator _emu;
         private string _currentFile;
-        private Task _execution;
         private bool _abort;
         private bool _stopped;
         private bool _doStep;
         private bool _updating;
 
         System.Timers.Timer _timer;
+        System.Timers.Timer _timer2;
 
         public Form1()
         {
             InitializeComponent();
             _timer = new System.Timers.Timer(16.666);
             _timer.Elapsed += RefreshUI;
+            _timer2 = new System.Timers.Timer(16.666);
+            _timer2.Elapsed += RefreshDisassembly;
         }
 
         private void RefreshUI(object sender, System.Timers.ElapsedEventArgs e)
@@ -41,6 +43,18 @@ namespace CPUEmu
             {
                 RefreshFlags();
                 RefreshRegisters();
+            }
+        }
+
+        private void RefreshDisassembly(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (_stopped)
+            {
+                MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as TextBoxBase).Clear()));
+                _emu.DisassembleInstructions(_emu.CurrentInstructionOffset, (int)Math.Max(20, _emu.PayloadLength / (_emu.BitsPerInstruction / 8)));
+                MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as TextBoxBase).BackColor = Color.White));
+                MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as TextBoxBase).Select(0, 4)));
+                MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as RichTextBox).SelectionBackColor = Color.Yellow));
             }
         }
 
@@ -66,6 +80,8 @@ namespace CPUEmu
 
             _updating = true;
             _timer.Start();
+
+            _timer2.Start();
         }
 
         private void ResetUI()
@@ -117,7 +133,7 @@ namespace CPUEmu
                         if (_doStep)
                             _doStep = false;
 
-                        _emu.DisassembleCurrentInstruction();
+                        //_emu.DisassembleCurrentInstruction();
                         _emu.ExecuteNextInstruction();
                     }
 
