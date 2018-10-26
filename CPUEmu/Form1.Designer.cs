@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.consoleLog = new System.Windows.Forms.RichTextBox();
+            this.txtlog = new System.Windows.Forms.RichTextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -38,24 +38,24 @@
             this.txtFlags = new System.Windows.Forms.TextBox();
             this.txtRegs = new System.Windows.Forms.TextBox();
             this.btnStep = new System.Windows.Forms.Button();
-            this.txtPrint = new System.Windows.Forms.RichTextBox();
+            this.txtDisassembly = new System.Windows.Forms.RichTextBox();
             this.btnPrintToggle = new System.Windows.Forms.Button();
             this.btnReExec = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // consoleLog
+            // txtlog
             // 
-            this.consoleLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.txtlog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.consoleLog.BackColor = System.Drawing.Color.Black;
-            this.consoleLog.ForeColor = System.Drawing.Color.White;
-            this.consoleLog.Location = new System.Drawing.Point(12, 62);
-            this.consoleLog.Name = "consoleLog";
-            this.consoleLog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.consoleLog.Size = new System.Drawing.Size(346, 376);
-            this.consoleLog.TabIndex = 0;
-            this.consoleLog.Text = "";
+            this.txtlog.BackColor = System.Drawing.Color.Black;
+            this.txtlog.ForeColor = System.Drawing.Color.White;
+            this.txtlog.Location = new System.Drawing.Point(12, 62);
+            this.txtlog.Name = "txtlog";
+            this.txtlog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.txtlog.Size = new System.Drawing.Size(346, 376);
+            this.txtlog.TabIndex = 0;
+            this.txtlog.Text = "";
             // 
             // menuStrip1
             // 
@@ -116,6 +116,8 @@
             // txtFlags
             // 
             this.txtFlags.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtFlags.Enabled = false;
+            this.txtFlags.ForeColor = System.Drawing.Color.Black;
             this.txtFlags.Location = new System.Drawing.Point(680, 62);
             this.txtFlags.Multiline = true;
             this.txtFlags.Name = "txtFlags";
@@ -127,6 +129,8 @@
             // 
             this.txtRegs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtRegs.Enabled = false;
+            this.txtRegs.ForeColor = System.Drawing.Color.Black;
             this.txtRegs.Location = new System.Drawing.Point(680, 188);
             this.txtRegs.Multiline = true;
             this.txtRegs.Name = "txtRegs";
@@ -145,19 +149,21 @@
             this.btnStep.UseVisualStyleBackColor = true;
             this.btnStep.Click += new System.EventHandler(this.btnStep_Click);
             // 
-            // txtPrint
+            // txtDisassembly
             // 
-            this.txtPrint.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.txtDisassembly.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtPrint.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.txtPrint.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPrint.Location = new System.Drawing.Point(364, 148);
-            this.txtPrint.Name = "txtPrint";
-            this.txtPrint.ReadOnly = true;
-            this.txtPrint.Size = new System.Drawing.Size(310, 290);
-            this.txtPrint.TabIndex = 8;
-            this.txtPrint.Text = "";
+            this.txtDisassembly.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.txtDisassembly.Enabled = false;
+            this.txtDisassembly.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDisassembly.ForeColor = System.Drawing.Color.Black;
+            this.txtDisassembly.Location = new System.Drawing.Point(364, 148);
+            this.txtDisassembly.Name = "txtDisassembly";
+            this.txtDisassembly.ReadOnly = true;
+            this.txtDisassembly.Size = new System.Drawing.Size(310, 290);
+            this.txtDisassembly.TabIndex = 8;
+            this.txtDisassembly.Text = "";
             // 
             // btnPrintToggle
             // 
@@ -187,14 +193,14 @@
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.btnReExec);
             this.Controls.Add(this.btnPrintToggle);
-            this.Controls.Add(this.txtPrint);
+            this.Controls.Add(this.txtDisassembly);
             this.Controls.Add(this.btnStep);
             this.Controls.Add(this.txtRegs);
             this.Controls.Add(this.txtFlags);
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.btnAbort);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.consoleLog);
+            this.Controls.Add(this.txtlog);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
@@ -208,7 +214,7 @@
 
         #endregion
 
-        private System.Windows.Forms.RichTextBox consoleLog;
+        private System.Windows.Forms.RichTextBox txtlog;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
@@ -218,7 +224,7 @@
         private System.Windows.Forms.TextBox txtFlags;
         private System.Windows.Forms.TextBox txtRegs;
         private System.Windows.Forms.Button btnStep;
-        private System.Windows.Forms.RichTextBox txtPrint;
+        private System.Windows.Forms.RichTextBox txtDisassembly;
         private System.Windows.Forms.Button btnPrintToggle;
         private System.Windows.Forms.Button btnReExec;
     }

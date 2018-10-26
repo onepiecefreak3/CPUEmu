@@ -11,8 +11,7 @@ using System.IO;
 using System.Threading;
 using System.Diagnostics;
 using System.Reflection;
-
-//TODO: using R15/PC as a destination register in all instructions needs to trigger SetPC or similar somehow
+using CPUEmu.Contract;
 
 namespace CPUEmu
 {
@@ -20,24 +19,29 @@ namespace CPUEmu
     {
         private Emulator _emu;
         private string _currentFile;
+
         private bool _abort;
         private bool _stopped;
         private bool _doStep;
         private bool _updating;
+        private bool _printToggle = true;
 
-        System.Timers.Timer _timer;
-        System.Timers.Timer _timer2;
+        System.Timers.Timer _refreshTimer;
+        System.Timers.Timer _disassembleTimer;
 
         public Form1()
         {
             InitializeComponent();
-            _timer = new System.Timers.Timer(16.666);
-            _timer.Elapsed += RefreshUI;
-            _timer2 = new System.Timers.Timer(16.666);
-            _timer2.Elapsed += RefreshDisassembly;
+
+            _refreshTimer = new System.Timers.Timer(16.666);
+            _refreshTimer.Elapsed += RefreshTables;
+
+            _disassembleTimer = new System.Timers.Timer(40);
+            _disassembleTimer.Elapsed += RefreshDisassembly;
         }
 
-        private void RefreshUI(object sender, System.Timers.ElapsedEventArgs e)
+        #region Asynchronous tasks
+        private void RefreshTables(object sender, System.Timers.ElapsedEventArgs e)
         {
             if (_updating)
             {
@@ -46,18 +50,41 @@ namespace CPUEmu
             }
         }
 
+        private Func<long, string, string> CreateDisassemblyLine => new Func<long, string, string>((l, s) => $"{l:X4}: {s}" + Environment.NewLine);
         private void RefreshDisassembly(object sender, System.Timers.ElapsedEventArgs e)
         {
+            var list = _emu.DisassembleInstructions(_emu.PayloadOffset, 20).ToList();
+
+            MultipleThreadControlExec(txtDisassembly, new Action<Control>((c) =>
+            {
+                var str = list.Aggregate("", (a, b) => a + CreateDisassemblyLine(b.offset, b.source));
+                c.Text = str;
+            }));
+
             if (_stopped)
             {
-                MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as TextBoxBase).Clear()));
-                _emu.DisassembleInstructions(_emu.CurrentInstructionOffset, (int)Math.Max(20, _emu.PayloadLength / (_emu.BitsPerInstruction / 8)));
-                MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as TextBoxBase).BackColor = Color.White));
-                MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as TextBoxBase).Select(0, 4)));
-                MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as RichTextBox).SelectionBackColor = Color.Yellow));
+                //TODO: Only when stopped, mark current instruction line
+                var currentLineIndex = list.FindIndex(x => x.offset == _emu.CurrentInstructionOffset);
+                var selectionStart = list.TakeWhile((x, i) => i < currentLineIndex).Sum(x => CreateDisassemblyLine(x.offset, x.source).Length) - currentLineIndex;
+
+                if (currentLineIndex >= 0)
+                    MultipleThreadControlExec(txtDisassembly, new Action<Control>((c) =>
+                    {
+                        (c as TextBoxBase).Select(selectionStart, CreateDisassemblyLine(list[currentLineIndex].offset, list[currentLineIndex].source).Length - 1);
+                        (c as RichTextBox).SelectionBackColor = Color.Yellow;
+                    }));
             }
         }
 
+        private async void StartExecution()
+        {
+            await ExecuteEmulator();
+
+            FinishExecution();
+        }
+        #endregion
+
+        #region Events
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var ofd = new OpenFileDialog();
@@ -66,6 +93,7 @@ namespace CPUEmu
                 OpenFile(ofd.FileName);
             }
         }
+        #endregion
 
         private void OpenFile(string file)
         {
@@ -79,50 +107,35 @@ namespace CPUEmu
             StartExecution();
 
             _updating = true;
-            _timer.Start();
 
-            _timer2.Start();
+            _refreshTimer.Start();
+            _disassembleTimer.Start();
         }
 
         private void ResetUI()
         {
-            consoleLog.Clear();
-            txtPrint.Clear();
-
-            _stopped = false;
-            btnStop.Text = "Stop Execution";
-
-            _doStep = false;
-            btnStep.Enabled = false;
+            txtlog.Clear();
+            txtDisassembly.Clear();
 
             _abort = false;
+            _stopped = false;
+            _doStep = false;
+
+            btnStop.Text = "Stop Execution";
+
             btnAbort.Enabled = true;
             btnStop.Enabled = true;
-
-            ToggleReExecBtn(false);
+            btnStep.Enabled = false;
+            btnReExec.Enabled = false;
         }
 
         private void OpenEmulator(string file)
         {
             //TODO: Use MEF for loading emulators from plugins
             _emu = new AARCH32(File.ReadAllBytes(file), 0x100000, 0x1000000, 0x100000);
-
-            if (_printToggle)
-            {
-                _emu.Log += OnEmulatorLog;
-                _emu.Disassemble += OnEmulatorDisassemble;
-            }
         }
 
-        private async void StartExecution()
-        {
-            var res = await ExecuteEmulator();
-
-            if (_printToggle) Log("Finished.");
-            FinishExecution();
-        }
-
-        private Task<bool> ExecuteEmulator()
+        private Task ExecuteEmulator()
         {
             return Task.Factory.StartNew(() =>
             {
@@ -133,28 +146,30 @@ namespace CPUEmu
                         if (_doStep)
                             _doStep = false;
 
-                        //_emu.DisassembleCurrentInstruction();
                         _emu.ExecuteNextInstruction();
                     }
 
                     Thread.Sleep(200);
                 }
-
-                return true;
             });
         }
 
         private void FinishExecution()
         {
-            MultipleThreadControlExec(btnReExec, new Action<Control>((c) => c.Enabled = true));
-            MultipleThreadControlExec(btnStop, new Action<Control>((c) => c.Enabled = false));
-            MultipleThreadControlExec(btnStep, new Action<Control>((c) => c.Enabled = false));
-            MultipleThreadControlExec(btnAbort, new Action<Control>((c) => c.Enabled = false));
+            btnAbort.Enabled = false;
+            btnStop.Enabled = false;
+            btnStep.Enabled = false;
+            btnReExec.Enabled = true;
 
             _abort = false;
-            _doStep = false;
             _stopped = false;
+            _doStep = false;
             _updating = false;
+
+            _refreshTimer.Stop();
+            _disassembleTimer.Stop();
+
+            Log("Finished.");
         }
 
         private void MultipleThreadControlExec(Control control, Action<Control> action)
@@ -165,15 +180,8 @@ namespace CPUEmu
                 action(control);
         }
 
-        private void ToggleReExecBtn(bool state)
+        private void RefreshTable(IEnumerable<(string name, long value)> table, TextBoxBase box, Func<string, string, long, string> addEntry)
         {
-            MultipleThreadControlExec(btnReExec, new Action<Control>((c) => c.Enabled = state));
-        }
-
-        private void RefreshTable(List<(string name, long value)> table, TextBoxBase box, Func<string, string, long, string> addEntry)
-        {
-            //MultipleThreadControlExec(box, new Action<Control>((c) => (c as TextBoxBase).Clear()));
-
             var str = "";
             foreach (var entry in table)
                 str = addEntry(str, entry.name, entry.value);
@@ -194,19 +202,10 @@ namespace CPUEmu
         #region Logging
         private void Log(string message)
         {
-            MultipleThreadControlExec(consoleLog, new Action<Control>((c) => (c as TextBoxBase).AppendText(message)));
+            MultipleThreadControlExec(txtlog, new Action<Control>((c) => (c as TextBoxBase).AppendText(message)));
         }
 
         private void OnEmulatorLog(object sender, string message) => Log(message + Environment.NewLine);
-        #endregion
-
-        #region Disassembling
-        private void Disassemble(long address, string source)
-        {
-            MultipleThreadControlExec(txtPrint, new Action<Control>((c) => (c as TextBoxBase).AppendText($"{address:X4}: {source}" + Environment.NewLine)));
-        }
-
-        private void OnEmulatorDisassemble(object sender, long address, string source) => Disassemble(address, source);
         #endregion
 
         private void btnAbort_Click(object sender, EventArgs e)
@@ -216,10 +215,10 @@ namespace CPUEmu
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            _stopped = !_stopped;
-            btnStep.Enabled = _stopped;
+            _stopped = btnStep.Enabled = !_stopped;
+
             if (_stopped)
-                btnStop.Text = "Continue Execution";
+                btnStop.Text = "Resume Execution";
             else
                 btnStop.Text = "Stop Execution";
         }
@@ -229,7 +228,6 @@ namespace CPUEmu
             _doStep = true;
         }
 
-        private bool _printToggle = true;
         private void btnPrintToggle_Click(object sender, EventArgs e)
         {
             if (_printToggle)
@@ -238,7 +236,6 @@ namespace CPUEmu
                 if (_emu != null)
                 {
                     _emu.Log -= OnEmulatorLog;
-                    _emu.Disassemble -= OnEmulatorDisassemble;
                 }
             }
             else
@@ -247,7 +244,6 @@ namespace CPUEmu
                 if (_emu != null)
                 {
                     _emu.Log += OnEmulatorLog;
-                    _emu.Disassemble += OnEmulatorDisassemble;
                 }
             }
             _printToggle = !_printToggle;

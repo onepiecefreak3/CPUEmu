@@ -49,5 +49,10 @@ namespace CPUEmu
         {
 
         }
+
+        private string DisassembleBranchExchange(uint instruction)
+        {
+            return "";
+        }
     }
 }

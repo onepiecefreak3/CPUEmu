@@ -51,7 +51,7 @@ namespace CPUEmu.Contract
             return DisassembleInstructions(CurrentInstructionOffset, 1).First();
         }
 
-        public abstract IEnumerable<(long, string)> DisassembleInstructions(long offset, int count);
+        public abstract IEnumerable<(long offset, string source)> DisassembleInstructions(long offset, int count);
 
         public abstract void ExecuteNextInstruction();
 
