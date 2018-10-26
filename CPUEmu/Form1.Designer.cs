@@ -155,7 +155,6 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtDisassembly.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.txtDisassembly.Enabled = false;
             this.txtDisassembly.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtDisassembly.ForeColor = System.Drawing.Color.Black;
             this.txtDisassembly.Location = new System.Drawing.Point(364, 148);
@@ -182,7 +181,7 @@
             this.btnReExec.Name = "btnReExec";
             this.btnReExec.Size = new System.Drawing.Size(115, 23);
             this.btnReExec.TabIndex = 11;
-            this.btnReExec.Text = "Execute anew";
+            this.btnReExec.Text = "ReExecute";
             this.btnReExec.UseVisualStyleBackColor = true;
             this.btnReExec.Click += new System.EventHandler(this.btnReExec_Click);
             // 

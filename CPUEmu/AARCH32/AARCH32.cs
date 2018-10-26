@@ -195,6 +195,12 @@ namespace CPUEmu
                     throw new InvalidDataException(name);
             }
         }
+
+        public override void Dispose()
+        {
+            _mem = null;
+            _reg = null;
+        }
         #endregion
 
         #region Helper

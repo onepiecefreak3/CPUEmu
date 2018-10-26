@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CPUEmu.Contract
 {
-    public abstract class Emulator
+    public abstract class Emulator : IDisposable
     {
         protected byte[] _mem;
 
@@ -89,5 +89,7 @@ namespace CPUEmu.Contract
             Array.Copy(buffer, 0, _mem, address, buffer.Length);
         }
         #endregion
+
+        public abstract void Dispose();
     }
 }
