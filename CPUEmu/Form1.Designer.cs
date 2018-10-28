@@ -118,7 +118,7 @@
             this.txtFlags.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.txtFlags.Enabled = false;
             this.txtFlags.ForeColor = System.Drawing.Color.Black;
-            this.txtFlags.Location = new System.Drawing.Point(680, 62);
+            this.txtFlags.Location = new System.Drawing.Point(679, 61);
             this.txtFlags.Multiline = true;
             this.txtFlags.Name = "txtFlags";
             this.txtFlags.ReadOnly = true;
@@ -131,7 +131,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtRegs.Enabled = false;
             this.txtRegs.ForeColor = System.Drawing.Color.Black;
-            this.txtRegs.Location = new System.Drawing.Point(680, 188);
+            this.txtRegs.Location = new System.Drawing.Point(679, 187);
             this.txtRegs.Multiline = true;
             this.txtRegs.Name = "txtRegs";
             this.txtRegs.ReadOnly = true;
@@ -157,12 +157,14 @@
             this.txtDisassembly.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.txtDisassembly.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtDisassembly.ForeColor = System.Drawing.Color.Black;
-            this.txtDisassembly.Location = new System.Drawing.Point(364, 148);
+            this.txtDisassembly.Location = new System.Drawing.Point(364, 147);
             this.txtDisassembly.Name = "txtDisassembly";
             this.txtDisassembly.ReadOnly = true;
-            this.txtDisassembly.Size = new System.Drawing.Size(310, 290);
+            this.txtDisassembly.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
+            this.txtDisassembly.Size = new System.Drawing.Size(309, 290);
             this.txtDisassembly.TabIndex = 8;
             this.txtDisassembly.Text = "";
+            this.txtDisassembly.SizeChanged += new System.EventHandler(this.txtDisassembly_SizeChanged);
             // 
             // btnPrintToggle
             // 
