@@ -21,15 +21,20 @@ namespace CPUEmu
 
         private int _lineSpacingInTwips = 210;
         private int _timeOut = 40;
+        private Color _breakPointColor = Color.Red;
 
         private int _bufferDisassemblyLines;
+        private long[] _bufferedDisassemblyOffsets;
+
         private int _breakPointSize;
+        private List<long> _breakPoints = new List<long>();
 
         private Emulator _emu;
         private string _currentFile;
 
         private bool _abort;
         private bool _stopped;
+        private bool _break;
         private bool _doStep;
         private bool _instructionRunning;
 
@@ -42,9 +47,16 @@ namespace CPUEmu
         {
             InitializeComponent();
 
-            txtDisassembly.SetInnerMargins((int)TwipsToPixel(_lineSpacingInTwips), 0, 0, 0);
+            txtDisassembly.SizeChanged -= txtDisassembly_SizeChanged;
+
+            //txtDisassembly.SetInnerMargins((int)TwipsToPixel(_lineSpacingInTwips), 0, 0, 0);
+            txtDisassembly.Location = new Point((int)TwipsToPixel(_lineSpacingInTwips), 0);
+            txtDisassembly.Width = pnBreakPoints.Width - (int)TwipsToPixel(_lineSpacingInTwips);
+
+            txtDisassembly.SizeChanged += txtDisassembly_SizeChanged;
+
             _bufferDisassemblyLines = (int)(txtDisassembly.Height / TwipsToPixel(_lineSpacingInTwips));
-            _breakPointSize = (int)TwipsToPixel(_lineSpacingInTwips);
+            _breakPointSize = Math.Max(1, (int)TwipsToPixel(_lineSpacingInTwips) - 3);
 
             _refreshTimer = new System.Timers.Timer(16.666);
             _refreshTimer.Elapsed += OnRefreshTables;
@@ -165,8 +177,18 @@ namespace CPUEmu
                 {
                     if (!_stopped || _doStep)
                     {
+                        //check if breakpoint is reached
+                        if (_breakPoints.Contains(_emu?.CurrentInstructionOffset ?? 0) && !_doStep && !_break)
+                        {
+                            _stopped = true;
+                            _break = true;
+                            StopExecution(true);
+                            continue;
+                        }
+
                         _instructionRunning = true;
                         if (_doStep) _doStep = false;
+                        if (_break) _break = false;
 
                         Thread.Sleep(_timeOut);
 
@@ -215,10 +237,10 @@ namespace CPUEmu
             if (_stopped)
                 ResumeExecution();
             else
-                StopExecution();
+                StopExecution(false);
         }
 
-        private void StopExecution()
+        private void StopExecution(bool foreignThread)
         {
             _refreshTimer.Stop();
             _disassembleTimer.Stop();
@@ -229,30 +251,39 @@ namespace CPUEmu
             while (_instructionRunning)
                 ;
 
-            btnStep.Enabled = true;
-            btnStop.Text = "Resume Execution";
+            if (foreignThread)
+            {
+                MultipleThreadControlExec(btnStep, new Action<Control>((c) => { c.Enabled = true; }));
+                MultipleThreadControlExec(btnStop, new Action<Control>((c) => { c.Text = "Resume Execution"; }));
+            }
+            else
+            {
+                btnStep.Enabled = true;
+                btnStop.Text = "Resume Execution";
+            }
 
-            RefreshDisassembly(false);
+            RefreshDisassembly(foreignThread);
         }
 
         private void ResumeExecution()
         {
-            _stopped = false;
-            _doStep = false;
-
-            while (_instructionRunning)
-                ;
+            //while (_instructionRunning)
+            //    ;
 
             btnStep.Enabled = false;
             btnStop.Text = "Stop Execution";
 
             _refreshTimer.Start();
             _disassembleTimer.Start();
+
+            _stopped = false;
+            _doStep = false;
         }
 
         private void DoStep()
         {
             _doStep = true;
+            _break = false;
 
             while (_doStep || _instructionRunning)
                 ;
@@ -359,7 +390,7 @@ namespace CPUEmu
 
         //TODO: Find sane settings for continous disassembling
         private IEnumerable<(long offset, string source)> GetDisassembledInstructions()
-            => _emu.DisassembleInstructions(
+            => _emu?.DisassembleInstructions(
                 Math.Min(
                     Math.Max(
                         _emu.PayloadOffset,
@@ -369,16 +400,34 @@ namespace CPUEmu
 
         private void RefreshDisassembly(bool foreignThread)
         {
+            //Get disassembly range
             var list = GetDisassembledInstructions().ToList();
-            var str = list.Aggregate("", (a, b) => a + CreateDisassemblyLine(b.offset, b.source)).TrimEnd(Environment.NewLine.ToArray());
 
+            //Handle disassembled data
+            var str = list.Aggregate("", (a, b) => a + CreateDisassemblyLine(b.offset, b.source)).TrimEnd(Environment.NewLine.ToArray());
+            _bufferedDisassemblyOffsets = list.Select(x => x.offset).ToArray();
+
+            //Write disassembled data
             if (foreignThread)
-                MultipleThreadControlExec(txtDisassembly, new Action<Control>((c) => { c.Text = str; HighlightCurrentInstruction(true); txtDisassembly.SetLineSpacing(_lineSpacingInTwips); }));
+                MultipleThreadControlExec(txtDisassembly, new Action<Control>((c) =>
+                {
+                    c.Text = str;
+                    txtDisassembly.SetLineSpacing(_lineSpacingInTwips);
+                    HighlightCurrentInstruction(true);
+
+                    //Draw breakpoints
+                    if (_stopped)
+                        DrawBreakpoints(true);
+                }));
             else
             {
                 txtDisassembly.Text = str;
-                HighlightCurrentInstruction(false);
                 txtDisassembly.SetLineSpacing(_lineSpacingInTwips);
+                HighlightCurrentInstruction(false);
+
+                //Draw breakpoints
+                if (_stopped)
+                    DrawBreakpoints(false);
             }
         }
         #endregion
@@ -392,5 +441,61 @@ namespace CPUEmu
 
         private void OnEmulatorLog(object sender, string message) => Log(message + Environment.NewLine);
         #endregion
+
+        private void txtDisassembly_MouseUp(object sender, MouseEventArgs e)
+        {
+            //if (e.X < _breakPointSize)
+            //{
+            //    var currentLine = (int)Math.Floor(e.Y / TwipsToPixel(_lineSpacingInTwips));
+            //    HandleBreakpointByLine(currentLine);
+            //    RefreshDisassembly(false);
+            //}
+        }
+
+        private void HandleBreakpointByLine(int line)
+        {
+            var bufferedBk = _bufferedDisassemblyOffsets.ToArray();
+
+            line = Math.Min(Math.Max(0, line), bufferedBk.Length - 1);
+            var offset = bufferedBk[line];
+
+            if (_breakPoints.Contains(offset))
+                _breakPoints.Remove(offset);
+            else
+                _breakPoints.Add(offset);
+        }
+
+        private void DrawBreakpoints(bool foreignThread)
+        {
+            var bufferedBk = _bufferedDisassemblyOffsets.Select((x, i) => new { offset = x, index = i }).ToArray();
+
+            var bpToDraw = bufferedBk.Where(x => _breakPoints.Contains(x.offset)).Select(x => x.index).ToList();
+
+            if (foreignThread)
+                MultipleThreadControlExec(pnBreakPoints, new Action<Control>((c) =>
+                {
+                    var gr = c.CreateGraphics();
+                    gr.Clear(c.BackColor);
+                    foreach (var bp in bpToDraw)
+                        gr.FillEllipse(new SolidBrush(_breakPointColor), new Rectangle(0, bp * (int)TwipsToPixel(_lineSpacingInTwips) + 5, _breakPointSize, _breakPointSize));
+                }));
+            else
+            {
+                var gr = pnBreakPoints.CreateGraphics();
+                gr.Clear(pnBreakPoints.BackColor);
+                foreach (var bp in bpToDraw)
+                    gr.FillEllipse(new SolidBrush(_breakPointColor), new Rectangle(0, bp * (int)TwipsToPixel(_lineSpacingInTwips) + 5, _breakPointSize, _breakPointSize));
+            }
+        }
+
+        private void pnBreakPoints_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.X < _breakPointSize)
+            {
+                var currentLine = (int)Math.Floor(e.Y / TwipsToPixel(_lineSpacingInTwips));
+                HandleBreakpointByLine(currentLine);
+                RefreshDisassembly(false);
+            }
+        }
     }
 }

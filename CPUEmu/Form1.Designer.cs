@@ -41,7 +41,9 @@
             this.txtDisassembly = new System.Windows.Forms.RichTextBox();
             this.btnPrintToggle = new System.Windows.Forms.Button();
             this.btnReExec = new System.Windows.Forms.Button();
+            this.pnBreakPoints = new System.Windows.Forms.Panel();
             this.menuStrip1.SuspendLayout();
+            this.pnBreakPoints.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtlog
@@ -157,14 +159,15 @@
             this.txtDisassembly.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.txtDisassembly.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtDisassembly.ForeColor = System.Drawing.Color.Black;
-            this.txtDisassembly.Location = new System.Drawing.Point(364, 147);
+            this.txtDisassembly.Location = new System.Drawing.Point(23, 0);
             this.txtDisassembly.Name = "txtDisassembly";
             this.txtDisassembly.ReadOnly = true;
             this.txtDisassembly.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.txtDisassembly.Size = new System.Drawing.Size(309, 290);
+            this.txtDisassembly.Size = new System.Drawing.Size(286, 290);
             this.txtDisassembly.TabIndex = 8;
             this.txtDisassembly.Text = "";
             this.txtDisassembly.SizeChanged += new System.EventHandler(this.txtDisassembly_SizeChanged);
+            this.txtDisassembly.MouseUp += new System.Windows.Forms.MouseEventHandler(this.txtDisassembly_MouseUp);
             // 
             // btnPrintToggle
             // 
@@ -187,14 +190,23 @@
             this.btnReExec.UseVisualStyleBackColor = true;
             this.btnReExec.Click += new System.EventHandler(this.btnReExec_Click);
             // 
+            // pnBreakPoints
+            // 
+            this.pnBreakPoints.Controls.Add(this.txtDisassembly);
+            this.pnBreakPoints.Location = new System.Drawing.Point(364, 147);
+            this.pnBreakPoints.Name = "pnBreakPoints";
+            this.pnBreakPoints.Size = new System.Drawing.Size(309, 290);
+            this.pnBreakPoints.TabIndex = 12;
+            this.pnBreakPoints.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnBreakPoints_MouseUp);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.pnBreakPoints);
             this.Controls.Add(this.btnReExec);
             this.Controls.Add(this.btnPrintToggle);
-            this.Controls.Add(this.txtDisassembly);
             this.Controls.Add(this.btnStep);
             this.Controls.Add(this.txtRegs);
             this.Controls.Add(this.txtFlags);
@@ -208,6 +220,7 @@
             this.Text = "Form1";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.pnBreakPoints.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -228,6 +241,7 @@
         private System.Windows.Forms.RichTextBox txtDisassembly;
         private System.Windows.Forms.Button btnPrintToggle;
         private System.Windows.Forms.Button btnReExec;
+        private System.Windows.Forms.Panel pnBreakPoints;
     }
 }
 
