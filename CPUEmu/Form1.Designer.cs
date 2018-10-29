@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.txtlog = new System.Windows.Forms.RichTextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -42,6 +43,8 @@
             this.btnPrintToggle = new System.Windows.Forms.Button();
             this.btnReExec = new System.Windows.Forms.Button();
             this.pnBreakPoints = new System.Windows.Forms.Panel();
+            this.timDisassembly = new System.Windows.Forms.Timer(this.components);
+            this.timTable = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1.SuspendLayout();
             this.pnBreakPoints.SuspendLayout();
             this.SuspendLayout();
@@ -199,6 +202,16 @@
             this.pnBreakPoints.TabIndex = 12;
             this.pnBreakPoints.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnBreakPoints_MouseUp);
             // 
+            // timDisassembly
+            // 
+            this.timDisassembly.Interval = 40;
+            this.timDisassembly.Tick += new System.EventHandler(this.timDisassembly_Tick);
+            // 
+            // timTable
+            // 
+            this.timTable.Interval = 16;
+            this.timTable.Tick += new System.EventHandler(this.timTable_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -242,6 +255,8 @@
         private System.Windows.Forms.Button btnPrintToggle;
         private System.Windows.Forms.Button btnReExec;
         private System.Windows.Forms.Panel pnBreakPoints;
+        private System.Windows.Forms.Timer timDisassembly;
+        private System.Windows.Forms.Timer timTable;
     }
 }
 

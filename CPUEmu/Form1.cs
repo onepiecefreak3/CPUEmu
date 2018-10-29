@@ -40,8 +40,8 @@ namespace CPUEmu
 
         private bool _printing;
 
-        System.Timers.Timer _refreshTimer;
-        System.Timers.Timer _disassembleTimer;
+        //System.Timers.Timer _refreshTimer;
+        //System.Timers.Timer _disassembleTimer;
 
         public Form1()
         {
@@ -58,11 +58,11 @@ namespace CPUEmu
             _bufferDisassemblyLines = (int)(txtDisassembly.Height / TwipsToPixel(_lineSpacingInTwips));
             _breakPointSize = Math.Max(1, (int)TwipsToPixel(_lineSpacingInTwips) - 3);
 
-            _refreshTimer = new System.Timers.Timer(16.666);
-            _refreshTimer.Elapsed += OnRefreshTables;
+            //_refreshTimer = new System.Timers.Timer(16.666);
+            //_refreshTimer.Elapsed += OnRefreshTables;
 
-            _disassembleTimer = new System.Timers.Timer(40);
-            _disassembleTimer.Elapsed += OnRefreshDisassembly;
+            //_disassembleTimer = new System.Timers.Timer(40);
+            //_disassembleTimer.Elapsed += OnRefreshDisassembly;
 
             EnablePrinting();
         }
@@ -165,8 +165,8 @@ namespace CPUEmu
         {
             ExecuteEmulator();
 
-            _refreshTimer.Start();
-            _disassembleTimer.Start();
+            timDisassembly.Start();
+            timTable.Start();
         }
 
         private async void ExecuteEmulator()
@@ -209,8 +209,8 @@ namespace CPUEmu
 
         private void FinishExecution()
         {
-            _refreshTimer.Stop();
-            _disassembleTimer.Stop();
+            timTable.Stop();
+            timDisassembly.Stop();
 
             RefreshFlags(true);
             RefreshRegisters(true);
@@ -242,8 +242,8 @@ namespace CPUEmu
 
         private void StopExecution(bool foreignThread)
         {
-            _refreshTimer.Stop();
-            _disassembleTimer.Stop();
+            timTable.Stop();
+            timDisassembly.Stop();
 
             _stopped = true;
             _doStep = false;
@@ -273,8 +273,8 @@ namespace CPUEmu
             btnStep.Enabled = false;
             btnStop.Text = "Stop Execution";
 
-            _refreshTimer.Start();
-            _disassembleTimer.Start();
+            timTable.Start();
+            timDisassembly.Start();
 
             _stopped = false;
             _doStep = false;
@@ -412,8 +412,10 @@ namespace CPUEmu
                 MultipleThreadControlExec(txtDisassembly, new Action<Control>((c) =>
                 {
                     c.Text = str;
-                    txtDisassembly.SetLineSpacing(_lineSpacingInTwips);
+                    (c as RichTextBox).SetLineSpacing(_lineSpacingInTwips);
                     HighlightCurrentInstruction(true);
+
+                    (c as RichTextBox).Select(0, 0);
 
                     //Draw breakpoints
                     if (_stopped)
@@ -424,6 +426,8 @@ namespace CPUEmu
                 txtDisassembly.Text = str;
                 txtDisassembly.SetLineSpacing(_lineSpacingInTwips);
                 HighlightCurrentInstruction(false);
+
+                txtDisassembly.Select(0, 0);
 
                 //Draw breakpoints
                 if (_stopped)
@@ -496,6 +500,17 @@ namespace CPUEmu
                 HandleBreakpointByLine(currentLine);
                 RefreshDisassembly(false);
             }
+        }
+
+        private void timTable_Tick(object sender, EventArgs e)
+        {
+            RefreshFlags(false);
+            RefreshRegisters(false);
+        }
+
+        private void timDisassembly_Tick(object sender, EventArgs e)
+        {
+            RefreshDisassembly(false);
         }
     }
 }
