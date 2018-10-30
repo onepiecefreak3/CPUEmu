@@ -28,6 +28,7 @@ namespace CPUEmu
                          1,
                          ref fmt
                        );
+            rtb.Select(0, 0);
         }
 
         [StructLayout(LayoutKind.Sequential)]

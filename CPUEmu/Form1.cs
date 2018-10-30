@@ -47,9 +47,8 @@ namespace CPUEmu
         {
             InitializeComponent();
 
-            txtDisassembly.SizeChanged -= txtDisassembly_SizeChanged;
+            timExecution.Interval = _timeOut;
 
-            //txtDisassembly.SetInnerMargins((int)TwipsToPixel(_lineSpacingInTwips), 0, 0, 0);
             txtDisassembly.Location = new Point((int)TwipsToPixel(_lineSpacingInTwips), 0);
             txtDisassembly.Width = pnBreakPoints.Width - (int)TwipsToPixel(_lineSpacingInTwips);
 
@@ -58,26 +57,20 @@ namespace CPUEmu
             _bufferDisassemblyLines = (int)(txtDisassembly.Height / TwipsToPixel(_lineSpacingInTwips));
             _breakPointSize = Math.Max(1, (int)TwipsToPixel(_lineSpacingInTwips) - 3);
 
-            //_refreshTimer = new System.Timers.Timer(16.666);
-            //_refreshTimer.Elapsed += OnRefreshTables;
-
-            //_disassembleTimer = new System.Timers.Timer(40);
-            //_disassembleTimer.Elapsed += OnRefreshDisassembly;
-
             EnablePrinting();
         }
 
         #region Asynchronous tasks
-        private void OnRefreshTables(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            RefreshFlags(true);
-            RefreshRegisters(true);
-        }
+        //private void OnRefreshTables(object sender, System.Timers.ElapsedEventArgs e)
+        //{
+        //    RefreshFlags();
+        //    RefreshRegisters();
+        //}
 
-        private void OnRefreshDisassembly(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            RefreshDisassembly(true);
-        }
+        //private void OnRefreshDisassembly(object sender, System.Timers.ElapsedEventArgs e)
+        //{
+        //    RefreshDisassembly();
+        //}
         #endregion
 
         #region Events
@@ -124,7 +117,8 @@ namespace CPUEmu
         private void txtDisassembly_SizeChanged(object sender, EventArgs e)
         {
             RecalculateDisassemblyLines();
-            RefreshDisassembly(false);
+            RefreshDisassembly();
+            HighlightCurrentInstruction();
         }
         #endregion
 
@@ -163,58 +157,29 @@ namespace CPUEmu
 
         private void StartExecution()
         {
-            ExecuteEmulator();
+            timExecution.Start();
 
-            timDisassembly.Start();
-            timTable.Start();
-        }
-
-        private async void ExecuteEmulator()
-        {
-            await Task.Factory.StartNew(() =>
-            {
-                while (!_emu.IsFinished && !_abort)
-                {
-                    if (!_stopped || _doStep)
-                    {
-                        //check if breakpoint is reached
-                        if (_breakPoints.Contains(_emu?.CurrentInstructionOffset ?? 0) && !_doStep && !_break)
-                        {
-                            _stopped = true;
-                            _break = true;
-                            StopExecution(true);
-                            continue;
-                        }
-
-                        _instructionRunning = true;
-                        if (_doStep) _doStep = false;
-                        if (_break) _break = false;
-
-                        Thread.Sleep(_timeOut);
-
-                        _emu?.ExecuteNextInstruction();
-
-                        _instructionRunning = false;
-                    }
-                }
-            });
-
-            FinishExecution();
+            //timDisassembly.Start();
+            //timTable.Start();
         }
 
         private void AbortExecution()
         {
             _abort = true;
+            if (_stopped)
+                FinishExecution();
         }
 
         private void FinishExecution()
         {
-            timTable.Stop();
-            timDisassembly.Stop();
+            timExecution.Stop();
+            //timTable.Stop();
+            //timDisassembly.Stop();
 
-            RefreshFlags(true);
-            RefreshRegisters(true);
-            RefreshDisassembly(true);
+            //RefreshFlags();
+            //RefreshRegisters();
+            RefreshDisassembly();
+            HighlightCurrentInstruction();
 
             btnAbort.Enabled = false;
             btnStop.Enabled = false;
@@ -237,44 +202,36 @@ namespace CPUEmu
             if (_stopped)
                 ResumeExecution();
             else
-                StopExecution(false);
+                StopExecution();
         }
 
-        private void StopExecution(bool foreignThread)
+        private void StopExecution()
         {
-            timTable.Stop();
-            timDisassembly.Stop();
-
             _stopped = true;
             _doStep = false;
+
+            timExecution.Stop();
+            //timTable.Stop();
+            //timDisassembly.Stop();
 
             while (_instructionRunning)
                 ;
 
-            if (foreignThread)
-            {
-                MultipleThreadControlExec(btnStep, new Action<Control>((c) => { c.Enabled = true; }));
-                MultipleThreadControlExec(btnStop, new Action<Control>((c) => { c.Text = "Resume Execution"; }));
-            }
-            else
-            {
-                btnStep.Enabled = true;
-                btnStop.Text = "Resume Execution";
-            }
+            btnStep.Enabled = true;
+            btnStop.Text = "Resume Execution";
 
-            RefreshDisassembly(foreignThread);
+            RefreshDisassembly();
+            HighlightCurrentInstruction();
         }
 
         private void ResumeExecution()
         {
-            //while (_instructionRunning)
-            //    ;
-
             btnStep.Enabled = false;
             btnStop.Text = "Stop Execution";
 
-            timTable.Start();
-            timDisassembly.Start();
+            timExecution.Start();
+            //timTable.Start();
+            //timDisassembly.Start();
 
             _stopped = false;
             _doStep = false;
@@ -282,16 +239,18 @@ namespace CPUEmu
 
         private void DoStep()
         {
+            timExecution.Start();
+
             _doStep = true;
             _break = false;
 
-            while (_doStep || _instructionRunning)
-                ;
+            //while (_doStep || _instructionRunning)
+            //    ;
 
-            RefreshFlags(false);
-            RefreshRegisters(false);
+            //RefreshFlags();
+            //RefreshRegisters();
 
-            RefreshDisassembly(false);
+            //RefreshDisassembly();
         }
 
         private void TogglePrinting(bool state)
@@ -316,67 +275,39 @@ namespace CPUEmu
             btnPrintToggle.Text = "Disable Printing";
         }
 
-        private void RefreshTable(IEnumerable<(string name, long value)> table, TextBoxBase box, Func<string, string, long, string> addEntry, bool foreignThread)
-        {
-            var str = table.Aggregate("", (a, b) => a = addEntry(a, b.name, b.value));
-
-            if (foreignThread)
-                MultipleThreadControlExec(box, new Action<Control>((c) => (c as TextBoxBase).Text = str));
-            else
-                box.Text = str;
-        }
-
-        private void RefreshFlags(bool foreignThread)
+        private void RefreshFlags()
         {
             if (_emu != null)
-                RefreshTable(
-                    _emu.RetrieveFlags(),
-                    txtFlags,
-                    new Func<string, string, long, string>((s1, s2, l) => s1 + $"{s2}: 0x{l:X8}" + Environment.NewLine),
-                    foreignThread);
+            {
+                var flags = _emu.RetrieveFlags();
+                var str = flags.Aggregate("", (a, b) => a += $"{b.flagName}: 0x{b.value:X8}" + Environment.NewLine);
+                txtFlags.Text = str;
+            }
         }
 
-        private void RefreshRegisters(bool foreignThread)
+        private void RefreshRegisters()
         {
             if (_emu != null)
-                RefreshTable(
-                    _emu.RetrieveRegisters(),
-                    txtRegs,
-                    new Func<string, string, long, string>((s1, s2, l) => s1 + $"{s2}: 0x{l:X8}" + Environment.NewLine),
-                    foreignThread);
+            {
+                var flags = _emu.RetrieveRegisters();
+                var str = flags.Aggregate("", (a, b) => a += $"{b.registerName}: 0x{b.value:X8}" + Environment.NewLine);
+                txtRegs.Text = str;
+            }
         }
 
-        private void HighlightCurrentInstruction(bool foreignThread)
+        private void HighlightCurrentInstruction()
         {
             var list = GetDisassembledInstructions().ToList();
 
-            var currentLineIndex = list.FindIndex(x => x.offset == _emu.CurrentInstructionOffset);
+            var currentLineIndex = list.FindIndex(x => x.offset == (_emu?.CurrentInstructionOffset ?? -1));
             var selectionStart = list.TakeWhile((x, i) => i < currentLineIndex).Sum(x => CreateDisassemblyLine(x.offset, x.source).Length) - currentLineIndex;
 
             if (currentLineIndex >= 0)
             {
-                if (foreignThread)
-                {
-                    MultipleThreadControlExec(txtDisassembly, new Action<Control>((c) =>
-                    {
-                        (c as RichTextBox).Select(selectionStart, CreateDisassemblyLine(list[currentLineIndex].offset, list[currentLineIndex].source).Length - 1);
-                        (c as RichTextBox).SelectionBackColor = Color.Yellow;
-                    }));
-                }
-                else
-                {
-                    txtDisassembly.Select(selectionStart, CreateDisassemblyLine(list[currentLineIndex].offset, list[currentLineIndex].source).Length - 1);
-                    txtDisassembly.SelectionBackColor = Color.Yellow;
-                }
+                txtDisassembly.Select(selectionStart, CreateDisassemblyLine(list[currentLineIndex].offset, list[currentLineIndex].source).Length - 1);
+                txtDisassembly.SelectionBackColor = Color.Yellow;
+                txtDisassembly.Select(0, 0);
             }
-        }
-
-        private void MultipleThreadControlExec(Control control, Action<Control> action)
-        {
-            if (control.InvokeRequired)
-                control.Invoke(new Action(() => action(control)));
-            else
-                action(control);
         }
 
         private void RecalculateDisassemblyLines()
@@ -388,7 +319,6 @@ namespace CPUEmu
         #region Disassembly
         private static Func<long, string, string> CreateDisassemblyLine => new Func<long, string, string>((l, s) => $"{l:X4}: {s}" + Environment.NewLine);
 
-        //TODO: Find sane settings for continous disassembling
         private IEnumerable<(long offset, string source)> GetDisassembledInstructions()
             => _emu?.DisassembleInstructions(
                 Math.Min(
@@ -398,7 +328,7 @@ namespace CPUEmu
                     _emu.PayloadOffset + _emu.PayloadLength - (_emu.BitsPerInstruction / 8) * _bufferDisassemblyLines),
                 _bufferDisassemblyLines);
 
-        private void RefreshDisassembly(bool foreignThread)
+        private void RefreshDisassembly()
         {
             //Get disassembly range
             var list = GetDisassembledInstructions().ToList();
@@ -408,31 +338,12 @@ namespace CPUEmu
             _bufferedDisassemblyOffsets = list.Select(x => x.offset).ToArray();
 
             //Write disassembled data
-            if (foreignThread)
-                MultipleThreadControlExec(txtDisassembly, new Action<Control>((c) =>
-                {
-                    c.Text = str;
-                    (c as RichTextBox).SetLineSpacing(_lineSpacingInTwips);
-                    HighlightCurrentInstruction(true);
+            txtDisassembly.Text = str;
+            txtDisassembly.SetLineSpacing(_lineSpacingInTwips);
 
-                    (c as RichTextBox).Select(0, 0);
-
-                    //Draw breakpoints
-                    if (_stopped)
-                        DrawBreakpoints(true);
-                }));
-            else
-            {
-                txtDisassembly.Text = str;
-                txtDisassembly.SetLineSpacing(_lineSpacingInTwips);
-                HighlightCurrentInstruction(false);
-
-                txtDisassembly.Select(0, 0);
-
-                //Draw breakpoints
-                if (_stopped)
-                    DrawBreakpoints(false);
-            }
+            //Draw breakpoints
+            //if (_stopped)
+                DrawBreakpoints();
         }
         #endregion
 
@@ -440,21 +351,11 @@ namespace CPUEmu
         private void Log(string message)
         {
             if (_printing)
-                MultipleThreadControlExec(txtlog, new Action<Control>((c) => (c as TextBoxBase).AppendText(message)));
+                Invoke(new Action(() => txtlog.AppendText(message)));
         }
 
         private void OnEmulatorLog(object sender, string message) => Log(message + Environment.NewLine);
         #endregion
-
-        private void txtDisassembly_MouseUp(object sender, MouseEventArgs e)
-        {
-            //if (e.X < _breakPointSize)
-            //{
-            //    var currentLine = (int)Math.Floor(e.Y / TwipsToPixel(_lineSpacingInTwips));
-            //    HandleBreakpointByLine(currentLine);
-            //    RefreshDisassembly(false);
-            //}
-        }
 
         private void HandleBreakpointByLine(int line)
         {
@@ -469,27 +370,16 @@ namespace CPUEmu
                 _breakPoints.Add(offset);
         }
 
-        private void DrawBreakpoints(bool foreignThread)
+        private void DrawBreakpoints()
         {
             var bufferedBk = _bufferedDisassemblyOffsets.Select((x, i) => new { offset = x, index = i }).ToArray();
 
             var bpToDraw = bufferedBk.Where(x => _breakPoints.Contains(x.offset)).Select(x => x.index).ToList();
 
-            if (foreignThread)
-                MultipleThreadControlExec(pnBreakPoints, new Action<Control>((c) =>
-                {
-                    var gr = c.CreateGraphics();
-                    gr.Clear(c.BackColor);
-                    foreach (var bp in bpToDraw)
-                        gr.FillEllipse(new SolidBrush(_breakPointColor), new Rectangle(0, bp * (int)TwipsToPixel(_lineSpacingInTwips) + 5, _breakPointSize, _breakPointSize));
-                }));
-            else
-            {
-                var gr = pnBreakPoints.CreateGraphics();
-                gr.Clear(pnBreakPoints.BackColor);
-                foreach (var bp in bpToDraw)
-                    gr.FillEllipse(new SolidBrush(_breakPointColor), new Rectangle(0, bp * (int)TwipsToPixel(_lineSpacingInTwips) + 5, _breakPointSize, _breakPointSize));
-            }
+            var gr = pnBreakPoints.CreateGraphics();
+            gr.Clear(pnBreakPoints.BackColor);
+            foreach (var bp in bpToDraw)
+                gr.FillEllipse(new SolidBrush(_breakPointColor), new Rectangle(0, bp * (int)TwipsToPixel(_lineSpacingInTwips) + 5, _breakPointSize, _breakPointSize));
         }
 
         private void pnBreakPoints_MouseUp(object sender, MouseEventArgs e)
@@ -498,19 +388,55 @@ namespace CPUEmu
             {
                 var currentLine = (int)Math.Floor(e.Y / TwipsToPixel(_lineSpacingInTwips));
                 HandleBreakpointByLine(currentLine);
-                RefreshDisassembly(false);
+                DrawBreakpoints();
+                //RefreshDisassembly();
             }
         }
 
         private void timTable_Tick(object sender, EventArgs e)
         {
-            RefreshFlags(false);
-            RefreshRegisters(false);
+            RefreshFlags();
+            RefreshRegisters();
         }
 
         private void timDisassembly_Tick(object sender, EventArgs e)
         {
-            RefreshDisassembly(false);
+            RefreshDisassembly();
+            HighlightCurrentInstruction();
+        }
+
+        private void timExecution_Tick(object sender, EventArgs e)
+        {
+            if ((!_emu?.IsFinished ?? false) && !_abort && (!_stopped || _doStep))
+            {
+                //check if breakpoint is reached
+                if (_breakPoints.Contains(_emu?.CurrentInstructionOffset ?? 0) && !_doStep && !_break)
+                {
+                    _break = true;
+                    _stopped = true;
+                    StopExecution();
+                }
+
+                if (!_stopped || _doStep)
+                {
+                    _instructionRunning = true;
+
+                    if (_doStep) _doStep = false;
+                    if (_break) _break = false;
+
+                    _emu?.ExecuteNextInstruction();
+
+                    _instructionRunning = false;
+
+                    RefreshFlags();
+                    RefreshRegisters();
+                    RefreshDisassembly();
+                    HighlightCurrentInstruction();
+                }
+            }
+
+            if (_abort || (_emu?.IsFinished ?? false))
+                FinishExecution();
         }
     }
 }

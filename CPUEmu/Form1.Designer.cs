@@ -45,6 +45,7 @@
             this.pnBreakPoints = new System.Windows.Forms.Panel();
             this.timDisassembly = new System.Windows.Forms.Timer(this.components);
             this.timTable = new System.Windows.Forms.Timer(this.components);
+            this.timExecution = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1.SuspendLayout();
             this.pnBreakPoints.SuspendLayout();
             this.SuspendLayout();
@@ -169,8 +170,6 @@
             this.txtDisassembly.Size = new System.Drawing.Size(286, 290);
             this.txtDisassembly.TabIndex = 8;
             this.txtDisassembly.Text = "";
-            this.txtDisassembly.SizeChanged += new System.EventHandler(this.txtDisassembly_SizeChanged);
-            this.txtDisassembly.MouseUp += new System.Windows.Forms.MouseEventHandler(this.txtDisassembly_MouseUp);
             // 
             // btnPrintToggle
             // 
@@ -211,6 +210,10 @@
             // 
             this.timTable.Interval = 16;
             this.timTable.Tick += new System.EventHandler(this.timTable_Tick);
+            // 
+            // timExecution
+            // 
+            this.timExecution.Tick += new System.EventHandler(this.timExecution_Tick);
             // 
             // Form1
             // 
@@ -257,6 +260,7 @@
         private System.Windows.Forms.Panel pnBreakPoints;
         private System.Windows.Forms.Timer timDisassembly;
         private System.Windows.Forms.Timer timTable;
+        private System.Windows.Forms.Timer timExecution;
     }
 }
 
