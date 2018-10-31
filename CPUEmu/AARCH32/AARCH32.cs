@@ -26,6 +26,8 @@ namespace CPUEmu
         private uint _pc { get => _reg[15]; set => _reg[15] = value; }
 
         Queue<uint> _instrBuffer = new Queue<uint>();
+
+        BarrelShifter _shifter = new BarrelShifter();
         #endregion
 
         #region Disassembling related

@@ -145,8 +145,8 @@ namespace CPUEmu
         private void HandleADC(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] + desc.operand2Value);
-            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
             _reg[desc.rd] += (uint)(_c ? 1 : 0);
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
         }
 
         private void HandleSBC(DataProcessorDescriptor desc)
@@ -222,7 +222,7 @@ namespace CPUEmu
         {
             UpdateFlags(
                 result == 0,
-                value >= value2,
+                result < value,
                 (result >> 31) == 1,
                 ((value >> 31) != (value2 >> 31)) && ((value >> 31) != (result >> 31))
                 );
@@ -326,7 +326,9 @@ namespace CPUEmu
                 operand2 = operand2
             };
 
-            res.operand2Value = GetOp2Value(res);
+            var logical = res.opcode == 0 || res.opcode == 1 || res.opcode == 8 || res.opcode == 9 || res.opcode == 0xc || res.opcode == 0xd || res.opcode == 0xe || res.opcode == 0xf;
+
+            res.operand2Value = GetOp2Value(res, logical);
 
             return res;
         }
@@ -341,14 +343,17 @@ namespace CPUEmu
             public long operand2Value;
         }
 
-        private uint GetOp2Value(DataProcessorDescriptor desc)
+        private uint GetOp2Value(DataProcessorDescriptor desc, bool l)
         {
+            uint shifted;
+            bool carry;
+
             if (desc.i)
             {
                 var imm = desc.operand2 & 0xFF;
                 var rot = ((desc.operand2 >> 8) & 0xF) * 2;
 
-                return ROR((uint)imm, (int)rot);
+                shifted = _shifter.ROR((uint)imm, (int)rot, out carry);
             }
             else
             {
@@ -358,8 +363,11 @@ namespace CPUEmu
                 var stype = (shift >> 1) & 0x3;
                 var shiftValue = (shift & 0x1) == 1 ? _reg[(shift >> 4) & 0xF] & 0xFF : shift >> 3;
 
-                return Shift(_reg[rm], (uint)stype, (uint)shiftValue, desc.s);
+                shifted = _shifter.ShiftByType((BarrelShifter.ShiftType)stype, _reg[rm], (int)shiftValue, out carry);
             }
+
+            if (desc.s && l) _c = carry;
+            return shifted;
         }
         #endregion
     }
