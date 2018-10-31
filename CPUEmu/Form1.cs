@@ -60,19 +60,6 @@ namespace CPUEmu
             EnablePrinting();
         }
 
-        #region Asynchronous tasks
-        //private void OnRefreshTables(object sender, System.Timers.ElapsedEventArgs e)
-        //{
-        //    RefreshFlags();
-        //    RefreshRegisters();
-        //}
-
-        //private void OnRefreshDisassembly(object sender, System.Timers.ElapsedEventArgs e)
-        //{
-        //    RefreshDisassembly();
-        //}
-        #endregion
-
         #region Events
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -153,6 +140,7 @@ namespace CPUEmu
         {
             //TODO: MEF for emulator choosing
             _emu = new AARCH32(File.ReadAllBytes(_currentFile), 0x100000, 0x1000000, 0x100000);
+            _emu.Log += OnEmulatorLog;
         }
 
         private void StartExecution()
@@ -343,7 +331,7 @@ namespace CPUEmu
 
             //Draw breakpoints
             //if (_stopped)
-                DrawBreakpoints();
+            DrawBreakpoints();
         }
         #endregion
 
@@ -351,7 +339,7 @@ namespace CPUEmu
         private void Log(string message)
         {
             if (_printing)
-                Invoke(new Action(() => txtlog.AppendText(message)));
+                txtlog.AppendText(message);
         }
 
         private void OnEmulatorLog(object sender, string message) => Log(message + Environment.NewLine);
@@ -359,27 +347,33 @@ namespace CPUEmu
 
         private void HandleBreakpointByLine(int line)
         {
-            var bufferedBk = _bufferedDisassemblyOffsets.ToArray();
+            if (_emu != null)
+            {
+                var bufferedBk = _bufferedDisassemblyOffsets.ToArray();
 
-            line = Math.Min(Math.Max(0, line), bufferedBk.Length - 1);
-            var offset = bufferedBk[line];
+                line = Math.Min(Math.Max(0, line), bufferedBk.Length - 1);
+                var offset = bufferedBk[line];
 
-            if (_breakPoints.Contains(offset))
-                _breakPoints.Remove(offset);
-            else
-                _breakPoints.Add(offset);
+                if (_breakPoints.Contains(offset))
+                    _breakPoints.Remove(offset);
+                else
+                    _breakPoints.Add(offset);
+            }
         }
 
         private void DrawBreakpoints()
         {
-            var bufferedBk = _bufferedDisassemblyOffsets.Select((x, i) => new { offset = x, index = i }).ToArray();
+            if (_emu != null)
+            {
+                var bufferedBk = _bufferedDisassemblyOffsets.Select((x, i) => new { offset = x, index = i }).ToArray();
 
-            var bpToDraw = bufferedBk.Where(x => _breakPoints.Contains(x.offset)).Select(x => x.index).ToList();
+                var bpToDraw = bufferedBk.Where(x => _breakPoints.Contains(x.offset)).Select(x => x.index).ToList();
 
-            var gr = pnBreakPoints.CreateGraphics();
-            gr.Clear(pnBreakPoints.BackColor);
-            foreach (var bp in bpToDraw)
-                gr.FillEllipse(new SolidBrush(_breakPointColor), new Rectangle(0, bp * (int)TwipsToPixel(_lineSpacingInTwips) + 5, _breakPointSize, _breakPointSize));
+                var gr = pnBreakPoints.CreateGraphics();
+                gr.Clear(pnBreakPoints.BackColor);
+                foreach (var bp in bpToDraw)
+                    gr.FillEllipse(new SolidBrush(_breakPointColor), new Rectangle(0, bp * (int)TwipsToPixel(_lineSpacingInTwips) + 5, _breakPointSize, _breakPointSize));
+            }
         }
 
         private void pnBreakPoints_MouseUp(object sender, MouseEventArgs e)

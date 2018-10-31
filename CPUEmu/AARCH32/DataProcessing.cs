@@ -115,112 +115,117 @@ namespace CPUEmu
         private void HandleAND(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] & desc.operand2Value);
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _c, (_reg[desc.rd] >> 31) == 1, _v);
+            if (desc.s) SetFlagsLogical(_reg[desc.rd]);
         }
 
         private void HandleEOR(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] ^ desc.operand2Value);
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _c, (_reg[desc.rd] >> 31) == 1, _v);
+            if (desc.s) SetFlagsLogical(_reg[desc.rd]);
         }
 
         private void HandleSUB(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] - desc.operand2Value);
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _reg[desc.rd] < _reg[desc.rn], (_reg[desc.rd] >> 31) == 1, (_reg[desc.rd] >> 31) != (_reg[desc.rn] >> 31));
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
         }
 
         private void HandleRSB(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(desc.operand2Value - _reg[desc.rn]);
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _reg[desc.rd] < desc.operand2Value, (_reg[desc.rd] >> 31) == 1, (_reg[desc.rd] >> 31) != (desc.operand2Value >> 31));
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], (uint)desc.operand2Value, _reg[desc.rn]);
         }
 
         private void HandleADD(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] + desc.operand2Value);
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _reg[desc.rd] < _reg[desc.rn], (_reg[desc.rd] >> 31) == 1, (_reg[desc.rd] >> 31) != (_reg[desc.rn] >> 31));
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
         }
 
         private void HandleADC(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] + desc.operand2Value);
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _reg[desc.rd] < _reg[desc.rn], (_reg[desc.rd] >> 31) == 1, (_reg[desc.rd] >> 31) != (_reg[desc.rn] >> 31));
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
             _reg[desc.rd] += (uint)(_c ? 1 : 0);
         }
 
         private void HandleSBC(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] - desc.operand2Value);
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _reg[desc.rd] < _reg[desc.rn], (_reg[desc.rd] >> 31) == 1, (_reg[desc.rd] >> 31) != (_reg[desc.rn] >> 31));
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
             _reg[desc.rd] += (uint)(_c ? 0 : -1);
         }
 
         private void HandleRSC(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(desc.operand2Value - _reg[desc.rn]);
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _reg[desc.rd] < _reg[desc.rn], (_reg[desc.rd] >> 31) == 1, (_reg[desc.rd] >> 31) != (_reg[desc.rn] >> 31));
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], (uint)desc.operand2Value, _reg[desc.rn]);
             _reg[desc.rd] += (uint)(_c ? 0 : -1);
         }
 
         private void HandleTST(DataProcessorDescriptor desc)
         {
             var res = _reg[desc.rn] & desc.operand2Value;
-            UpdateFlags(res == 0, _c, (res >> 31) == 1, _v);
+            SetFlagsLogical((uint)res);
         }
 
         private void HandleTEQ(DataProcessorDescriptor desc)
         {
             var res = _reg[desc.rn] ^ desc.operand2Value;
-            UpdateFlags(res == 0, _c, (res >> 31) == 1, _v);
+            SetFlagsLogical((uint)res);
         }
 
         private void HandleCMP(DataProcessorDescriptor desc)
         {
             var res = _reg[desc.rn] - desc.operand2Value;
-            UpdateFlags(res == 0, res < _reg[desc.rn], (res >> 31) == 1, (res >> 31) != (_reg[desc.rn] >> 31));
+            SetFlagsArithmethic((uint)res, _reg[desc.rn], (uint)desc.operand2Value);
         }
 
         private void HandleCMN(DataProcessorDescriptor desc)
         {
             var res = _reg[desc.rn] + desc.operand2Value;
-            UpdateFlags(res == 0, res < _reg[desc.rn], (res >> 31) == 1, (res >> 31) != (_reg[desc.rn] >> 31));
+            SetFlagsArithmethic((uint)res, _reg[desc.rn], (uint)desc.operand2Value);
         }
 
         private void HandleORR(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] | desc.operand2Value);
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _c, (_reg[desc.rd] >> 31) == 1, _v);
+            if (desc.s) SetFlagsLogical(_reg[desc.rd]);
         }
 
         private void HandleMOV(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)desc.operand2Value;
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _c, (_reg[desc.rd] >> 31) == 1, _v);
+            if (desc.s) SetFlagsLogical(_reg[desc.rd]);
         }
 
         private void HandleBIC(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] & ~desc.operand2Value);
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _c, (_reg[desc.rd] >> 31) == 1, _v);
+            if (desc.s) SetFlagsLogical(_reg[desc.rd]);
         }
 
         private void HandleMVN(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)~desc.operand2Value;
-            if (desc.s)
-                UpdateFlags(_reg[desc.rd] == 0, _c, (_reg[desc.rd] >> 31) == 1, _v);
+            if (desc.s) SetFlagsLogical(_reg[desc.rd]);
+        }
+        #endregion
+
+        #region Set Flags
+        private void SetFlagsLogical(uint result)
+        {
+            UpdateFlags(result == 0, _c, (result >> 31) == 1, _v);
+        }
+
+        private void SetFlagsArithmethic(uint result, uint value, uint value2)
+        {
+            UpdateFlags(
+                result == 0,
+                value >= value2,
+                (result >> 31) == 1,
+                ((value >> 31) != (value2 >> 31)) && ((value >> 31) != (result >> 31))
+                );
         }
         #endregion
 

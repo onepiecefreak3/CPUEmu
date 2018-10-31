@@ -58,6 +58,7 @@
             this.txtlog.ForeColor = System.Drawing.Color.White;
             this.txtlog.Location = new System.Drawing.Point(12, 62);
             this.txtlog.Name = "txtlog";
+            this.txtlog.ReadOnly = true;
             this.txtlog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.txtlog.Size = new System.Drawing.Size(346, 376);
             this.txtlog.TabIndex = 0;
