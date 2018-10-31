@@ -354,6 +354,7 @@ namespace CPUEmu
                 var rot = ((desc.operand2 >> 8) & 0xF) * 2;
 
                 shifted = _shifter.ROR((uint)imm, (int)rot, out carry);
+                if (rot == 0) carry = _c;
             }
             else
             {
@@ -364,6 +365,7 @@ namespace CPUEmu
                 var shiftValue = (shift & 0x1) == 1 ? _reg[(shift >> 4) & 0xF] & 0xFF : shift >> 3;
 
                 shifted = _shifter.ShiftByType((BarrelShifter.ShiftType)stype, _reg[rm], (int)shiftValue, out carry);
+                if (shiftValue == 0) carry = _c;
             }
 
             if (desc.s && l) _c = carry;
