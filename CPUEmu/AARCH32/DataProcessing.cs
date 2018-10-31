@@ -152,15 +152,15 @@ namespace CPUEmu
         private void HandleSBC(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] - desc.operand2Value);
-            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
             _reg[desc.rd] += (uint)(_c ? 0 : -1);
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
         }
 
         private void HandleRSC(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(desc.operand2Value - _reg[desc.rn]);
-            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], (uint)desc.operand2Value, _reg[desc.rn]);
             _reg[desc.rd] += (uint)(_c ? 0 : -1);
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], (uint)desc.operand2Value, _reg[desc.rn]);
         }
 
         private void HandleTST(DataProcessorDescriptor desc)
