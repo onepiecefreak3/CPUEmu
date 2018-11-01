@@ -127,40 +127,40 @@ namespace CPUEmu
         private void HandleSUB(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] - desc.operand2Value);
-            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value, true);
         }
 
         private void HandleRSB(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(desc.operand2Value - _reg[desc.rn]);
-            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], (uint)desc.operand2Value, _reg[desc.rn]);
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], (uint)desc.operand2Value, _reg[desc.rn], true);
         }
 
         private void HandleADD(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] + desc.operand2Value);
-            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value, false);
         }
 
         private void HandleADC(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] + desc.operand2Value);
             _reg[desc.rd] += (uint)(_c ? 1 : 0);
-            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value, _c);
         }
 
         private void HandleSBC(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(_reg[desc.rn] - desc.operand2Value);
             _reg[desc.rd] += (uint)(_c ? 0 : -1);
-            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value);
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], _reg[desc.rn], (uint)desc.operand2Value, _c);
         }
 
         private void HandleRSC(DataProcessorDescriptor desc)
         {
             _reg[desc.rd] = (uint)(desc.operand2Value - _reg[desc.rn]);
             _reg[desc.rd] += (uint)(_c ? 0 : -1);
-            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], (uint)desc.operand2Value, _reg[desc.rn]);
+            if (desc.s) SetFlagsArithmethic(_reg[desc.rd], (uint)desc.operand2Value, _reg[desc.rn], _c);
         }
 
         private void HandleTST(DataProcessorDescriptor desc)
@@ -178,13 +178,13 @@ namespace CPUEmu
         private void HandleCMP(DataProcessorDescriptor desc)
         {
             var res = _reg[desc.rn] - desc.operand2Value;
-            SetFlagsArithmethic((uint)res, _reg[desc.rn], (uint)desc.operand2Value);
+            SetFlagsArithmethic((uint)res, _reg[desc.rn], (uint)desc.operand2Value, true);
         }
 
         private void HandleCMN(DataProcessorDescriptor desc)
         {
             var res = _reg[desc.rn] + desc.operand2Value;
-            SetFlagsArithmethic((uint)res, _reg[desc.rn], (uint)desc.operand2Value);
+            SetFlagsArithmethic((uint)res, _reg[desc.rn], (uint)desc.operand2Value, false);
         }
 
         private void HandleORR(DataProcessorDescriptor desc)
@@ -218,11 +218,11 @@ namespace CPUEmu
             UpdateFlags(result == 0, _c, (result >> 31) == 1, _v);
         }
 
-        private void SetFlagsArithmethic(uint result, uint value, uint value2)
+        private void SetFlagsArithmethic(uint result, uint value, uint value2, bool carryIn)
         {
             UpdateFlags(
                 result == 0,
-                result < value,
+                (!carryIn) ? result < value : result <= value,
                 (result >> 31) == 1,
                 ((value >> 31) != (value2 >> 31)) && ((value >> 31) != (result >> 31))
                 );
