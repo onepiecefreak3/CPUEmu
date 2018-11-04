@@ -40,21 +40,49 @@ namespace CPUEmu
 
         public uint LSL(uint value, int count, out bool carry)
         {
-            count &= 0x1F;
+            if (count >= 32)
+            {
+                if (count == 32)
+                    carry = (value & 0x1) == 1;
+                else
+                    carry = false;
+
+                return 0;
+            }
+
             carry = ((value >> (32 - count)) & 0x1) == 1;
             return value << count;
         }
 
         public uint LSR(uint value, int count, out bool carry)
         {
-            count &= 0x1F;
+            if (count >= 32)
+            {
+                if (count == 32)
+                    carry = ((value >> 31) & 0x1) == 1;
+                else
+                    carry = false;
+
+                return 0;
+            }
+
             carry = ((value >> (count - 1)) & 0x1) == 1;
             return value >> count;
         }
 
         public uint ASR(uint value, int count, out bool carry)
         {
-            count &= 0x1F;
+            if (count >= 32)
+            {
+                var sign = (value >> 31) & 0x1;
+                carry = sign == 1;
+
+                if (sign == 1)
+                    return 0xFFFFFFFF;
+                else
+                    return 0;
+            }
+
             carry = (((int)value >> (count - 1)) & 0x1) == 1;
             return (uint)((int)value >> count);
         }

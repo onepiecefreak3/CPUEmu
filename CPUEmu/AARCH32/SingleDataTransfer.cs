@@ -81,6 +81,7 @@ namespace CPUEmu
 
                 var stype = (shift >> 1) & 0x3;
                 var shiftValue = (shift & 0x1) == 1 ? _reg[(shift >> 4) & 0xF] & 0xFF : shift >> 3;
+                if ((shift & 0x1) == 0 && (stype == 1 || stype == 2) && shiftValue == 0) shiftValue = 32;
 
                 res.offset = _shifter.ShiftByType((BarrelShifter.ShiftType)stype, _reg[res.offset & 0xF], (int)shiftValue, out _c);
             }
