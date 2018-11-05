@@ -224,7 +224,7 @@ namespace CPUEmu
                 result == 0,
                 (!carryIn) ? result < value : result <= value,
                 (result >> 31) == 1,
-                add ? ((value >> 31) != (value2 >> 31)) && ((value >> 31) != (result >> 31)) : ((value >> 31) == (value2 >> 31)) && ((value >> 31) != (result >> 31))
+                !add ? ((value >> 31) != (value2 >> 31)) && ((value >> 31) != (result >> 31)) : ((value >> 31) == (value2 >> 31)) && ((value >> 31) != (result >> 31))
                 );
         }
         #endregion
