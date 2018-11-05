@@ -12,6 +12,11 @@ namespace CPUEmu
         {
             var desc = DescribeBlockDataTransfer(instruction);
 
+            if (desc.u)
+                IncrementAddressing(desc);
+            else
+                DecrementAddressing(desc);
+
             //TODO: Finish Block Data Transfer
 
             long address = _reg[desc.rn];
@@ -34,6 +39,59 @@ namespace CPUEmu
 
                     if (!desc.p || !desc.u)
                         address += 4;
+                }
+            }
+        }
+
+        private void IncrementAddressing(BlockDataTransferDescriptor desc)
+        {
+            var address = _reg[desc.rn];
+
+            for (int i = 0; i < 16; i++)
+            {
+                if (((desc.list >> i) & 0x1) == 1)
+                {
+                    if (desc.p)
+                        address += 4;
+
+                    if (desc.l)
+                        _reg[i] = ReadUInt32(address);
+                    else
+                        WriteUInt32(address, _reg[i]);
+
+                    if (!desc.p)
+                        address += 4;
+                }
+            }
+        }
+
+        private void DecrementAddressing(BlockDataTransferDescriptor desc)
+        {
+            var spaceToWrite = Enumerable.Range(0, 16).Aggregate(0, (a, b) => a + (((desc.list >> b) & 0x1) == 1 ? 4 : 0));
+            var address = _reg[desc.rn] - spaceToWrite;
+
+            for (int i = 0; i < 16; i++)
+            {
+                if (((desc.list >> i) & 0x1) == 1)
+                {
+                    if (desc.p)
+                    {
+                        address += 4;
+                        if (desc.w)
+                            _reg[desc.rn] -= 4;
+                    }
+
+                    if (desc.l)
+                        _reg[i] = ReadUInt32(address);
+                    else
+                        WriteUInt32(address, _reg[i]);
+
+                    if (!desc.p)
+                    {
+                        address += 4;
+                        if (desc.w)
+                            _reg[desc.rn] -= 4;
+                    }
                 }
             }
         }
