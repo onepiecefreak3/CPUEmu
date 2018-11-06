@@ -12,41 +12,48 @@ namespace CPUEmu
         {
             var desc = DescribeBlockDataTransfer(instruction);
 
-            if (desc.u)
-                IncrementAddressing(desc);
-            else
-                DecrementAddressing(desc);
+            uint bytesToWrite = (uint)Enumerable.Range(0, 16).Sum(x => ((desc.list >> x) & 0x1) * 4);
+            var address = _reg[desc.rn] - ((desc.u) ? 0 : bytesToWrite);
 
-            //TODO: Finish Block Data Transfer
-
-            long address = _reg[desc.rn];
-
+            bool writtenBack = false;
             for (int i = 0; i < 16; i++)
             {
                 if (((desc.list >> i) & 0x1) == 1)
                 {
-                    if (desc.p || !desc.u)
-                        address += 4;
-
-                    if (desc.l)
+                    if (desc.u)
                     {
-                        _reg[i] = ReadUInt32((uint)address);
-                        if (i == 15)
-                            SetPC(_reg[i]);
+                        if (desc.p)
+                            address += 4;
                     }
                     else
-                        WriteUInt32((uint)address, _reg[i]);
+                    {
+                        if (!desc.p)
+                            address += 4;
+                    }
 
-                    if (!desc.p || !desc.u)
+                    if (desc.l)
+                        _reg[i] = ReadUInt32(address);
+                    else
+                        WriteUInt32(address, _reg[i]);
+
+                    if (!desc.p)
                         address += 4;
+
+                    if (desc.w && !writtenBack)
+                    {
+                        writtenBack = true;
+                        _reg[desc.rn] += bytesToWrite;
+                    }
                 }
             }
         }
 
         private void IncrementAddressing(BlockDataTransferDescriptor desc)
         {
+            uint bytesToWrite = (uint)Enumerable.Range(0, 16).Sum(x => ((desc.list >> x) & 0x1) * 4);
             var address = _reg[desc.rn];
 
+            bool writtenBack = false;
             for (int i = 0; i < 16; i++)
             {
                 if (((desc.list >> i) & 0x1) == 1)
@@ -61,25 +68,28 @@ namespace CPUEmu
 
                     if (!desc.p)
                         address += 4;
+
+                    if (desc.w && !writtenBack)
+                    {
+                        writtenBack = true;
+                        _reg[desc.rn] += bytesToWrite;
+                    }
                 }
             }
         }
 
         private void DecrementAddressing(BlockDataTransferDescriptor desc)
         {
-            var spaceToWrite = Enumerable.Range(0, 16).Aggregate(0, (a, b) => a + (((desc.list >> b) & 0x1) == 1 ? 4 : 0));
-            var address = _reg[desc.rn] - spaceToWrite;
+            uint bytesToWrite = (uint)Enumerable.Range(0, 16).Sum(x => ((desc.list >> x) & 0x1) * 4);
+            var address = _reg[desc.rn] - bytesToWrite;
 
+            bool writtenBack = false;
             for (int i = 0; i < 16; i++)
             {
                 if (((desc.list >> i) & 0x1) == 1)
                 {
                     if (desc.p)
-                    {
                         address += 4;
-                        if (desc.w)
-                            _reg[desc.rn] -= 4;
-                    }
 
                     if (desc.l)
                         _reg[i] = ReadUInt32(address);
@@ -87,10 +97,12 @@ namespace CPUEmu
                         WriteUInt32(address, _reg[i]);
 
                     if (!desc.p)
-                    {
                         address += 4;
-                        if (desc.w)
-                            _reg[desc.rn] -= 4;
+
+                    if (desc.w && !writtenBack)
+                    {
+                        writtenBack = true;
+                        _reg[desc.rn] -= bytesToWrite;
                     }
                 }
             }
