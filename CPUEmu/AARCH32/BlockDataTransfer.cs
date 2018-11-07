@@ -20,23 +20,15 @@ namespace CPUEmu
             {
                 if (((desc.list >> i) & 0x1) == 1)
                 {
-                    if (desc.u)
-                    {
-                        if (desc.p)
-                            address += 4;
-                    }
-                    else
-                    {
-                        if (!desc.p)
-                            address += 4;
-                    }
+                    if (desc.p || !desc.u)
+                        address += 4;
 
                     if (desc.l)
                         _reg[i] = ReadUInt32(address);
                     else
                         WriteUInt32(address, _reg[i]);
 
-                    if (!desc.p)
+                    if (!desc.p || desc.u)
                         address += 4;
 
                     if (desc.w && !writtenBack)
