@@ -48,10 +48,6 @@ namespace CPUEmu
 
         public override string Name => "AARCH32";
 
-        public override int BitVersion => 32;
-
-        public override int BitsPerInstruction => 32;
-
         public override long CurrentInstructionOffset => _pc - 8;
 
         public override bool IsFinished => !_instrBuffer.Any();
@@ -83,9 +79,9 @@ namespace CPUEmu
             }
         }
 
-        public override IEnumerable<(string flagName, long value)> RetrieveFlags()
+        public override IEnumerable<(string flagName, object value)> GetFlags()
         {
-            return new List<(string flagName, long value)>
+            return new List<(string flagName, object value)>
             {
                 ("Z", _z ? 1 : 0),
                 ("C", _c ? 1 : 0),
@@ -94,9 +90,9 @@ namespace CPUEmu
             };
         }
 
-        public override IEnumerable<(string registerName, long value)> RetrieveRegisters()
+        public override IEnumerable<(string registerName, object value)> GetRegisters()
         {
-            return new List<(string registerName, long value)>
+            return new List<(string registerName, object value)>
             {
                 ("R0", _reg[0]),
                 ("R1", _reg[1]),

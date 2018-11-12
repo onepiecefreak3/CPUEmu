@@ -267,7 +267,7 @@ namespace CPUEmu
         {
             if (_emu != null)
             {
-                var flags = _emu.RetrieveFlags();
+                var flags = _emu.GetFlags();
                 var str = flags.Aggregate("", (a, b) => a += $"{b.flagName}: 0x{b.value:X8}" + Environment.NewLine);
                 txtFlags.Text = str;
             }
@@ -277,7 +277,7 @@ namespace CPUEmu
         {
             if (_emu != null)
             {
-                var flags = _emu.RetrieveRegisters();
+                var flags = _emu.GetRegisters();
                 var str = flags.Aggregate("", (a, b) => a += $"{b.registerName}: 0x{b.value:X8}" + Environment.NewLine);
                 txtRegs.Text = str;
             }

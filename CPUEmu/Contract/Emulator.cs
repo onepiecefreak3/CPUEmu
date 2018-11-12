@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 
 namespace CPUEmu.Contract
 {
+    public enum ByteOrder
+    {
+        LittleEndian,
+        BigEndian
+    }
+
     public abstract class Emulator : IDisposable
     {
         protected byte[] _mem;
@@ -32,24 +38,14 @@ namespace CPUEmu.Contract
         public delegate void LogEventHandler(object sender, string message);
 
         public abstract event LogEventHandler Log;
-
-        //public delegate void DisassembleEventHandler(object sender, long address, string source);
-
-        //public abstract event DisassembleEventHandler Disassemble;
         #endregion
 
         public abstract string Name { get; }
 
-        public abstract int BitVersion { get; }
-
-        public abstract int BitsPerInstruction { get; }
-
         public abstract long CurrentInstructionOffset { get; }
 
-        public (long, string) DisassembleCurrentInstruction()
-        {
-            return DisassembleInstructions(CurrentInstructionOffset, 1).First();
-        }
+        public (long, string) DisassembleCurrentInstruction() =>
+            DisassembleInstructions(CurrentInstructionOffset, 1).First();
 
         public abstract IEnumerable<(long offset, string source)> DisassembleInstructions(long offset, int count);
 
@@ -57,37 +53,35 @@ namespace CPUEmu.Contract
 
         public abstract bool IsFinished { get; }
 
-        public abstract IEnumerable<(string flagName, long value)> RetrieveFlags();
+        public abstract IEnumerable<(string flagName, object value)> GetFlags();
 
-        public abstract IEnumerable<(string registerName, long value)> RetrieveRegisters();
+        public abstract IEnumerable<(string registerName, object value)> GetRegisters();
 
         public abstract void SetFlag(string name, long value);
 
         public abstract void SetRegister(string name, long value);
 
-        #region Get/Set memory
-        public byte GetMemoryByte(long address)
+        #region Memory operations
+        public byte ReadByte(long address) => _mem[address];
+
+        public void WriteByte(long address, byte value) => _mem[address] = value;
+
+        public int ReadInt32(long address, ByteOrder bo = ByteOrder.LittleEndian) =>
+            bo == ByteOrder.LittleEndian ? BitConverter.ToInt32(_mem, (int)address) : BitConverter.ToInt32(_mem.Skip((int)address).Take(4).Reverse().ToArray(), 0);
+
+        public void WriteInt32(long address, int value, ByteOrder bo = ByteOrder.LittleEndian)
         {
-            return _mem[address];
+            if (bo == ByteOrder.LittleEndian)
+                Array.Copy(BitConverter.GetBytes(value), 0, _mem, address, 4);
+            else
+                Array.Copy(BitConverter.GetBytes(value).Reverse().ToArray(), 0, _mem, address, 4);
         }
 
-        public void SetMemoryByte(long address, byte value)
-        {
-            _mem[address] = value;
-        }
+        public byte[] GetMemoryRange(long address, int count) =>
+            _mem.Skip((int)Math.Min(address, _mem.Length)).Take((int)Math.Min(count, _mem.Length - address)).ToArray();
 
-        public byte[] GetMemoryRange(long address, int count)
-        {
-            count = (int)Math.Min(count, _mem.Length - address);
-            var buffer = new byte[count];
-            Array.Copy(_mem, address, buffer, 0, count);
-            return buffer;
-        }
-
-        public void SetMemoryRange(long address, byte[] buffer)
-        {
-            Array.Copy(buffer, 0, _mem, address, buffer.Length);
-        }
+        public void SetMemoryRange(long address, byte[] buffer) =>
+            Array.Copy(buffer, 0, _mem, Math.Min(address, _mem.Length), Math.Min(buffer.Length, _mem.Length - address));
         #endregion
 
         public abstract void Dispose();
