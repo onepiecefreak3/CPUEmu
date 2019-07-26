@@ -6,7 +6,7 @@ namespace CPUEmu.Aarch32
 {
     class Aarch32ArchitectureParser : IArchitectureParser
     {
-        public IList<IInstruction> Parse(Stream assembly, IInterruptBroker interruptBroker = null)
+        public IList<IInstruction> Parse(Stream assembly)
         {
             var result = new List<IInstruction>();
 
