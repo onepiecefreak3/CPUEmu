@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CPUEmu
 {
     internal class BarrelShifter
     {
+        private static readonly Lazy<BarrelShifter> _lazy = new Lazy<BarrelShifter>(() => new BarrelShifter());
+        public static BarrelShifter Instance => _lazy.Value;
+
         public enum ShiftType : uint
         {
             LSL,

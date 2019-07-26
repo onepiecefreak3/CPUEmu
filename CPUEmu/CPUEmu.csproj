@@ -60,11 +60,33 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AARCH32\AARCH32.cs" />
+    <Compile Include="AARCH32\Aarch32ArchitectureParser.cs" />
+    <Compile Include="AARCH32\Aarch32CpuState.cs" />
     <Compile Include="AARCH32\BarrelShifter.cs" />
     <Compile Include="AARCH32\BlockDataTransfer.cs" />
     <Compile Include="AARCH32\Branch.cs" />
     <Compile Include="AARCH32\Conditions.cs" />
     <Compile Include="AARCH32\DataProcessing.cs" />
+    <Compile Include="AARCH32\Instructions\BranchInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingCmnInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingOrrInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingMovInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingBicInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingMvnInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingAddInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingAdcInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingSbcInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingRscInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingTstInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingTeqInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingCmpInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingRsbInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingSubInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingEorInstruction.cs" />
+    <Compile Include="AARCH32\Instructions\DataProcessingAndInstruction.cs" />
+    <Compile Include="AARCH32\Factories\DataProcessingInstructionFactory.cs" />
+    <Compile Include="AARCH32\Instructions\SvcInstruction.cs" />
     <Compile Include="AARCH32\InstructionType.cs" />
     <Compile Include="AARCH32\SingleDataTransfer.cs" />
     <Compile Include="Extensions.cs" />
@@ -75,6 +97,11 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Contract\Emulator.cs" />
+    <Compile Include="Interfaces\IArchitectureExecuter.cs" />
+    <Compile Include="Interfaces\IArchitectureParser.cs" />
+    <Compile Include="Interfaces\ICpuState.cs" />
+    <Compile Include="Interfaces\IInstruction.cs" />
+    <Compile Include="Interfaces\IInterruptBroker.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">

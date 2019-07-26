@@ -3,43 +3,49 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CPUEmu.Interfaces;
 
-namespace CPUEmu
+namespace CPUEmu.AARCH32
 {
-    public partial class AARCH32
+    class ConditionHelper
     {
-        private bool CheckConditions(byte condition)
+        public static bool CanExecute(ICpuState state, byte condition)
         {
+            var (z, c, n, v) = (Convert.ToBoolean(state.GetFlag("Z")),
+                Convert.ToBoolean(state.GetFlag("C")),
+                Convert.ToBoolean(state.GetFlag("N")),
+                Convert.ToBoolean(state.GetFlag("V")));
+
             switch (condition)
             {
                 case 0:
-                    return _z;
+                    return z;
                 case 1:
-                    return !_z;
+                    return !z;
                 case 2:
-                    return _c;
+                    return c;
                 case 3:
-                    return !_c;
+                    return !c;
                 case 4:
-                    return _n;
+                    return n;
                 case 5:
-                    return !_n;
+                    return !n;
                 case 6:
-                    return _v;
+                    return v;
                 case 7:
-                    return !_v;
+                    return !v;
                 case 8:
-                    return _c && !_z;
+                    return c && !z;
                 case 9:
-                    return !_c || _z;
+                    return !c || z;
                 case 10:
-                    return _n == _v;
+                    return n == v;
                 case 11:
-                    return _n != _v;
+                    return n != v;
                 case 12:
-                    return !_z && (_n == _v);
+                    return !z && n == v;
                 case 13:
-                    return _z || (_n != _v);
+                    return z || n != v;
                 case 14:
                     return true;
 
@@ -48,57 +54,30 @@ namespace CPUEmu
                     return false;
             }
         }
-        private void DisassembleConditions(byte condition)
+
+        private static Dictionary<byte, string> _condNames = new Dictionary<byte, string>
         {
-            switch (condition)
-            {
-                case 0:
-                    _currentCondition = "EQ";
-                    break;
-                case 1:
-                    _currentCondition = "NE";
-                    break;
-                case 2:
-                    _currentCondition = "CS";
-                    break;
-                case 3:
-                    _currentCondition = "CC";
-                    break;
-                case 4:
-                    _currentCondition = "MI";
-                    break;
-                case 5:
-                    _currentCondition = "PL";
-                    break;
-                case 6:
-                    _currentCondition = "VS";
-                    break;
-                case 7:
-                    _currentCondition = "VC";
-                    break;
-                case 8:
-                    _currentCondition = "HI";
-                    break;
-                case 9:
-                    _currentCondition = "LS";
-                    break;
-                case 10:
-                    _currentCondition = "GE";
-                    break;
-                case 11:
-                    _currentCondition = "LT";
-                    break;
-                case 12:
-                    _currentCondition = "GT";
-                    break;
-                case 13:
-                    _currentCondition = "LE";
-                    break;
-                case 14:
-                case 15:
-                    _currentCondition = "";
-                    break;
-            }
+            [0] = "EQ",
+            [1] = "NE",
+            [2] = "CS",
+            [3] = "CC",
+            [4] = "MI",
+            [5] = "PL",
+            [6] = "VS",
+            [7] = "VC",
+            [8] = "HI",
+            [9] = "LS",
+            [10] = "GE",
+            [11] = "LT",
+            [12] = "GT",
+            [13] = "LE",
+            [14] = "",
+            [15] = ""
+        };
+
+        public static string ToString(byte condition)
+        {
+            return _condNames[condition];
         }
     }
 }
