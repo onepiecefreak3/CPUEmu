@@ -2,7 +2,7 @@
 using System.IO;
 using CPUEmu.Interfaces;
 
-namespace CPUEmu.AARCH32
+namespace CPUEmu.Aarch32
 {
     class Aarch32ArchitectureParser : IArchitectureParser
     {
@@ -39,7 +39,7 @@ namespace CPUEmu.AARCH32
                             break;
 
                         case InstructionType.BranchExchange:
-                            BranchExchange(instruction);
+                            // TODO: Implement branch exchange
                             break;
 
                         case InstructionType.HalfwordDataTransferReg:
@@ -51,15 +51,15 @@ namespace CPUEmu.AARCH32
                             break;
 
                         case InstructionType.SingleDataTransfer:
-                            SingleDataTransfer(instruction);
+                            result.Add(Instructions.SingleDataTransferInstruction.Parse(instructionPosition, condition, instruction));
                             break;
 
                         case InstructionType.BlockDataTransfer:
-                            BlockDataTransfer(instruction);
+                            result.Add(Instructions.BlockDataTransferInstruction.Parse(instructionPosition, condition, instruction));
                             break;
 
                         case InstructionType.Branch:
-                            result.Add(Instructions.DataProcessing.BranchInstruction.Parse(instructionPosition, condition, instruction));
+                            result.Add(Instructions.Branch.BranchInstruction.Parse(instructionPosition, condition, instruction));
                             break;
 
                         case InstructionType.CoprocessorDataTransfer:
@@ -72,8 +72,7 @@ namespace CPUEmu.AARCH32
                             break;
 
                         case InstructionType.SoftwareInterrupt:
-                            // TODO: Get interrupt value
-                            result.Add(new Instructions.DataProcessing.SvcInstruction(instructionPosition, 0, interruptBroker));
+                            result.Add(new Instructions.SvcInstruction(instructionPosition, condition, (int)(instruction & 0xFFFFFF)));
                             break;
 
                         case InstructionType.Undefined:

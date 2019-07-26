@@ -1,7 +1,7 @@
 ﻿using System;
 using CPUEmu.Interfaces;
 
-namespace CPUEmu.AARCH32.Instructions.DataProcessing
+namespace CPUEmu.Aarch32.Instructions.DataProcessing
 {
     class DataProcessingAddInstruction : DataProcessingInstruction
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CPUEmu.AARCH32.Factories
+namespace CPUEmu.Aarch32.Factories
 {
     class DataProcessingInstructionFactory
     {

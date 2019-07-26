@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using CPUEmu.Interfaces;
 
-namespace CPUEmu.AARCH32
+namespace CPUEmu.Aarch32
 {
     class Aarch32CpuState : ICpuState
     {

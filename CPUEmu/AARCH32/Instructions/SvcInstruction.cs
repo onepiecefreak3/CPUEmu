@@ -1,25 +1,28 @@
 ﻿using CPUEmu.Interfaces;
 
-namespace CPUEmu.AARCH32.Instructions.DataProcessing
+namespace CPUEmu.Aarch32.Instructions
 {
     class SvcInstruction : IInstruction
     {
-        private readonly IInterruptBroker _broker;
+        private readonly byte _condition;
         private readonly byte _svc;
 
         public int Position { get; }
 
-        public SvcInstruction(int position, byte svc, IInterruptBroker broker)
+        public SvcInstruction(int position, byte condition, int svc)
         {
             Position = position;
 
+            _condition = condition;
             _svc = svc;
-            _broker = broker;
         }
 
-        public void Execute(ICpuState cpuState)
+        public void Execute(IEnvironment env)
         {
-            _broker.Execute(_svc, cpuState);
+            if (!ConditionHelper.CanExecute(env.CpuState, _condition))
+                return;
+
+            env.InterruptBroker.Execute(_svc, env);
         }
     }
 }

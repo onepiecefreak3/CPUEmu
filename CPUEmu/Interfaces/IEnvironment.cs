@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace CPUEmu.Interfaces
 {
-    public interface IInterruptBroker
+    public interface IEnvironment
     {
-        void Execute(int svc, IEnvironment cpuState);
+        ICpuState CpuState { get; }
+        IMemoryMap MemoryMap { get; }
+        IInterruptBroker InterruptBroker { get; }
     }
 }

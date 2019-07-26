@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -59,36 +61,35 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AARCH32\AARCH32.cs" />
-    <Compile Include="AARCH32\Aarch32ArchitectureParser.cs" />
-    <Compile Include="AARCH32\Aarch32CpuState.cs" />
-    <Compile Include="AARCH32\BarrelShifter.cs" />
-    <Compile Include="AARCH32\BlockDataTransfer.cs" />
-    <Compile Include="AARCH32\Branch.cs" />
-    <Compile Include="AARCH32\Conditions.cs" />
-    <Compile Include="AARCH32\DataProcessing.cs" />
-    <Compile Include="AARCH32\Instructions\BranchInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingCmnInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingOrrInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingMovInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingBicInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingMvnInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingAddInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingAdcInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingSbcInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingRscInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingTstInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingTeqInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingCmpInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingRsbInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingSubInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingEorInstruction.cs" />
-    <Compile Include="AARCH32\Instructions\DataProcessingAndInstruction.cs" />
-    <Compile Include="AARCH32\Factories\DataProcessingInstructionFactory.cs" />
-    <Compile Include="AARCH32\Instructions\SvcInstruction.cs" />
-    <Compile Include="AARCH32\InstructionType.cs" />
-    <Compile Include="AARCH32\SingleDataTransfer.cs" />
+    <Compile Include="Aarch32\Aarch32ArchitectureParser.cs" />
+    <Compile Include="Aarch32\Aarch32CpuState.cs" />
+    <Compile Include="Aarch32\Aarch32Environment.cs" />
+    <Compile Include="Aarch32\BarrelShifter.cs" />
+    <Compile Include="Aarch32\ConditionHelper.cs" />
+    <Compile Include="Aarch32\Instructions\BlockDataTransferInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingAdcInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingAddInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingAndInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingBicInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingCmnInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingCmpInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingEorInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\Branch\BranchInstruction.cs" />
+    <Compile Include="Aarch32\Factories\DataProcessingInstructionFactory.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingMovInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingMvnInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingOrrInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingRsbInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingRscInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingSbcInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingSubInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingTeqInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingTstInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\SingleDataTransferInstruction.cs" />
+    <Compile Include="Aarch32\Instructions\SvcInstruction.cs" />
+    <Compile Include="Aarch32\InstructionType.cs" />
+    <Compile Include="LittleEndianMemoryMap.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -100,8 +101,10 @@
     <Compile Include="Interfaces\IArchitectureExecuter.cs" />
     <Compile Include="Interfaces\IArchitectureParser.cs" />
     <Compile Include="Interfaces\ICpuState.cs" />
+    <Compile Include="Interfaces\IEnvironment.cs" />
     <Compile Include="Interfaces\IInstruction.cs" />
     <Compile Include="Interfaces\IInterruptBroker.cs" />
+    <Compile Include="Interfaces\IMemoryMap.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">

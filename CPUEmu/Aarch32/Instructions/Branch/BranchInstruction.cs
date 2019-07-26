@@ -1,7 +1,7 @@
 ﻿using System;
 using CPUEmu.Interfaces;
 
-namespace CPUEmu.AARCH32.Instructions.DataProcessing
+namespace CPUEmu.Aarch32.Instructions.Branch
 {
     class BranchInstruction : IInstruction
     {
@@ -33,8 +33,10 @@ namespace CPUEmu.AARCH32.Instructions.DataProcessing
             return new BranchInstruction(position, condition, offset, l);
         }
 
-        public void Execute(ICpuState cpuState)
+        public void Execute(IEnvironment env)
         {
+            var cpuState = env.CpuState;
+
             if (!ConditionHelper.CanExecute(cpuState, _condition))
                 return;
 

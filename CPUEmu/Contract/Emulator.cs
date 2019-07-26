@@ -42,12 +42,12 @@ namespace CPUEmu.Contract
 
         public abstract string Name { get; }
 
-        public abstract long CurrentInstructionOffset { get; }
+        public abstract int CurrentInstruction { get; }
 
-        public (long, string) DisassembleCurrentInstruction() =>
-            DisassembleInstructions(CurrentInstructionOffset, 1).First();
+        public (int, long, string) DisassembleCurrentInstruction() =>
+            DisassembleInstructions(CurrentInstruction, 0, 1).First();
 
-        public abstract IEnumerable<(long offset, string source)> DisassembleInstructions(long offset, int count);
+        public abstract IEnumerable<(int count, long offset, string source)> DisassembleInstructions(int instrCount, int down, int up);
 
         public abstract void ExecuteNextInstruction();
 

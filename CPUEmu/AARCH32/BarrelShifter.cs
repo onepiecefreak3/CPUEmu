@@ -1,35 +1,35 @@
 ﻿using System;
 
-namespace CPUEmu
+namespace CPUEmu.Aarch32
 {
-    internal class BarrelShifter
+    class BarrelShifter
     {
-        private static readonly Lazy<BarrelShifter> _lazy = new Lazy<BarrelShifter>(() => new BarrelShifter());
-        public static BarrelShifter Instance => _lazy.Value;
+        private static readonly Lazy<BarrelShifter> Lazy = new Lazy<BarrelShifter>(() => new BarrelShifter());
+        public static BarrelShifter Instance => Lazy.Value;
 
         public enum ShiftType : uint
         {
-            LSL,
-            LSR,
-            ASR,
-            ROR
+            Lsl,
+            Lsr,
+            Asr,
+            Ror
         }
 
         public uint ShiftByType(ShiftType type, uint value, int count, out bool carry)
         {
             switch (type)
             {
-                case ShiftType.LSL:
-                    return LSL(value, count, out carry);
+                case ShiftType.Lsl:
+                    return Lsl(value, count, out carry);
 
-                case ShiftType.LSR:
-                    return LSR(value, count, out carry);
+                case ShiftType.Lsr:
+                    return Lsr(value, count, out carry);
 
-                case ShiftType.ASR:
-                    return ASR(value, count, out carry);
+                case ShiftType.Asr:
+                    return Asr(value, count, out carry);
 
-                case ShiftType.ROR:
-                    return ROR(value, count, out carry);
+                case ShiftType.Ror:
+                    return Ror(value, count, out carry);
 
                 default:
                     carry = false;
@@ -37,7 +37,7 @@ namespace CPUEmu
             }
         }
 
-        public uint LSL(uint value, int count, out bool carry)
+        public uint Lsl(uint value, int count, out bool carry)
         {
             if (count >= 32)
             {
@@ -53,7 +53,7 @@ namespace CPUEmu
             return value << count;
         }
 
-        public uint LSR(uint value, int count, out bool carry)
+        public uint Lsr(uint value, int count, out bool carry)
         {
             if (count >= 32)
             {
@@ -69,7 +69,7 @@ namespace CPUEmu
             return value >> count;
         }
 
-        public uint ASR(uint value, int count, out bool carry)
+        public uint Asr(uint value, int count, out bool carry)
         {
             if (count >= 32)
             {
@@ -86,7 +86,7 @@ namespace CPUEmu
             return (uint)((int)value >> count);
         }
 
-        public uint ROR(uint value, int count, out bool carry)
+        public uint Ror(uint value, int count, out bool carry)
         {
             count &= 0x1F;
             carry = ((value >> (count - 1)) & 0x1) == 1;

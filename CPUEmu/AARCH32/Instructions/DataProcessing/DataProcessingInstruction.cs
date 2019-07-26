@@ -1,7 +1,7 @@
 ﻿using System;
 using CPUEmu.Interfaces;
 
-namespace CPUEmu.AARCH32.Instructions.DataProcessing
+namespace CPUEmu.Aarch32.Instructions.DataProcessing
 {
     abstract class DataProcessingInstruction : IInstruction
     {
@@ -27,8 +27,10 @@ namespace CPUEmu.AARCH32.Instructions.DataProcessing
             Operand2 = operand2;
         }
 
-        public void Execute(ICpuState cpuState)
+        public void Execute(IEnvironment env)
         {
+            var cpuState = env.CpuState;
+
             if (!ConditionHelper.CanExecute(cpuState, Condition))
                 return;
 
@@ -50,7 +52,7 @@ namespace CPUEmu.AARCH32.Instructions.DataProcessing
                 var imm = Operand2 & 0xFF;
                 var rot = ((Operand2 >> 8) & 0xF) * 2;
 
-                shifted = BarrelShifter.Instance.ROR(imm, (int)rot, out carry);
+                shifted = BarrelShifter.Instance.Ror(imm, (int)rot, out carry);
                 if (rot == 0 && !isDisassemble)
                     carry = Convert.ToBoolean(state.GetFlag("C"));
             }

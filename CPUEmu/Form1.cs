@@ -24,7 +24,7 @@ namespace CPUEmu
         private Color _breakPointColor = Color.Red;
 
         private int _bufferDisassemblyLines;
-        private long[] _bufferedDisassemblyOffsets;
+        private int[] _bufferedDisassemblyCounts;
 
         private int _breakPointSize;
         private List<long> _breakPoints = new List<long>();
@@ -139,7 +139,7 @@ namespace CPUEmu
         private void InitializeEmulator()
         {
             //TODO: MEF for emulator choosing
-            _emu = new AARCH32(File.ReadAllBytes(_currentFile), 0x100000, 0x1000000, 0x100000);
+            _emu = new Aarch32(File.ReadAllBytes(_currentFile), 0x100000, 0x1000000, 0x100000);
             _emu.Log += OnEmulatorLog;
         }
 
@@ -287,7 +287,7 @@ namespace CPUEmu
         {
             var list = GetDisassembledInstructions().ToList();
 
-            var currentLineIndex = list.FindIndex(x => x.offset == (_emu?.CurrentInstructionOffset ?? -1));
+            var currentLineIndex = list.FindIndex(x => x.count == (_emu?.CurrentInstruction ?? -1));
             var selectionStart = list.TakeWhile((x, i) => i < currentLineIndex).Sum(x => CreateDisassemblyLine(x.offset, x.source).Length) - currentLineIndex;
 
             if (currentLineIndex >= 0)
@@ -307,14 +307,8 @@ namespace CPUEmu
         #region Disassembly
         private static Func<long, string, string> CreateDisassemblyLine => new Func<long, string, string>((l, s) => $"{l:X4}: {s}" + Environment.NewLine);
 
-        private IEnumerable<(long offset, string source)> GetDisassembledInstructions()
-            => _emu?.DisassembleInstructions(
-                Math.Min(
-                    Math.Max(
-                        _emu.PayloadOffset,
-                        _emu.CurrentInstructionOffset - (_emu.BitsPerInstruction / 8) * (_bufferDisassemblyLines / 2)),
-                    _emu.PayloadOffset + _emu.PayloadLength - (_emu.BitsPerInstruction / 8) * _bufferDisassemblyLines),
-                _bufferDisassemblyLines);
+        private IEnumerable<(int count, long offset, string source)> GetDisassembledInstructions()
+            => _emu?.DisassembleInstructions(_emu.CurrentInstruction, _bufferDisassemblyLines / 2, (int)Math.Ceiling(_bufferDisassemblyLines / 2d));
 
         private void RefreshDisassembly()
         {
@@ -323,7 +317,7 @@ namespace CPUEmu
 
             //Handle disassembled data
             var str = list.Aggregate("", (a, b) => a + CreateDisassemblyLine(b.offset, b.source)).TrimEnd(Environment.NewLine.ToArray());
-            _bufferedDisassemblyOffsets = list.Select(x => x.offset).ToArray();
+            _bufferedDisassemblyCounts = list.Select(x => x.count).ToArray();
 
             //Write disassembled data
             txtDisassembly.Text = str;
@@ -349,15 +343,15 @@ namespace CPUEmu
         {
             if (_emu != null)
             {
-                var bufferedBk = _bufferedDisassemblyOffsets.ToArray();
+                var bufferedBk = _bufferedDisassemblyCounts.ToArray();
 
                 line = Math.Min(Math.Max(0, line), bufferedBk.Length - 1);
-                var offset = bufferedBk[line];
+                var count = bufferedBk[line];
 
-                if (_breakPoints.Contains(offset))
-                    _breakPoints.Remove(offset);
+                if (_breakPoints.Contains(count))
+                    _breakPoints.Remove(count);
                 else
-                    _breakPoints.Add(offset);
+                    _breakPoints.Add(count);
             }
         }
 
@@ -365,9 +359,9 @@ namespace CPUEmu
         {
             if (_emu != null)
             {
-                var bufferedBk = _bufferedDisassemblyOffsets.Select((x, i) => new { offset = x, index = i }).ToArray();
+                var bufferedBk = _bufferedDisassemblyCounts.Select((x, i) => new { count = x, index = i }).ToArray();
 
-                var bpToDraw = bufferedBk.Where(x => _breakPoints.Contains(x.offset)).Select(x => x.index).ToList();
+                var bpToDraw = bufferedBk.Where(x => _breakPoints.Contains(x.count)).Select(x => x.index).ToList();
 
                 var gr = pnBreakPoints.CreateGraphics();
                 gr.Clear(pnBreakPoints.BackColor);
@@ -404,7 +398,7 @@ namespace CPUEmu
             if ((!_emu?.IsFinished ?? false) && !_abort && (!_stopped || _doStep))
             {
                 //check if breakpoint is reached
-                if (_breakPoints.Contains(_emu?.CurrentInstructionOffset ?? 0) && !_doStep && !_break)
+                if (_breakPoints.Contains(_emu?.CurrentInstruction ?? 0) && !_doStep && !_break)
                 {
                     _break = true;
                     _stopped = true;

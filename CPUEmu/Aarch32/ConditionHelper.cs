@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CPUEmu.Interfaces;
 
-namespace CPUEmu.AARCH32
+namespace CPUEmu.Aarch32
 {
     class ConditionHelper
     {
@@ -50,7 +47,8 @@ namespace CPUEmu.AARCH32
                     return true;
 
                 default:
-                    Log?.Invoke(this, $"Unknown condition 0x{condition:X1}. Ignore instruction.");
+                    // TODO: Logging
+                    //Log?.Invoke(this, $"Unknown condition 0x{condition:X1}. Ignore instruction.");
                     return false;
             }
         }
