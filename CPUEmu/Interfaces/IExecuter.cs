@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace CPUEmu.Interfaces
 {
-    public interface IInterruptBroker : IDisposable
+    public interface IExecuter
     {
-        void Execute(int svc, IEnvironment cpuState);
+        IEnvironment Environemnt { get; }
+        IList<IInstruction> Instructions { get; }
+        void ExecuteNextInstruction();
     }
 }

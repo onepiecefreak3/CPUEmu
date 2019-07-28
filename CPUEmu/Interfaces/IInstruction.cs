@@ -1,6 +1,8 @@
-﻿namespace CPUEmu.Interfaces
+﻿using System;
+
+namespace CPUEmu.Interfaces
 {
-    public interface IInstruction
+    public interface IInstruction : IDisposable
     {
         int Position { get; }
 

@@ -6,10 +6,15 @@ using System.Threading.Tasks;
 
 namespace CPUEmu.Interfaces
 {
-    public interface IEnvironment
+    public interface IEnvironment : IDisposable
     {
         ICpuState CpuState { get; }
         IMemoryMap MemoryMap { get; }
-        IInterruptBroker InterruptBroker { get; }
+        int PayloadAddress { get; }
+        int StackAddress { get; }
+        int StackSize { get; }
+        IInterruptBroker InterruptBroker { get; set; }
+
+        void Reset();
     }
 }

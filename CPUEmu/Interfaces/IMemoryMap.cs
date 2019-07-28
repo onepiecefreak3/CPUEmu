@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CPUEmu.Interfaces
 {
-    public interface IMemoryMap
+    public interface IMemoryMap : IDisposable
     {
+        int Length { get; }
+
         byte ReadByte(int offset);
         void WriteByte(int offset, byte value);
 
@@ -16,5 +14,8 @@ namespace CPUEmu.Interfaces
 
         uint ReadUInt32(int offset);
         void WriteUInt32(int offset, uint value);
+
+        void Read(byte[] buffer, int offset, int count, int offsetInMemory);
+        void Write(byte[] buffer, int offset, int count, int offsetInMemory);
     }
 }

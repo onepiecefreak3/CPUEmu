@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CPUEmu.Interfaces
 {
-    public interface ICpuState
+    public interface ICpuState : IDisposable
     {
         IDictionary<string, object> GetRegisters();
         object GetRegister(string register);
