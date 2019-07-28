@@ -1,4 +1,5 @@
 ﻿using System;
+using CPUEmu.Aarch32.Exceptions;
 
 namespace CPUEmu.Aarch32
 {
@@ -6,14 +7,6 @@ namespace CPUEmu.Aarch32
     {
         private static readonly Lazy<BarrelShifter> Lazy = new Lazy<BarrelShifter>(() => new BarrelShifter());
         public static BarrelShifter Instance => Lazy.Value;
-
-        public enum ShiftType : uint
-        {
-            Lsl,
-            Lsr,
-            Asr,
-            Ror
-        }
 
         public uint ShiftByType(ShiftType type, uint value, int count, out bool carry)
         {
@@ -32,8 +25,8 @@ namespace CPUEmu.Aarch32
                     return Ror(value, count, out carry);
 
                 default:
-                    carry = false;
-                    return 0;
+                    // TODO: Check against ARM documentation.
+                    throw new UnknownShiftTypeException((int)type);
             }
         }
 

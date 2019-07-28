@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using CPUEmu.Interfaces;
+﻿using System.Collections.Generic;
+using CPUEmu.Aarch32.Exceptions;
 
 namespace CPUEmu.Aarch32
 {
     class ConditionHelper
     {
-        public static bool CanExecute(ICpuState state, byte condition)
+        public static bool CanExecute(Aarch32CpuState state, byte condition)
         {
-            var (z, c, n, v) = (Convert.ToBoolean(state.GetFlag("Z")),
-                Convert.ToBoolean(state.GetFlag("C")),
-                Convert.ToBoolean(state.GetFlag("N")),
-                Convert.ToBoolean(state.GetFlag("V")));
+            if (condition > 14)
+                throw new UnknownConditionException(condition);
+
+            var (z, c, n, v) = (state.Z, state.C, state.N, state.V);
 
             switch (condition)
             {
@@ -45,15 +44,13 @@ namespace CPUEmu.Aarch32
                     return z || n != v;
                 case 14:
                     return true;
-
                 default:
-                    // TODO: Logging
-                    //Log?.Invoke(this, $"Unknown condition 0x{condition:X1}. Ignore instruction.");
+                    // Path gets never reached, due to initial if statement
                     return false;
             }
         }
 
-        private static Dictionary<byte, string> _condNames = new Dictionary<byte, string>
+        private static readonly Dictionary<byte, string> _condNames = new Dictionary<byte, string>
         {
             [0] = "EQ",
             [1] = "NE",
@@ -75,6 +72,9 @@ namespace CPUEmu.Aarch32
 
         public static string ToString(byte condition)
         {
+            if (!_condNames.ContainsKey(condition))
+                throw new UnknownConditionException(condition);
+
             return _condNames[condition];
         }
     }
