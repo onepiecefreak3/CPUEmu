@@ -45,7 +45,9 @@ namespace CPUEmu.Aarch32.Instructions
 
         public void Execute(IEnvironment env)
         {
-            var cpuState = env.CpuState;
+            var cpuState = env.CpuState as Aarch32CpuState;
+            if (cpuState == null)
+                throw new InvalidOperationException("Unknown cpu state.");
             var memoryMap = env.MemoryMap;
 
             if (!ConditionHelper.CanExecute(cpuState, _condition))
@@ -55,7 +57,7 @@ namespace CPUEmu.Aarch32.Instructions
             for (var i = 0; i < 16; i++)
                 if (((_list >> i) & 0x1) == 1)
                     bytesToWrite += 4;
-            var address = Convert.ToInt32(cpuState.GetRegister($"R{_rn}")) - (_u ? 0 : bytesToWrite);
+            var address = (int)(cpuState.Registers[_rn] - (_u ? 0 : bytesToWrite));
 
             var writtenBack = false;
             for (var i = 0; i < 16; i++)
@@ -66,9 +68,9 @@ namespace CPUEmu.Aarch32.Instructions
                         address += 4;
 
                     if (_l)
-                        cpuState.SetRegister($"R{i}", memoryMap.ReadUInt32(address));
+                        cpuState.Registers[i] = memoryMap.ReadUInt32(address);
                     else
-                        memoryMap.WriteUInt32(address, Convert.ToUInt32(cpuState.GetRegister($"R{i}")));
+                        memoryMap.WriteUInt32(address, cpuState.Registers[i]);
 
                     if (!_p || _u)
                         address += 4;
@@ -76,8 +78,8 @@ namespace CPUEmu.Aarch32.Instructions
                     if (_w && !writtenBack)
                     {
                         writtenBack = true;
-                        var rnValue = Convert.ToUInt32(cpuState.GetRegister($"R{_rn}"));
-                        cpuState.SetRegister($"R{_rn}", rnValue + bytesToWrite);
+                        var rnValue = cpuState.Registers[_rn];
+                        cpuState.Registers[_rn] = (uint)(rnValue + bytesToWrite);
                         // TODO: Check increment/decrement
                         //_reg[desc.rn] -= bytesToWrite;
                         //_reg[desc.rn] += bytesToWrite;
@@ -92,8 +94,24 @@ namespace CPUEmu.Aarch32.Instructions
             for (int i = 0; i < 16; i++)
                 if ((_list >> i & 0x1) == 1)
                     listRegs.Add(i);
-            return $"{(_l ? "LDM" : "STM")}{ConditionHelper.ToString(_condition)}{(_l == _p ? "E" : "F")}{(_l == _u ? "D" : "A")} " +
-                   $"R{_rn}{(_w ? "!" : "")},{{{string.Join(",", listRegs)}}}{(_s ? "^" : "")}";
+
+            var result = _l ? "LDM" : "STM";
+            result += ConditionHelper.ToString(_condition);
+            result += _l == _p ? "E" : "F";
+            result += _l == _u ? "D" : "A";
+            result += "R" + _rn;
+            if (_w)
+                result += "!";
+            result += ", {" + string.Join(",", listRegs) + "}";
+            if (_s)
+                result += "^";
+
+            return result;
+        }
+
+        public void Dispose()
+        {
+
         }
     }
 }

@@ -29,20 +29,26 @@ namespace CPUEmu.Aarch32.Instructions.DataProcessing
 
         public void Execute(IEnvironment env)
         {
-            var cpuState = env.CpuState;
+            switch (env.CpuState)
+            {
+                case Aarch32CpuState armCpuState:
+                    if (!ConditionHelper.CanExecute(armCpuState, Condition))
+                        return;
 
-            if (!ConditionHelper.CanExecute(cpuState, Condition))
-                return;
+                    ExecuteInternal(armCpuState, GetOp2Value(armCpuState));
 
-            ExecuteInternal(cpuState, GetOp2Value(cpuState));
-
-            if (Rd == 0xF)
-                cpuState.SetRegister("PC", cpuState.GetRegister("R" + Rd));
+                    // TODO: Legacy code that called a method to reset the instruction queue to the new PC after it was changed
+                    //if (Rd == 0xF)
+                    //    armCpuState.PC = armCpuState.Registers[Rd];
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown cpu state.");
+            }
         }
 
-        protected abstract void ExecuteInternal(ICpuState cpuState, uint operand2Value);
+        protected abstract void ExecuteInternal(Aarch32CpuState cpuState, uint operand2Value);
 
-        protected uint GetOp2Value(ICpuState state, bool isDisassemble = false)
+        protected uint GetOp2Value(Aarch32CpuState state, bool isDisassemble = false)
         {
             uint shifted;
             bool carry;
@@ -54,7 +60,7 @@ namespace CPUEmu.Aarch32.Instructions.DataProcessing
 
                 shifted = BarrelShifter.Instance.Ror(imm, (int)rot, out carry);
                 if (rot == 0 && !isDisassemble)
-                    carry = Convert.ToBoolean(state.GetFlag("C"));
+                    carry = state.C;
             }
             else
             {
@@ -63,17 +69,17 @@ namespace CPUEmu.Aarch32.Instructions.DataProcessing
 
                 var stype = (shift >> 1) & 0x3;
                 var shiftValue = (shift & 0x1) == 1 ?
-                    Convert.ToUInt32(state.GetRegister($"R{(shift >> 4) & 0xF}")) & 0xFF :
+                    state.Registers[(shift >> 4) & 0xF] & 0xFF :
                     shift >> 3;
                 if ((shift & 0x1) == 0 && (stype == 1 || stype == 2) && shiftValue == 0) shiftValue = 32;
 
-                shifted = BarrelShifter.Instance.ShiftByType((BarrelShifter.ShiftType)stype, Convert.ToUInt32(state.GetRegister($"R{rm}")), (int)shiftValue, out carry);
+                shifted = BarrelShifter.Instance.ShiftByType((ShiftType)stype, state.Registers[rm], (int)shiftValue, out carry);
                 if (shiftValue == 0 && !isDisassemble)
-                    carry = Convert.ToBoolean(state.GetFlag("C"));
+                    carry = state.C;
             }
 
             if (S && IsLogical && !isDisassemble)
-                state.SetFlag("C", carry);
+                state.C = carry;
 
             return shifted;
         }
@@ -98,6 +104,39 @@ namespace CPUEmu.Aarch32.Instructions.DataProcessing
 
             cpuState.SetFlag("Z", z);
             cpuState.SetFlag("N", n);
+        }
+
+        public override string ToString()
+        {
+            var result = ToStringInternal();
+
+            var isRelevantShift = ((Operand2 >> 4) & 0x1) == 1 || Operand2 >> 7 != 0;
+            var shiftType = (ShiftType)(Operand2 >> 5 & 0x3);
+
+            if (I)
+                result += $"#0x{GetOp2Value(null, true):X}";
+            else
+            {
+                result += "R" + (Operand2 & 0xF);
+                if (isRelevantShift)
+                {
+                    result += ", ";
+                    result += shiftType;
+                    if (((Operand2 >> 4) & 0x1) == 1)
+                        result += " R" + (Operand2 >> 8);
+                    else
+                        result += "#" + (Operand2 >> 7);
+                }
+            }
+
+            return result;
+        }
+
+        protected abstract string ToStringInternal();
+
+        public void Dispose()
+        {
+
         }
     }
 }

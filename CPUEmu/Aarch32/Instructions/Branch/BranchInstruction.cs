@@ -6,12 +6,12 @@ namespace CPUEmu.Aarch32.Instructions.Branch
     class BranchInstruction : IInstruction
     {
         private readonly byte _condition;
-        private readonly uint _offset;
+        private readonly int _offset;
         private readonly bool _l;
 
         public int Position { get; }
 
-        private BranchInstruction(int position, byte condition, uint offset, bool l)
+        private BranchInstruction(int position, byte condition, int offset, bool l)
         {
             Position = position;
 
@@ -22,11 +22,12 @@ namespace CPUEmu.Aarch32.Instructions.Branch
 
         public static IInstruction Parse(int position, byte condition, uint instruction)
         {
-            var offset = (instruction & 0xFFFFFF) << 2;
+            var offset = (int)((instruction & 0xFFFFFF) << 2);
 
             //sign extend offset
-            var sign = (offset >> 25) & 0x1;
-            for (int i = 26; i < 32; i++) offset |= sign << i;
+            var sign = offset >> 23;
+            for (int i = 24; i < 32; i++)
+                offset |= sign << i;
 
             var l = ((instruction >> 24) & 0x1) == 1;
 
@@ -35,21 +36,37 @@ namespace CPUEmu.Aarch32.Instructions.Branch
 
         public void Execute(IEnvironment env)
         {
-            var cpuState = env.CpuState;
+            switch (env.CpuState)
+            {
+                case Aarch32CpuState armCpuState:
+                    if (!ConditionHelper.CanExecute(armCpuState, _condition))
+                        return;
 
-            if (!ConditionHelper.CanExecute(cpuState, _condition))
-                return;
+                    var pc = armCpuState.PC;
+                    if (_l)
+                        armCpuState.LR = pc - 4;
 
-            var pc = Convert.ToUInt32(cpuState.GetRegister("PC"));
-            if (_l)
-                cpuState.SetRegister("LR", pc - 4);
+                    armCpuState.PC = (uint)(pc + _offset);
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown cpu state.");
+            }
 
-            cpuState.SetRegister("PC", pc + _offset);
         }
 
         public override string ToString()
         {
-            return $"B{(_l ? "L" : "")}{ConditionHelper.ToString(_condition)} 0x{Position + 8 + _offset:X2}";
+            var result = "B";
+            if (_l)
+                result += "L";
+            result += ConditionHelper.ToString(_condition);
+            result += $" #{_offset}";
+            return result;
+        }
+
+        public void Dispose()
+        {
+
         }
     }
 }

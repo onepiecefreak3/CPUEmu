@@ -1,6 +1,4 @@
-﻿using CPUEmu.Interfaces;
-
-namespace CPUEmu.Aarch32.Instructions.DataProcessing
+﻿namespace CPUEmu.Aarch32.Instructions.DataProcessing
 {
     class DataProcessingMovInstruction : DataProcessingInstruction
     {
@@ -11,16 +9,22 @@ namespace CPUEmu.Aarch32.Instructions.DataProcessing
         {
         }
 
-        protected override void ExecuteInternal(ICpuState cpuState, uint operand2Value)
+        protected override void ExecuteInternal(Aarch32CpuState cpuState, uint operand2Value)
         {
-            cpuState.SetRegister($"R{Rd}", operand2Value);
+            cpuState.Registers[Rd] = operand2Value;
             if (S)
                 SetFlagsLogical(cpuState, operand2Value);
         }
 
-        public override string ToString()
+        protected override string ToStringInternal()
         {
-            return $"MOV{(S ? "S" : "")}{ConditionHelper.ToString(Condition)} R{Rd}, {(I ? $"#{GetOp2Value(null, true)}" : $"R{Operand2 & 0xF}")}";
+            var result = "MOV";
+            if (S)
+                result += "S";
+            result += ConditionHelper.ToString(Condition);
+            result += " R" + Rd + ", ";
+
+            return result;
         }
     }
 }

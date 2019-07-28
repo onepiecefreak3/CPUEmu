@@ -1,7 +1,4 @@
-﻿using System;
-using CPUEmu.Interfaces;
-
-namespace CPUEmu.Aarch32.Instructions.DataProcessing
+﻿namespace CPUEmu.Aarch32.Instructions.DataProcessing
 {
     class DataProcessingRsbInstruction : DataProcessingInstruction
     {
@@ -12,19 +9,26 @@ namespace CPUEmu.Aarch32.Instructions.DataProcessing
         {
         }
 
-        protected override void ExecuteInternal(ICpuState cpuState, uint operand2Value)
+        protected override void ExecuteInternal(Aarch32CpuState cpuState, uint operand2Value)
         {
-            var rn = Convert.ToUInt32(cpuState.GetRegister($"R{Rn}"));
+            var rn = cpuState.Registers[Rn];
             var rdNewValue = operand2Value - rn;
 
-            cpuState.SetRegister($"R{Rd}", rdNewValue);
+            cpuState.Registers[Rd] = rdNewValue;
             if (S)
                 SetFlagsArithmethic(cpuState, rdNewValue, operand2Value, rn, false, true);
         }
 
-        public override string ToString()
+        protected override string ToStringInternal()
         {
-            return $"RSB{(S ? "S" : "")}{ConditionHelper.ToString(Condition)} R{Rd}, {(I ? $"#{GetOp2Value(null, true)}" : $"R{Operand2 & 0xF}")}, R{Rn}";
+            var result = "RSB";
+            if (S)
+                result += "S";
+            result += ConditionHelper.ToString(Condition);
+            result += " R" + Rd + ", ";
+            result += "R" + Rn + ", ";
+
+            return result;
         }
     }
 }

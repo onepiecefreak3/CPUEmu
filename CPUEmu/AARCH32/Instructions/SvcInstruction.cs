@@ -1,15 +1,16 @@
-﻿using CPUEmu.Interfaces;
+﻿using System;
+using CPUEmu.Interfaces;
 
 namespace CPUEmu.Aarch32.Instructions
 {
     class SvcInstruction : IInstruction
     {
         private readonly byte _condition;
-        private readonly byte _svc;
+        private readonly int _svc;
 
         public int Position { get; }
 
-        public SvcInstruction(int position, byte condition, int svc)
+        private SvcInstruction(int position, byte condition, int svc)
         {
             Position = position;
 
@@ -17,12 +18,30 @@ namespace CPUEmu.Aarch32.Instructions
             _svc = svc;
         }
 
+        public static IInstruction Parse(int position, byte condition, uint instruction)
+        {
+            return new SvcInstruction(position, condition, (int)(instruction & 0xFFFFFF));
+        }
+
         public void Execute(IEnvironment env)
         {
-            if (!ConditionHelper.CanExecute(env.CpuState, _condition))
+            if (!(env.CpuState is Aarch32CpuState armCpuState))
+                throw new InvalidOperationException("Unknown cpu state.");
+
+            if (!ConditionHelper.CanExecute(armCpuState, _condition))
                 return;
 
             env.InterruptBroker.Execute(_svc, env);
+        }
+
+        public override string ToString()
+        {
+            return $"SVC {_svc}";
+        }
+
+        public void Dispose()
+        {
+
         }
     }
 }
