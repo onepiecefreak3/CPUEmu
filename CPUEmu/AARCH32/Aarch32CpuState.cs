@@ -7,25 +7,42 @@ namespace CPUEmu.Aarch32
 {
     class Aarch32CpuState : ICpuState
     {
-        private bool _z;
-        private bool _c;
-        private bool _n;
-        private bool _v;
+        public bool Z { get; set; }
+        public bool C { get; set; }
+        public bool N { get; set; }
+        public bool V { get; set; }
 
-        private readonly uint[] _regs;
+        public uint[] Registers { get; private set; }
+        public uint SP
+        {
+            get => Registers[13];
+            set => Registers[13] = value;
+        }
+
+        public uint LR
+        {
+            get => Registers[14];
+            set => Registers[14] = value;
+        }
+
+        public uint PC
+        {
+            get => Registers[15];
+            set => Registers[15] = value;
+        }
 
         public Aarch32CpuState()
         {
-            _regs = new uint[16];
+            Registers = new uint[16];
         }
 
-        private Aarch32CpuState(uint[] regs, bool z, bool c, bool n, bool v)
+        private Aarch32CpuState(uint[] registers, bool z, bool c, bool n, bool v)
         {
-            _regs = regs;
-            _z = z;
-            _c = c;
-            _n = n;
-            _v = v;
+            Registers = registers;
+            Z = z;
+            C = c;
+            N = n;
+            V = v;
         }
 
         public IDictionary<string, object> GetRegisters()
@@ -33,11 +50,11 @@ namespace CPUEmu.Aarch32
             var result = new Dictionary<string, object>();
 
             for (var i = 0; i < 13; i++)
-                result.Add("R" + i, _regs[i]);
+                result.Add("R" + i, Registers[i]);
 
-            result.Add("SP", _regs[13]);
-            result.Add("LR", _regs[14]);
-            result.Add("PC", _regs[15]);
+            result.Add("SP", SP);
+            result.Add("LR", LR);
+            result.Add("PC", PC);
 
             return result;
         }
@@ -45,16 +62,16 @@ namespace CPUEmu.Aarch32
         public object GetRegister(string register)
         {
             if (Regex.IsMatch(register, "R\\d+"))
-                return _regs[Convert.ToInt32(register.Substring(1))];
+                return Registers[Convert.ToInt32(register.Substring(1))];
 
             switch (register)
             {
                 case "SP":
-                    return _regs[13];
+                    return SP;
                 case "LR":
-                    return _regs[14];
+                    return LR;
                 case "PC":
-                    return _regs[15];
+                    return PC;
                 default:
                     throw new InvalidOperationException($"Register {register} is unknown.");
             }
@@ -63,18 +80,18 @@ namespace CPUEmu.Aarch32
         public void SetRegister(string register, object value)
         {
             if (Regex.IsMatch(register, "R\\d+"))
-                _regs[Convert.ToInt32(register.Substring(1))] = Convert.ToUInt32(value);
+                Registers[Convert.ToInt32(register.Substring(1))] = Convert.ToUInt32(value);
 
             switch (register)
             {
                 case "SP":
-                    _regs[13] = Convert.ToUInt32(value);
+                    Registers[13] = Convert.ToUInt32(value);
                     break;
                 case "LR":
-                    _regs[14] = Convert.ToUInt32(value);
+                    Registers[14] = Convert.ToUInt32(value);
                     break;
                 case "PC":
-                    _regs[15] = Convert.ToUInt32(value);
+                    Registers[15] = Convert.ToUInt32(value);
                     break;
                 default:
                     throw new InvalidOperationException($"Register {register} is unknown.");
@@ -85,10 +102,10 @@ namespace CPUEmu.Aarch32
         {
             var result = new Dictionary<string, object>();
 
-            result.Add("Z", _z ? 1 : 0);
-            result.Add("C", _z ? 1 : 0);
-            result.Add("N", _z ? 1 : 0);
-            result.Add("V", _z ? 1 : 0);
+            result.Add("Z", Z);
+            result.Add("C", C);
+            result.Add("N", N);
+            result.Add("V", V);
 
             return result;
         }
@@ -98,13 +115,13 @@ namespace CPUEmu.Aarch32
             switch (flag)
             {
                 case "Z":
-                    return _z;
+                    return Z;
                 case "C":
-                    return _c;
+                    return C;
                 case "N":
-                    return _n;
+                    return N;
                 case "V":
-                    return _v;
+                    return V;
                 default:
                     throw new InvalidOperationException($"Flag {flag} is unknown.");
             }
@@ -115,16 +132,16 @@ namespace CPUEmu.Aarch32
             switch (flag)
             {
                 case "Z":
-                    _z = Convert.ToBoolean(value);
+                    Z = Convert.ToBoolean(value);
                     break;
                 case "C":
-                    _c = Convert.ToBoolean(value);
+                    C = Convert.ToBoolean(value);
                     break;
                 case "N":
-                    _n = Convert.ToBoolean(value);
+                    N = Convert.ToBoolean(value);
                     break;
                 case "V":
-                    _v = Convert.ToBoolean(value);
+                    V = Convert.ToBoolean(value);
                     break;
                 default:
                     throw new InvalidOperationException($"Flag {flag} is unknown.");
@@ -134,9 +151,14 @@ namespace CPUEmu.Aarch32
         public ICpuState Clone()
         {
             var newRegs = new uint[16];
-            Array.Copy(newRegs, newRegs, 16);
+            Array.Copy(Registers, newRegs, 16);
 
-            return new Aarch32CpuState(newRegs, _z, _c, _n, _v);
+            return new Aarch32CpuState(newRegs, Z, C, N, V);
+        }
+
+        public void Dispose()
+        {
+            Registers = null;
         }
     }
 }

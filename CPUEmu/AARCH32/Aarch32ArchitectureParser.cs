@@ -1,92 +1,92 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using CPUEmu.Aarch32.Exceptions;
 using CPUEmu.Interfaces;
+using CPUEmu.Aarch32.Instructions;
+using CPUEmu.Aarch32.Factories;
+using CPUEmu.Aarch32.Instructions.Branch;
 
 namespace CPUEmu.Aarch32
 {
-    class Aarch32ArchitectureParser : IArchitectureParser
+    class Aarch32ArchitectureParser
     {
-        public IList<IInstruction> Parse(Stream assembly)
+        public static IList<IInstruction> Parse(Stream assembly)
         {
             var result = new List<IInstruction>();
+            var startPosition = assembly.Position;
 
-            using (var br = new BinaryReader(assembly))
+            while (assembly.Position < assembly.Length)
             {
-                while (br.BaseStream.Position < br.BaseStream.Length)
+                var instructionPosition = (int)(assembly.Position - startPosition);
+                var instruction = ReadUInt32(assembly);
+                var condition = (byte)(instruction >> 28);
+
+                switch (GetInstructionType(instruction))
                 {
-                    var instructionPosition = (int)br.BaseStream.Position;
-                    var instruction = br.ReadUInt32();
-                    var condition = (byte)(instruction >> 28);
+                    case InstructionType.DataProcessing:
+                        result.Add(DataProcessingInstructionFactory.Create(instructionPosition, condition,
+                            instruction));
+                        break;
 
-                    // TODO: Make endian invariant
-                    switch (GetInstructionType(instruction))
-                    {
-                        case InstructionType.DataProcessing:
-                            result.Add(Factories.DataProcessingInstructionFactory.Create(instructionPosition, condition,
-                                instruction));
-                            break;
+                    case InstructionType.Multiply:
+                        // TODO: Implement multiply
+                        break;
 
-                        case InstructionType.Multiply:
-                            // TODO: Implement multiply
-                            break;
+                    case InstructionType.MultiplyLong:
+                        // TODO: Implement Multiply long
+                        break;
 
-                        case InstructionType.MultiplyLong:
-                            // TODO: Implement Multiply long
-                            break;
+                    case InstructionType.SingleDataSwap:
+                        // TODO: Implement Data swap
+                        break;
 
-                        case InstructionType.SingleDataSwap:
-                            // TODO: Implement Data swap
-                            break;
+                    case InstructionType.BranchExchange:
+                        // TODO: Implement branch exchange
+                        break;
 
-                        case InstructionType.BranchExchange:
-                            // TODO: Implement branch exchange
-                            break;
+                    case InstructionType.HalfwordDataTransferReg:
+                        // TODO: Implement halfword data transfer reg
+                        break;
 
-                        case InstructionType.HalfwordDataTransferReg:
-                            // TODO: Implement halfword data transfer reg
-                            break;
+                    case InstructionType.HalfwordDataTransferImm:
+                        // TODO: Implement halfword data transer imm
+                        break;
 
-                        case InstructionType.HalfwordDataTransferImm:
-                            // TODO: Implement halfword data transer imm
-                            break;
+                    case InstructionType.SingleDataTransfer:
+                        result.Add(SingleDataTransferInstruction.Parse(instructionPosition, condition, instruction));
+                        break;
 
-                        case InstructionType.SingleDataTransfer:
-                            result.Add(Instructions.SingleDataTransferInstruction.Parse(instructionPosition, condition, instruction));
-                            break;
+                    case InstructionType.BlockDataTransfer:
+                        result.Add(BlockDataTransferInstruction.Parse(instructionPosition, condition, instruction));
+                        break;
 
-                        case InstructionType.BlockDataTransfer:
-                            result.Add(Instructions.BlockDataTransferInstruction.Parse(instructionPosition, condition, instruction));
-                            break;
+                    case InstructionType.Branch:
+                        result.Add(BranchInstruction.Parse(instructionPosition, condition, instruction));
+                        break;
 
-                        case InstructionType.Branch:
-                            result.Add(Instructions.Branch.BranchInstruction.Parse(instructionPosition, condition, instruction));
-                            break;
+                    case InstructionType.CoprocessorDataTransfer:
+                        break;
 
-                        case InstructionType.CoprocessorDataTransfer:
-                            break;
+                    case InstructionType.CoprocessorDataOperation:
+                        break;
 
-                        case InstructionType.CoprocessorDataOperation:
-                            break;
+                    case InstructionType.CoprocessorRegTransfer:
+                        break;
 
-                        case InstructionType.CoprocessorRegTransfer:
-                            break;
+                    case InstructionType.SoftwareInterrupt:
+                        result.Add(SvcInstruction.Parse(instructionPosition, condition, instruction));
+                        break;
 
-                        case InstructionType.SoftwareInterrupt:
-                            result.Add(new Instructions.SvcInstruction(instructionPosition, condition, (int)(instruction & 0xFFFFFF)));
-                            break;
-
-                        case InstructionType.Undefined:
-                        default:
-                            //Log?.Invoke(this, $"Instruction 0x{instruction:X8} undefined at PC 0x{_pc - 8:X8}");
-                            break;
-                    }
+                    case InstructionType.Undefined:
+                    default:
+                        throw new UndefinedInstructionException(instruction, instructionPosition);
                 }
             }
 
             return result;
         }
 
-        private InstructionType GetInstructionType(uint instruction)
+        private static InstructionType GetInstructionType(uint instruction)
         {
             var check = instruction & 0x0C000000;
             if (check == 0x0)
@@ -133,6 +133,13 @@ namespace CPUEmu.Aarch32
             }
 
             return InstructionType.Undefined;
+        }
+
+        private static uint ReadUInt32(Stream input)
+        {
+            var value = new byte[4];
+            input.Read(value, 0, 4);
+            return (uint)(value[0] | (value[1] << 8) | (value[2] << 16) | (value[3] << 24));
         }
     }
 }
