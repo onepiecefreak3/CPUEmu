@@ -1,6 +1,6 @@
 ﻿namespace CPUEmu
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Erforderliche Designervariable.
@@ -33,7 +33,6 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.label1 = new System.Windows.Forms.Label();
             this.btnAbort = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
             this.txtFlags = new System.Windows.Forms.TextBox();
@@ -46,6 +45,8 @@
             this.timDisassembly = new System.Windows.Forms.Timer(this.components);
             this.timTable = new System.Windows.Forms.Timer(this.components);
             this.timExecution = new System.Windows.Forms.Timer(this.components);
+            this.btnStartExecution = new System.Windows.Forms.Button();
+            this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.pnBreakPoints.SuspendLayout();
             this.SuspendLayout();
@@ -56,11 +57,11 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.txtlog.BackColor = System.Drawing.Color.Black;
             this.txtlog.ForeColor = System.Drawing.Color.White;
-            this.txtlog.Location = new System.Drawing.Point(12, 62);
+            this.txtlog.Location = new System.Drawing.Point(479, 114);
             this.txtlog.Name = "txtlog";
             this.txtlog.ReadOnly = true;
             this.txtlog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.txtlog.Size = new System.Drawing.Size(346, 376);
+            this.txtlog.Size = new System.Drawing.Size(309, 324);
             this.txtlog.TabIndex = 0;
             this.txtlog.Text = "";
             // 
@@ -77,7 +78,8 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openToolStripMenuItem});
+            this.openToolStripMenuItem,
+            this.closeToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -85,23 +87,14 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openToolStripMenuItem.Text = "&Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 46);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(48, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Console:";
             // 
             // btnAbort
             // 
             this.btnAbort.Enabled = false;
-            this.btnAbort.Location = new System.Drawing.Point(364, 60);
+            this.btnAbort.Location = new System.Drawing.Point(479, 85);
             this.btnAbort.Name = "btnAbort";
             this.btnAbort.Size = new System.Drawing.Size(115, 23);
             this.btnAbort.TabIndex = 3;
@@ -112,11 +105,11 @@
             // btnStop
             // 
             this.btnStop.Enabled = false;
-            this.btnStop.Location = new System.Drawing.Point(364, 89);
+            this.btnStop.Location = new System.Drawing.Point(478, 56);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(115, 23);
             this.btnStop.TabIndex = 4;
-            this.btnStop.Text = "Stop Execution";
+            this.btnStop.Text = "Halt Execution";
             this.btnStop.UseVisualStyleBackColor = true;
             this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
             // 
@@ -125,11 +118,11 @@
             this.txtFlags.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.txtFlags.Enabled = false;
             this.txtFlags.ForeColor = System.Drawing.Color.Black;
-            this.txtFlags.Location = new System.Drawing.Point(679, 61);
+            this.txtFlags.Location = new System.Drawing.Point(365, 27);
             this.txtFlags.Multiline = true;
             this.txtFlags.Name = "txtFlags";
             this.txtFlags.ReadOnly = true;
-            this.txtFlags.Size = new System.Drawing.Size(108, 120);
+            this.txtFlags.Size = new System.Drawing.Size(108, 155);
             this.txtFlags.TabIndex = 5;
             // 
             // txtRegs
@@ -138,7 +131,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtRegs.Enabled = false;
             this.txtRegs.ForeColor = System.Drawing.Color.Black;
-            this.txtRegs.Location = new System.Drawing.Point(679, 187);
+            this.txtRegs.Location = new System.Drawing.Point(365, 188);
             this.txtRegs.Multiline = true;
             this.txtRegs.Name = "txtRegs";
             this.txtRegs.ReadOnly = true;
@@ -148,13 +141,12 @@
             // btnStep
             // 
             this.btnStep.Enabled = false;
-            this.btnStep.Location = new System.Drawing.Point(364, 118);
+            this.btnStep.Location = new System.Drawing.Point(721, 85);
             this.btnStep.Name = "btnStep";
             this.btnStep.Size = new System.Drawing.Size(115, 23);
             this.btnStep.TabIndex = 7;
             this.btnStep.Text = "Do Step";
             this.btnStep.UseVisualStyleBackColor = true;
-            this.btnStep.Click += new System.EventHandler(this.btnStep_Click);
             // 
             // txtDisassembly
             // 
@@ -168,24 +160,23 @@
             this.txtDisassembly.Name = "txtDisassembly";
             this.txtDisassembly.ReadOnly = true;
             this.txtDisassembly.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.txtDisassembly.Size = new System.Drawing.Size(286, 290);
+            this.txtDisassembly.Size = new System.Drawing.Size(323, 411);
             this.txtDisassembly.TabIndex = 8;
             this.txtDisassembly.Text = "";
             // 
             // btnPrintToggle
             // 
-            this.btnPrintToggle.Location = new System.Drawing.Point(485, 89);
+            this.btnPrintToggle.Location = new System.Drawing.Point(721, 56);
             this.btnPrintToggle.Name = "btnPrintToggle";
             this.btnPrintToggle.Size = new System.Drawing.Size(115, 23);
             this.btnPrintToggle.TabIndex = 10;
             this.btnPrintToggle.Text = "Disable Printing";
             this.btnPrintToggle.UseVisualStyleBackColor = true;
-            this.btnPrintToggle.Click += new System.EventHandler(this.btnPrintToggle_Click);
             // 
             // btnReExec
             // 
             this.btnReExec.Enabled = false;
-            this.btnReExec.Location = new System.Drawing.Point(485, 60);
+            this.btnReExec.Location = new System.Drawing.Point(721, 27);
             this.btnReExec.Name = "btnReExec";
             this.btnReExec.Size = new System.Drawing.Size(115, 23);
             this.btnReExec.TabIndex = 11;
@@ -195,32 +186,49 @@
             // 
             // pnBreakPoints
             // 
+            this.pnBreakPoints.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.pnBreakPoints.Controls.Add(this.txtDisassembly);
-            this.pnBreakPoints.Location = new System.Drawing.Point(364, 147);
+            this.pnBreakPoints.Enabled = false;
+            this.pnBreakPoints.Location = new System.Drawing.Point(12, 27);
             this.pnBreakPoints.Name = "pnBreakPoints";
-            this.pnBreakPoints.Size = new System.Drawing.Size(309, 290);
+            this.pnBreakPoints.Size = new System.Drawing.Size(346, 411);
             this.pnBreakPoints.TabIndex = 12;
             this.pnBreakPoints.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnBreakPoints_MouseUp);
             // 
             // timDisassembly
             // 
             this.timDisassembly.Interval = 40;
-            this.timDisassembly.Tick += new System.EventHandler(this.timDisassembly_Tick);
             // 
             // timTable
             // 
             this.timTable.Interval = 16;
-            this.timTable.Tick += new System.EventHandler(this.timTable_Tick);
             // 
-            // timExecution
+            // btnStartExecution
             // 
-            this.timExecution.Tick += new System.EventHandler(this.timExecution_Tick);
+            this.btnStartExecution.Enabled = false;
+            this.btnStartExecution.Location = new System.Drawing.Point(479, 27);
+            this.btnStartExecution.Name = "btnStartExecution";
+            this.btnStartExecution.Size = new System.Drawing.Size(114, 23);
+            this.btnStartExecution.TabIndex = 13;
+            this.btnStartExecution.Text = "Start Execution";
+            this.btnStartExecution.UseVisualStyleBackColor = true;
+            this.btnStartExecution.Click += new System.EventHandler(this.BtnStartExecution_Click);
             // 
-            // Form1
+            // closeToolStripMenuItem
+            // 
+            this.closeToolStripMenuItem.Enabled = false;
+            this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.closeToolStripMenuItem.Text = "&Close";
+            this.closeToolStripMenuItem.Click += new System.EventHandler(this.CloseToolStripMenuItem_Click);
+            // 
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnStartExecution);
             this.Controls.Add(this.pnBreakPoints);
             this.Controls.Add(this.btnReExec);
             this.Controls.Add(this.btnPrintToggle);
@@ -229,12 +237,11 @@
             this.Controls.Add(this.txtFlags);
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.btnAbort);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.txtlog);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "MainForm";
+            this.Text = "MainForm";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.pnBreakPoints.ResumeLayout(false);
@@ -249,7 +256,6 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnAbort;
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.TextBox txtFlags;
@@ -262,6 +268,8 @@
         private System.Windows.Forms.Timer timDisassembly;
         private System.Windows.Forms.Timer timTable;
         private System.Windows.Forms.Timer timExecution;
+        private System.Windows.Forms.Button btnStartExecution;
+        private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
     }
 }
 
