@@ -96,6 +96,9 @@
     <Compile Include="Aarch32\InstructionType.cs" />
     <Compile Include="Aarch32\ShiftType.cs" />
     <Compile Include="Assemblies\TestArmAssemblyAdapter.cs" />
+    <Compile Include="BetterListBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Defaults\BigEndianMemoryMap.cs" />
     <Compile Include="Defaults\DefaultInterruptBroker.cs" />
     <Compile Include="Defaults\DefaultLogger.cs" />

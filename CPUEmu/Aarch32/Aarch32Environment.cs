@@ -36,9 +36,9 @@ namespace CPUEmu.Aarch32
 
         public void Dispose()
         {
-            CpuState.Dispose();
-            MemoryMap.Dispose();
-            InterruptBroker.Dispose();
+            CpuState?.Dispose();
+            MemoryMap?.Dispose();
+            InterruptBroker?.Dispose();
 
             CpuState = null;
             MemoryMap = null;

@@ -33,12 +33,12 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnAbort = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
             this.txtFlags = new System.Windows.Forms.TextBox();
             this.txtRegs = new System.Windows.Forms.TextBox();
             this.btnStep = new System.Windows.Forms.Button();
-            this.txtDisassembly = new System.Windows.Forms.RichTextBox();
             this.btnPrintToggle = new System.Windows.Forms.Button();
             this.btnReExec = new System.Windows.Forms.Button();
             this.pnBreakPoints = new System.Windows.Forms.Panel();
@@ -46,7 +46,8 @@
             this.timTable = new System.Windows.Forms.Timer(this.components);
             this.timExecution = new System.Windows.Forms.Timer(this.components);
             this.btnStartExecution = new System.Windows.Forms.Button();
-            this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnResume = new System.Windows.Forms.Button();
+            this.txtDisassembly = new CPUEmu.BetterListBox();
             this.menuStrip1.SuspendLayout();
             this.pnBreakPoints.SuspendLayout();
             this.SuspendLayout();
@@ -56,12 +57,13 @@
             this.txtlog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.txtlog.BackColor = System.Drawing.Color.Black;
-            this.txtlog.ForeColor = System.Drawing.Color.White;
-            this.txtlog.Location = new System.Drawing.Point(479, 114);
+            this.txtlog.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtlog.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(65)))));
+            this.txtlog.Location = new System.Drawing.Point(327, 114);
             this.txtlog.Name = "txtlog";
             this.txtlog.ReadOnly = true;
             this.txtlog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.txtlog.Size = new System.Drawing.Size(309, 324);
+            this.txtlog.Size = new System.Drawing.Size(309, 316);
             this.txtlog.TabIndex = 0;
             this.txtlog.Text = "";
             // 
@@ -71,7 +73,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(648, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -87,14 +89,22 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.openToolStripMenuItem.Text = "&Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+            // 
+            // closeToolStripMenuItem
+            // 
+            this.closeToolStripMenuItem.Enabled = false;
+            this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.closeToolStripMenuItem.Text = "&Close";
+            this.closeToolStripMenuItem.Click += new System.EventHandler(this.CloseToolStripMenuItem_Click);
             // 
             // btnAbort
             // 
             this.btnAbort.Enabled = false;
-            this.btnAbort.Location = new System.Drawing.Point(479, 85);
+            this.btnAbort.Location = new System.Drawing.Point(326, 56);
             this.btnAbort.Name = "btnAbort";
             this.btnAbort.Size = new System.Drawing.Size(115, 23);
             this.btnAbort.TabIndex = 3;
@@ -105,7 +115,7 @@
             // btnStop
             // 
             this.btnStop.Enabled = false;
-            this.btnStop.Location = new System.Drawing.Point(478, 56);
+            this.btnStop.Location = new System.Drawing.Point(447, 27);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(115, 23);
             this.btnStop.TabIndex = 4;
@@ -118,7 +128,7 @@
             this.txtFlags.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.txtFlags.Enabled = false;
             this.txtFlags.ForeColor = System.Drawing.Color.Black;
-            this.txtFlags.Location = new System.Drawing.Point(365, 27);
+            this.txtFlags.Location = new System.Drawing.Point(213, 27);
             this.txtFlags.Multiline = true;
             this.txtFlags.Name = "txtFlags";
             this.txtFlags.ReadOnly = true;
@@ -131,42 +141,26 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtRegs.Enabled = false;
             this.txtRegs.ForeColor = System.Drawing.Color.Black;
-            this.txtRegs.Location = new System.Drawing.Point(365, 188);
+            this.txtRegs.Location = new System.Drawing.Point(213, 188);
             this.txtRegs.Multiline = true;
             this.txtRegs.Name = "txtRegs";
             this.txtRegs.ReadOnly = true;
-            this.txtRegs.Size = new System.Drawing.Size(108, 250);
+            this.txtRegs.Size = new System.Drawing.Size(108, 242);
             this.txtRegs.TabIndex = 6;
             // 
             // btnStep
             // 
             this.btnStep.Enabled = false;
-            this.btnStep.Location = new System.Drawing.Point(721, 85);
+            this.btnStep.Location = new System.Drawing.Point(559, 85);
             this.btnStep.Name = "btnStep";
             this.btnStep.Size = new System.Drawing.Size(115, 23);
             this.btnStep.TabIndex = 7;
             this.btnStep.Text = "Do Step";
             this.btnStep.UseVisualStyleBackColor = true;
             // 
-            // txtDisassembly
-            // 
-            this.txtDisassembly.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtDisassembly.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.txtDisassembly.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDisassembly.ForeColor = System.Drawing.Color.Black;
-            this.txtDisassembly.Location = new System.Drawing.Point(23, 0);
-            this.txtDisassembly.Name = "txtDisassembly";
-            this.txtDisassembly.ReadOnly = true;
-            this.txtDisassembly.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.txtDisassembly.Size = new System.Drawing.Size(323, 411);
-            this.txtDisassembly.TabIndex = 8;
-            this.txtDisassembly.Text = "";
-            // 
             // btnPrintToggle
             // 
-            this.btnPrintToggle.Location = new System.Drawing.Point(721, 56);
+            this.btnPrintToggle.Location = new System.Drawing.Point(553, 56);
             this.btnPrintToggle.Name = "btnPrintToggle";
             this.btnPrintToggle.Size = new System.Drawing.Size(115, 23);
             this.btnPrintToggle.TabIndex = 10;
@@ -176,7 +170,7 @@
             // btnReExec
             // 
             this.btnReExec.Enabled = false;
-            this.btnReExec.Location = new System.Drawing.Point(721, 27);
+            this.btnReExec.Location = new System.Drawing.Point(568, 30);
             this.btnReExec.Name = "btnReExec";
             this.btnReExec.Size = new System.Drawing.Size(115, 23);
             this.btnReExec.TabIndex = 11;
@@ -189,10 +183,9 @@
             this.pnBreakPoints.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.pnBreakPoints.Controls.Add(this.txtDisassembly);
-            this.pnBreakPoints.Enabled = false;
             this.pnBreakPoints.Location = new System.Drawing.Point(12, 27);
             this.pnBreakPoints.Name = "pnBreakPoints";
-            this.pnBreakPoints.Size = new System.Drawing.Size(346, 411);
+            this.pnBreakPoints.Size = new System.Drawing.Size(195, 403);
             this.pnBreakPoints.TabIndex = 12;
             this.pnBreakPoints.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnBreakPoints_MouseUp);
             // 
@@ -207,7 +200,7 @@
             // btnStartExecution
             // 
             this.btnStartExecution.Enabled = false;
-            this.btnStartExecution.Location = new System.Drawing.Point(479, 27);
+            this.btnStartExecution.Location = new System.Drawing.Point(327, 27);
             this.btnStartExecution.Name = "btnStartExecution";
             this.btnStartExecution.Size = new System.Drawing.Size(114, 23);
             this.btnStartExecution.TabIndex = 13;
@@ -215,19 +208,34 @@
             this.btnStartExecution.UseVisualStyleBackColor = true;
             this.btnStartExecution.Click += new System.EventHandler(this.BtnStartExecution_Click);
             // 
-            // closeToolStripMenuItem
+            // btnResume
             // 
-            this.closeToolStripMenuItem.Enabled = false;
-            this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.closeToolStripMenuItem.Text = "&Close";
-            this.closeToolStripMenuItem.Click += new System.EventHandler(this.CloseToolStripMenuItem_Click);
+            this.btnResume.Location = new System.Drawing.Point(447, 56);
+            this.btnResume.Name = "btnResume";
+            this.btnResume.Size = new System.Drawing.Size(115, 23);
+            this.btnResume.TabIndex = 14;
+            this.btnResume.Text = "Resume Execution";
+            this.btnResume.UseVisualStyleBackColor = true;
+            this.btnResume.Click += new System.EventHandler(this.BtnResume_Click);
+            // 
+            // txtDisassembly
+            // 
+            this.txtDisassembly.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDisassembly.FormattingEnabled = true;
+            this.txtDisassembly.ItemHeight = 14;
+            this.txtDisassembly.Location = new System.Drawing.Point(25, 3);
+            this.txtDisassembly.Name = "txtDisassembly";
+            this.txtDisassembly.ScrollAlwaysVisible = true;
+            this.txtDisassembly.Size = new System.Drawing.Size(167, 396);
+            this.txtDisassembly.TabIndex = 0;
+            this.txtDisassembly.Scrolled += new System.EventHandler(this.TxtDisassembly_TopIndexChanged);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(648, 442);
+            this.Controls.Add(this.btnResume);
             this.Controls.Add(this.btnStartExecution);
             this.Controls.Add(this.pnBreakPoints);
             this.Controls.Add(this.btnReExec);
@@ -242,6 +250,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "MainForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.pnBreakPoints.ResumeLayout(false);
@@ -261,7 +270,6 @@
         private System.Windows.Forms.TextBox txtFlags;
         private System.Windows.Forms.TextBox txtRegs;
         private System.Windows.Forms.Button btnStep;
-        private System.Windows.Forms.RichTextBox txtDisassembly;
         private System.Windows.Forms.Button btnPrintToggle;
         private System.Windows.Forms.Button btnReExec;
         private System.Windows.Forms.Panel pnBreakPoints;
@@ -270,6 +278,8 @@
         private System.Windows.Forms.Timer timExecution;
         private System.Windows.Forms.Button btnStartExecution;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
+        private BetterListBox txtDisassembly;
+        private System.Windows.Forms.Button btnResume;
     }
 }
 

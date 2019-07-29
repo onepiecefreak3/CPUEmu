@@ -16,47 +16,19 @@ namespace CPUEmu
         private string _currentFileName;
         private Stream _currentFileStream;
 
+        private const int LineSpacingInTwips_ = 210;
+
         private static double TwipsToPixel(int twips) => (int)(twips / 14.9999999999);
 
-        private int _lineSpacingInTwips = 210;
-        //private int _timeOut = 40;
+        private int _breakPointSize => Math.Max(1, (int)TwipsToPixel(LineSpacingInTwips_) - 3);
         private Color _breakPointColor = Color.Red;
-
-        //private int _bufferDisassemblyLines;
-        //private int[] _bufferedDisassemblyCounts;
-
-        //private int _breakPointSize;
-        //private List<long> _breakPoints = new List<long>();
-
-        //private Emulator _emu;
-
-        //private bool _abort;
-        //private bool _stopped;
-        //private bool _break;
-        //private bool _doStep;
-        //private bool _instructionRunning;
-
-        //private bool _printing;
-
-        //System.Timers.Timer _refreshTimer;
-        //System.Timers.Timer _disassembleTimer;
 
         public MainForm()
         {
             InitializeComponent();
-
-            //timExecution.Interval = _timeOut;
-
-            //txtDisassembly.Location = new Point((int)TwipsToPixel(_lineSpacingInTwips), 0);
-            //txtDisassembly.Width = pnBreakPoints.Width - (int)TwipsToPixel(_lineSpacingInTwips);
-
-            //txtDisassembly.SizeChanged += txtDisassembly_SizeChanged;
-
-            //_bufferDisassemblyLines = (int)(txtDisassembly.Height / TwipsToPixel(_lineSpacingInTwips));
-            //_breakPointSize = Math.Max(1, (int)TwipsToPixel(_lineSpacingInTwips) - 3);
-
-            //EnablePrinting();
         }
+
+        #region Methods
 
         private void OpenFile()
         {
@@ -69,10 +41,8 @@ namespace CPUEmu
                 _currentFileName = ofd.FileName;
                 _currentFileStream = File.OpenRead(_currentFileName);
 
+                SetupUiOpenFile();
                 SelectAdapter();
-                _adapter.Load(_currentFileStream);
-                SetupExecutorEvents();
-                InitializeUI();
             }
         }
 
@@ -98,25 +68,181 @@ namespace CPUEmu
             _adapter = _pluginLoader.Adapters.First();
         }
 
-        // ----------------------------------
+        private void LoadAdapter()
+        {
+            _adapter.Load(_currentFileStream);
+            SetupExecutorEvents();
+        }
+
+        private void SetupExecutorEvents()
+        {
+            _adapter.Executor.ExecutionStarted += Executor_ExecutionStarted;
+            _adapter.Executor.ExecutionFinished += Executor_ExecutionFinished;
+
+            _adapter.Executor.InstructionExecuting += Executor_InstructionExecuting;
+            _adapter.Executor.InstructionExecuted += Executor_InstructionExecuted;
+
+            _adapter.Executor.ExecutionHalted += Executor_ExecutionHalted;
+            _adapter.Executor.ExecutionAborted += Executor_ExecutionAborted;
+
+            _adapter.Executor.BreakpointReached += Executor_BreakpointReached;
+        }
+
+        private void WriteLogLine(string message)
+        {
+            if (txtlog.InvokeRequired)
+                txtlog.Invoke(new MethodInvoker(() => WriteLogLine(message)));
+            else
+                txtlog.AppendText(message + Environment.NewLine);
+        }
+
+        #endregion
+
+        #region UI
+
+        private void SetupUiOpenFile()
+        {
+            txtlog.Clear();
+
+            btnStartExecution.Enabled = true;
+            btnStop.Enabled = false;
+            btnAbort.Enabled = false;
+        }
+
+        private void SetupUiExecutionStart()
+        {
+            if (btnStartExecution.InvokeRequired)
+                btnStartExecution.Invoke(new MethodInvoker(SetupUiExecutionStart));
+            else
+            {
+                btnStartExecution.Enabled = false;
+                btnStop.Enabled = true;
+                btnResume.Enabled = false;
+                btnAbort.Enabled = true;
+            }
+        }
+
+        private void SetupUiExecutionFinished()
+        {
+            if (btnStartExecution.InvokeRequired)
+                btnStartExecution.Invoke(new MethodInvoker(SetupUiExecutionFinished));
+            else
+            {
+                btnStartExecution.Enabled = true;
+                btnStop.Enabled = false;
+                btnResume.Enabled = false;
+                btnAbort.Enabled = false;
+            }
+        }
+
+        private void SetupUiExecutionHalted()
+        {
+            if (btnStop.InvokeRequired)
+                btnStop.Invoke(new MethodInvoker(SetupUiExecutionHalted));
+            else
+            {
+                btnStop.Enabled = false;
+                btnResume.Enabled = true;
+                btnAbort.Enabled = true;
+            }
+        }
+
+        private void SetupUiExecutionAborted()
+        {
+            if (btnStartExecution.InvokeRequired)
+                btnStartExecution.Invoke(new MethodInvoker(SetupUiExecutionHalted));
+            else
+            {
+                btnStartExecution.Enabled = true;
+                btnStop.Enabled = false;
+                btnResume.Enabled = false;
+                btnAbort.Enabled = false;
+            }
+        }
+
+        #endregion
+
+        #region Events
+
+        private void Executor_ExecutionHalted(object sender, EventArgs e)
+        {
+            SetupUiExecutionHalted();
+            LoadFlagsAndRegisters();
+            WriteLogLine("Execution halted.");
+        }
+
+        private void Executor_ExecutionAborted(object sender, EventArgs e)
+        {
+            SetupUiExecutionAborted();
+            LoadFlagsAndRegisters();
+            WriteLogLine("Execution aborted.");
+        }
+
+        private void Executor_InstructionExecuted(object sender, EventArgs e)
+        {
+        }
+
+        private void Executor_InstructionExecuting(object sender, EventArgs e)
+        {
+            if (_adapter.Executor.IsHalted)
+            {
+
+            }
+        }
+
+        private void Executor_ExecutionStarted(object sender, EventArgs e)
+        {
+            SetupUiExecutionStart();
+            LoadFlagsAndRegisters();
+            WriteLogLine("Execution started.");
+        }
+
+        private void Executor_ExecutionFinished(object sender, EventArgs e)
+        {
+            SetupUiExecutionFinished();
+            LoadFlagsAndRegisters();
+            WriteLogLine("Execution finished normally.");
+        }
+
+        private void Executor_BreakpointReached(object sender, EventArgs e)
+        {
+            SetupUiExecutionHalted();
+            LoadFlagsAndRegisters();
+            WriteLogLine("Breakpoint reached.");
+        }
+
+        private void BtnStartExecution_Click(object sender, EventArgs e)
+        {
+            // TODO: Choose interrupter in GUI
+            _adapter.Environment.InterruptBroker = new DefaultInterruptBroker(new DefaultLogger(txtlog));
+            _adapter.Executor.ExecuteAsync();
+        }
+
+        #endregion
 
         private void ResetUi()
         {
             txtlog.Clear();
             txtFlags.Clear();
             txtRegs.Clear();
-            txtDisassembly.Clear();
+            txtDisassembly.Items.Clear();
             // TODO: Clear breakpoint graphics
         }
 
-        private void SetupExecutorEvents()
+        private void LoadDisassembly()
         {
-            _adapter.Executor.ExecutionFinished += Executor_ExecutionFinished;
+            txtDisassembly.Items.AddRange(_adapter.Instructions.ToArray());
         }
 
-        private void Executor_ExecutionFinished(object sender, EventArgs e)
+        private void LoadFlagsAndRegisters()
         {
-            ;
+            if (txtFlags.InvokeRequired)
+                txtFlags.Invoke(new MethodInvoker(LoadFlagsAndRegisters));
+            else
+            {
+                txtFlags.Text = string.Join(Environment.NewLine, _adapter.Environment.CpuState.GetFlags());
+                txtRegs.Text = string.Join(Environment.NewLine, _adapter.Environment.CpuState.GetRegisters());
+            }
         }
 
         #region Events
@@ -124,6 +250,8 @@ namespace CPUEmu
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFile();
+            LoadAdapter();
+            LoadDisassembly();
         }
 
         private void CloseToolStripMenuItem_Click(object sender, EventArgs e)
@@ -167,16 +295,17 @@ namespace CPUEmu
 
         #region Methods
 
+
+
         private void InitializeUI()
         {
             txtlog.Clear();
-            txtDisassembly.Clear();
+            txtDisassembly.Items.Clear();
 
             btnStartExecution.Enabled = true;
             btnStop.Enabled = true;
+            btnResume.Enabled = true;
             btnAbort.Enabled = true;
-
-            btnStop.Text = "Stop Execution";
         }
 
         private void StartExecution()
@@ -352,25 +481,32 @@ namespace CPUEmu
         //}
         #endregion
 
-        private void HandleBreakpointByLine(int line)
+        private void HandleBreakpointByLine(int lineNumber)
         {
-            // TODO: Handle breakpoint by line
-            //if (_emu != null)
-            //{
-            //    var bufferedBk = _bufferedDisassemblyCounts.ToArray();
-
-            //    line = Math.Min(Math.Max(0, line), bufferedBk.Length - 1);
-            //    var count = bufferedBk[line];
-
-            //    if (_breakPoints.Contains(count))
-            //        _breakPoints.Remove(count);
-            //    else
-            //        _breakPoints.Add(count);
-            //}
+            var absoluteLine = txtDisassembly.TopIndex + lineNumber;
+            _adapter.Executor.SetBreakpoint(_adapter.Instructions[absoluteLine]);
         }
 
         private void DrawBreakpoints()
         {
+            var gr = pnBreakPoints.CreateGraphics();
+            gr.Clear(pnBreakPoints.BackColor);
+
+            var activeBreakpoints = _adapter.Executor.GetActiveBreakpoints().ToArray();
+            for (int i = 0; i < txtDisassembly.Height / txtDisassembly.ItemHeight; i++)
+            {
+                if (activeBreakpoints.Contains(txtDisassembly.Items[i + txtDisassembly.TopIndex]))
+                {
+                    gr.FillEllipse(new SolidBrush(_breakPointColor),
+                        new Rectangle(0, i * (int)TwipsToPixel(LineSpacingInTwips_) + 5, _breakPointSize, _breakPointSize));
+                }
+            }
+
+            gr.Dispose();
+            pnBreakPoints.Update();
+
+            //var itemRange = txtDisassembly.TopIndex;
+            //breakPointsInRange = active;
             // TODO: Draw breakpoint
             //if (_emu != null)
             //{
@@ -387,14 +523,12 @@ namespace CPUEmu
 
         private void pnBreakPoints_MouseUp(object sender, MouseEventArgs e)
         {
-            // TODO: Set breakpoint by mouse
-            //if (e.X < _breakPointSize)
-            //{
-            //    var currentLine = (int)Math.Floor(e.Y / TwipsToPixel(_lineSpacingInTwips));
-            //    HandleBreakpointByLine(currentLine);
-            //    DrawBreakpoints();
-            //    //RefreshDisassembly();
-            //}
+            if (_currentFileStream == null)
+                return;
+
+            var currentLine = (int)Math.Floor(e.Y / TwipsToPixel(LineSpacingInTwips_));
+            HandleBreakpointByLine(currentLine);
+            DrawBreakpoints();
         }
 
         //private void timTable_Tick(object sender, EventArgs e)
@@ -443,11 +577,20 @@ namespace CPUEmu
         //        FinishExecution();
         //}
 
-        private void BtnStartExecution_Click(object sender, EventArgs e)
+        private void TxtDisassembly_TopIndexChanged(object sender, EventArgs e)
         {
-            btnStartExecution.Enabled = false;
-            _adapter.Environment.InterruptBroker = new DefaultInterruptBroker(new DefaultLogger(txtlog));
-            _adapter.Executor.ExecuteAsync();
+            DrawBreakpoints();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            _adapter?.Executor?.AbortExecution();
+            _adapter?.Dispose();
+        }
+
+        private void BtnResume_Click(object sender, EventArgs e)
+        {
+            _adapter.Executor.ResumeExecution();
         }
     }
 }

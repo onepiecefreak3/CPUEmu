@@ -18,14 +18,16 @@ namespace CPUEmu.Aarch32
             ResetInternal();
         }
 
+        protected override void SetCurrentInstruction()
+        {
+            CurrentInstruction = _instructionBuffer.Dequeue();
+        }
+
         protected override void ExecuteInternal()
         {
-            var instruction = CurrentInstruction = _instructionBuffer.Dequeue();
+            CurrentInstruction.Execute(Environment);
 
-            instruction.Execute(Environment);
-
-            // TODO: Discrepancy to actual documentation?
-            if (instruction.Position + 0x8 != Convert.ToUInt32(Environment.CpuState.GetRegister("PC")))
+            if (CurrentInstruction.Position + 0x8 != ArmCpuState.PC)
             {
                 _instructionBuffer.Clear();
 
