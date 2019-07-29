@@ -2,16 +2,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
-using System.Threading.Tasks;
 using CPUEmu.Interfaces;
 
 namespace CPUEmu
 {
     public abstract class Executor : IDisposable
     {
-        private readonly ConcurrentDictionary<IInstruction, bool> _breakPoints;
+        private ConcurrentDictionary<IInstruction, bool> _breakPoints;
         private IInstruction _breakPointInstruction;
 
         private bool _doStep;
@@ -48,13 +46,13 @@ namespace CPUEmu
             _executionTask.Start();
         }
 
-        // TODO: Breakpoint handling
-        // Event invocation and so on
+        // Event invocation, break handling and so on
         private void Execute(int waitMs)
         {
             Reset();
             IsFinished = false;
             IsAborted = false;
+            IsHalted = false;
 
             ExecutionStarted?.Invoke(this, new EventArgs());
 
@@ -99,9 +97,7 @@ namespace CPUEmu
                 InstructionExecuted?.Invoke(this, new EventArgs());
             }
 
-            if (IsAborted)
-                ExecutionAborted?.Invoke(this, new EventArgs());
-            else
+            if (!IsAborted)
                 ExecutionFinished?.Invoke(this, new EventArgs());
         }
 
@@ -138,8 +134,16 @@ namespace CPUEmu
 
         public void AbortExecution()
         {
+            AbortExecution(true);
+        }
+
+        protected void AbortExecution(bool invokeEvent)
+        {
             IsAborted = true;
             _executionTask?.Abort();
+            _breakPointInstruction = null;
+            if (invokeEvent)
+                ExecutionAborted?.Invoke(this, new EventArgs());
         }
 
         public bool SetBreakpoint(IInstruction instructionToBreakOn)
@@ -162,6 +166,11 @@ namespace CPUEmu
             return _breakPoints.TryRemove(instructionToRemove, out _);
         }
 
+        public void ResetBreakpoints()
+        {
+            _breakPoints = new ConcurrentDictionary<IInstruction, bool>();
+        }
+
         public IEnumerable<IInstruction> GetActiveBreakpoints()
         {
             return _breakPoints.Where(x => x.Value).Select(x => x.Key);
@@ -169,7 +178,7 @@ namespace CPUEmu
 
         public void Dispose()
         {
-            AbortExecution();
+            AbortExecution(false);
             foreach (var inst in Instructions)
                 inst.Dispose();
             Environment.Dispose();

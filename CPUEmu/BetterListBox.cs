@@ -20,5 +20,10 @@ namespace CPUEmu
                 Scrolled?.Invoke(this, new EventArgs());
             }
         }
+
+        public new void RefreshItems()
+        {
+            base.RefreshItems();
+        }
     }
 }

@@ -38,9 +38,6 @@
             this.btnStop = new System.Windows.Forms.Button();
             this.txtFlags = new System.Windows.Forms.TextBox();
             this.txtRegs = new System.Windows.Forms.TextBox();
-            this.btnStep = new System.Windows.Forms.Button();
-            this.btnPrintToggle = new System.Windows.Forms.Button();
-            this.btnReExec = new System.Windows.Forms.Button();
             this.pnBreakPoints = new System.Windows.Forms.Panel();
             this.timDisassembly = new System.Windows.Forms.Timer(this.components);
             this.timTable = new System.Windows.Forms.Timer(this.components);
@@ -59,11 +56,11 @@
             this.txtlog.BackColor = System.Drawing.Color.Black;
             this.txtlog.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtlog.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(65)))));
-            this.txtlog.Location = new System.Drawing.Point(327, 114);
+            this.txtlog.Location = new System.Drawing.Point(347, 88);
             this.txtlog.Name = "txtlog";
             this.txtlog.ReadOnly = true;
             this.txtlog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.txtlog.Size = new System.Drawing.Size(309, 316);
+            this.txtlog.Size = new System.Drawing.Size(309, 342);
             this.txtlog.TabIndex = 0;
             this.txtlog.Text = "";
             // 
@@ -73,7 +70,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(648, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(668, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -104,9 +101,9 @@
             // btnAbort
             // 
             this.btnAbort.Enabled = false;
-            this.btnAbort.Location = new System.Drawing.Point(326, 56);
+            this.btnAbort.Location = new System.Drawing.Point(346, 59);
             this.btnAbort.Name = "btnAbort";
-            this.btnAbort.Size = new System.Drawing.Size(115, 23);
+            this.btnAbort.Size = new System.Drawing.Size(151, 23);
             this.btnAbort.TabIndex = 3;
             this.btnAbort.Text = "Abort Execution";
             this.btnAbort.UseVisualStyleBackColor = true;
@@ -115,9 +112,9 @@
             // btnStop
             // 
             this.btnStop.Enabled = false;
-            this.btnStop.Location = new System.Drawing.Point(447, 27);
+            this.btnStop.Location = new System.Drawing.Point(503, 30);
             this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(115, 23);
+            this.btnStop.Size = new System.Drawing.Size(153, 23);
             this.btnStop.TabIndex = 4;
             this.btnStop.Text = "Halt Execution";
             this.btnStop.UseVisualStyleBackColor = true;
@@ -128,7 +125,7 @@
             this.txtFlags.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.txtFlags.Enabled = false;
             this.txtFlags.ForeColor = System.Drawing.Color.Black;
-            this.txtFlags.Location = new System.Drawing.Point(213, 27);
+            this.txtFlags.Location = new System.Drawing.Point(233, 27);
             this.txtFlags.Multiline = true;
             this.txtFlags.Name = "txtFlags";
             this.txtFlags.ReadOnly = true;
@@ -141,42 +138,12 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtRegs.Enabled = false;
             this.txtRegs.ForeColor = System.Drawing.Color.Black;
-            this.txtRegs.Location = new System.Drawing.Point(213, 188);
+            this.txtRegs.Location = new System.Drawing.Point(233, 188);
             this.txtRegs.Multiline = true;
             this.txtRegs.Name = "txtRegs";
             this.txtRegs.ReadOnly = true;
             this.txtRegs.Size = new System.Drawing.Size(108, 242);
             this.txtRegs.TabIndex = 6;
-            // 
-            // btnStep
-            // 
-            this.btnStep.Enabled = false;
-            this.btnStep.Location = new System.Drawing.Point(559, 85);
-            this.btnStep.Name = "btnStep";
-            this.btnStep.Size = new System.Drawing.Size(115, 23);
-            this.btnStep.TabIndex = 7;
-            this.btnStep.Text = "Do Step";
-            this.btnStep.UseVisualStyleBackColor = true;
-            // 
-            // btnPrintToggle
-            // 
-            this.btnPrintToggle.Location = new System.Drawing.Point(553, 56);
-            this.btnPrintToggle.Name = "btnPrintToggle";
-            this.btnPrintToggle.Size = new System.Drawing.Size(115, 23);
-            this.btnPrintToggle.TabIndex = 10;
-            this.btnPrintToggle.Text = "Disable Printing";
-            this.btnPrintToggle.UseVisualStyleBackColor = true;
-            // 
-            // btnReExec
-            // 
-            this.btnReExec.Enabled = false;
-            this.btnReExec.Location = new System.Drawing.Point(568, 30);
-            this.btnReExec.Name = "btnReExec";
-            this.btnReExec.Size = new System.Drawing.Size(115, 23);
-            this.btnReExec.TabIndex = 11;
-            this.btnReExec.Text = "ReExecute";
-            this.btnReExec.UseVisualStyleBackColor = true;
-            this.btnReExec.Click += new System.EventHandler(this.btnReExec_Click);
             // 
             // pnBreakPoints
             // 
@@ -185,7 +152,7 @@
             this.pnBreakPoints.Controls.Add(this.txtDisassembly);
             this.pnBreakPoints.Location = new System.Drawing.Point(12, 27);
             this.pnBreakPoints.Name = "pnBreakPoints";
-            this.pnBreakPoints.Size = new System.Drawing.Size(195, 403);
+            this.pnBreakPoints.Size = new System.Drawing.Size(215, 403);
             this.pnBreakPoints.TabIndex = 12;
             this.pnBreakPoints.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnBreakPoints_MouseUp);
             // 
@@ -200,9 +167,9 @@
             // btnStartExecution
             // 
             this.btnStartExecution.Enabled = false;
-            this.btnStartExecution.Location = new System.Drawing.Point(327, 27);
+            this.btnStartExecution.Location = new System.Drawing.Point(347, 30);
             this.btnStartExecution.Name = "btnStartExecution";
-            this.btnStartExecution.Size = new System.Drawing.Size(114, 23);
+            this.btnStartExecution.Size = new System.Drawing.Size(150, 23);
             this.btnStartExecution.TabIndex = 13;
             this.btnStartExecution.Text = "Start Execution";
             this.btnStartExecution.UseVisualStyleBackColor = true;
@@ -210,9 +177,10 @@
             // 
             // btnResume
             // 
-            this.btnResume.Location = new System.Drawing.Point(447, 56);
+            this.btnResume.Enabled = false;
+            this.btnResume.Location = new System.Drawing.Point(503, 59);
             this.btnResume.Name = "btnResume";
-            this.btnResume.Size = new System.Drawing.Size(115, 23);
+            this.btnResume.Size = new System.Drawing.Size(153, 23);
             this.btnResume.TabIndex = 14;
             this.btnResume.Text = "Resume Execution";
             this.btnResume.UseVisualStyleBackColor = true;
@@ -220,27 +188,27 @@
             // 
             // txtDisassembly
             // 
+            this.txtDisassembly.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.txtDisassembly.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtDisassembly.FormattingEnabled = true;
             this.txtDisassembly.ItemHeight = 14;
-            this.txtDisassembly.Location = new System.Drawing.Point(25, 3);
+            this.txtDisassembly.Location = new System.Drawing.Point(18, 3);
             this.txtDisassembly.Name = "txtDisassembly";
             this.txtDisassembly.ScrollAlwaysVisible = true;
-            this.txtDisassembly.Size = new System.Drawing.Size(167, 396);
+            this.txtDisassembly.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
+            this.txtDisassembly.Size = new System.Drawing.Size(194, 396);
             this.txtDisassembly.TabIndex = 0;
             this.txtDisassembly.Scrolled += new System.EventHandler(this.TxtDisassembly_TopIndexChanged);
+            this.txtDisassembly.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.TxtDisassembly_DrawItem);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(648, 442);
+            this.ClientSize = new System.Drawing.Size(668, 442);
             this.Controls.Add(this.btnResume);
             this.Controls.Add(this.btnStartExecution);
             this.Controls.Add(this.pnBreakPoints);
-            this.Controls.Add(this.btnReExec);
-            this.Controls.Add(this.btnPrintToggle);
-            this.Controls.Add(this.btnStep);
             this.Controls.Add(this.txtRegs);
             this.Controls.Add(this.txtFlags);
             this.Controls.Add(this.btnStop);
@@ -269,9 +237,6 @@
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.TextBox txtFlags;
         private System.Windows.Forms.TextBox txtRegs;
-        private System.Windows.Forms.Button btnStep;
-        private System.Windows.Forms.Button btnPrintToggle;
-        private System.Windows.Forms.Button btnReExec;
         private System.Windows.Forms.Panel pnBreakPoints;
         private System.Windows.Forms.Timer timDisassembly;
         private System.Windows.Forms.Timer timTable;
