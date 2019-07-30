@@ -25,13 +25,13 @@ namespace CPUEmu
 
         public abstract IInstruction CurrentInstruction { get; set; }
 
-        public event EventHandler InstructionExecuting;
-        public event EventHandler InstructionExecuted;
+        public event EventHandler<InstructionExecuteEventArgs> InstructionExecuting;
+        public event EventHandler<InstructionExecuteEventArgs> InstructionExecuted;
         public event EventHandler ExecutionStarted;
         public event EventHandler ExecutionFinished;
-        public event EventHandler ExecutionHalted;
-        public event EventHandler ExecutionAborted;
-        public event EventHandler BreakpointReached;
+        public event EventHandler<InstructionExecuteEventArgs> ExecutionHalted;
+        public event EventHandler<InstructionExecuteEventArgs> ExecutionAborted;
+        public event EventHandler<InstructionExecuteEventArgs> BreakpointReached;
 
         protected Executor(IList<IInstruction> instructions, IEnvironment environment)
         {
@@ -83,18 +83,18 @@ namespace CPUEmu
                     SetCurrentInstruction();
                 if (_breakPointInstruction != CurrentInstruction && _breakPoints.ContainsKey(CurrentInstruction) && _breakPoints[CurrentInstruction])
                 {
-                    BreakExecution();
+                    BreakExecution(CurrentInstruction, Instructions.IndexOf(CurrentInstruction));
                     _breakPointInstruction = CurrentInstruction;
                     continue;
                 }
 
-                InstructionExecuting?.Invoke(this, new EventArgs());
+                InstructionExecuting?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, Instructions.IndexOf(CurrentInstruction)));
 
                 Thread.Sleep(waitMs);
                 ExecuteInternal();
-                CurrentInstruction = null;
 
-                InstructionExecuted?.Invoke(this, new EventArgs());
+                InstructionExecuted?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, Instructions.IndexOf(CurrentInstruction)));
+                CurrentInstruction = null;
             }
 
             if (!IsAborted)
@@ -117,13 +117,13 @@ namespace CPUEmu
         public void HaltExecution()
         {
             IsHalted = true;
-            ExecutionHalted?.Invoke(this, new EventArgs());
+            ExecutionHalted?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, Instructions.IndexOf(CurrentInstruction)));
         }
 
-        private void BreakExecution()
+        private void BreakExecution(IInstruction instruction, int index)
         {
             IsHalted = true;
-            BreakpointReached?.Invoke(this, new EventArgs());
+            BreakpointReached?.Invoke(this, new InstructionExecuteEventArgs(instruction, index));
         }
 
         public void ResumeExecution()
@@ -143,7 +143,7 @@ namespace CPUEmu
             _executionTask?.Abort();
             _breakPointInstruction = null;
             if (invokeEvent)
-                ExecutionAborted?.Invoke(this, new EventArgs());
+                ExecutionAborted?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, Instructions.IndexOf(CurrentInstruction)));
         }
 
         public bool SetBreakpoint(IInstruction instructionToBreakOn)

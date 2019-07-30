@@ -38,15 +38,13 @@
             this.btnStop = new System.Windows.Forms.Button();
             this.txtFlags = new System.Windows.Forms.TextBox();
             this.txtRegs = new System.Windows.Forms.TextBox();
-            this.pnBreakPoints = new System.Windows.Forms.Panel();
+            this.txtDisassembly = new CPUEmu.CodingListBox();
             this.timDisassembly = new System.Windows.Forms.Timer(this.components);
             this.timTable = new System.Windows.Forms.Timer(this.components);
             this.timExecution = new System.Windows.Forms.Timer(this.components);
             this.btnStartExecution = new System.Windows.Forms.Button();
             this.btnResume = new System.Windows.Forms.Button();
-            this.txtDisassembly = new CPUEmu.BetterListBox();
             this.menuStrip1.SuspendLayout();
-            this.pnBreakPoints.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtlog
@@ -60,7 +58,7 @@
             this.txtlog.Name = "txtlog";
             this.txtlog.ReadOnly = true;
             this.txtlog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.txtlog.Size = new System.Drawing.Size(309, 342);
+            this.txtlog.Size = new System.Drawing.Size(309, 334);
             this.txtlog.TabIndex = 0;
             this.txtlog.Text = "";
             // 
@@ -142,19 +140,29 @@
             this.txtRegs.Multiline = true;
             this.txtRegs.Name = "txtRegs";
             this.txtRegs.ReadOnly = true;
-            this.txtRegs.Size = new System.Drawing.Size(108, 242);
+            this.txtRegs.Size = new System.Drawing.Size(108, 234);
             this.txtRegs.TabIndex = 6;
             // 
-            // pnBreakPoints
+            // txtDisassembly
             // 
-            this.pnBreakPoints.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.pnBreakPoints.Controls.Add(this.txtDisassembly);
-            this.pnBreakPoints.Location = new System.Drawing.Point(12, 27);
-            this.pnBreakPoints.Name = "pnBreakPoints";
-            this.pnBreakPoints.Size = new System.Drawing.Size(215, 403);
-            this.pnBreakPoints.TabIndex = 12;
-            this.pnBreakPoints.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnBreakPoints_MouseUp);
+            this.txtDisassembly.BreakpointAreaWidth = 17;
+            this.txtDisassembly.BreakpointColor = System.Drawing.Color.Red;
+            this.txtDisassembly.BreakpointRadius = 8;
+            this.txtDisassembly.CurrentInstructionColor = System.Drawing.Color.Yellow;
+            this.txtDisassembly.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.txtDisassembly.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDisassembly.FormattingEnabled = true;
+            this.txtDisassembly.ItemHeight = 14;
+            this.txtDisassembly.Location = new System.Drawing.Point(12, 27);
+            this.txtDisassembly.Name = "txtDisassembly";
+            this.txtDisassembly.ScrollAlwaysVisible = true;
+            this.txtDisassembly.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
+            this.txtDisassembly.Size = new System.Drawing.Size(215, 396);
+            this.txtDisassembly.TabIndex = 0;
+            this.txtDisassembly.BreakpointAdded += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointAdded);
+            this.txtDisassembly.BreakpointRemoved += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointRemoved);
+            this.txtDisassembly.BreakpointEnabled += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointEnabled);
+            this.txtDisassembly.BreakpointDisabled += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointDisabled);
             // 
             // timDisassembly
             // 
@@ -186,29 +194,14 @@
             this.btnResume.UseVisualStyleBackColor = true;
             this.btnResume.Click += new System.EventHandler(this.BtnResume_Click);
             // 
-            // txtDisassembly
-            // 
-            this.txtDisassembly.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.txtDisassembly.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDisassembly.FormattingEnabled = true;
-            this.txtDisassembly.ItemHeight = 14;
-            this.txtDisassembly.Location = new System.Drawing.Point(18, 3);
-            this.txtDisassembly.Name = "txtDisassembly";
-            this.txtDisassembly.ScrollAlwaysVisible = true;
-            this.txtDisassembly.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.txtDisassembly.Size = new System.Drawing.Size(194, 396);
-            this.txtDisassembly.TabIndex = 0;
-            this.txtDisassembly.Scrolled += new System.EventHandler(this.TxtDisassembly_TopIndexChanged);
-            this.txtDisassembly.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.TxtDisassembly_DrawItem);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(668, 442);
+            this.ClientSize = new System.Drawing.Size(668, 434);
+            this.Controls.Add(this.txtDisassembly);
             this.Controls.Add(this.btnResume);
             this.Controls.Add(this.btnStartExecution);
-            this.Controls.Add(this.pnBreakPoints);
             this.Controls.Add(this.txtRegs);
             this.Controls.Add(this.txtFlags);
             this.Controls.Add(this.btnStop);
@@ -221,7 +214,6 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.pnBreakPoints.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -237,13 +229,12 @@
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.TextBox txtFlags;
         private System.Windows.Forms.TextBox txtRegs;
-        private System.Windows.Forms.Panel pnBreakPoints;
         private System.Windows.Forms.Timer timDisassembly;
         private System.Windows.Forms.Timer timTable;
         private System.Windows.Forms.Timer timExecution;
         private System.Windows.Forms.Button btnStartExecution;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
-        private BetterListBox txtDisassembly;
+        private CodingListBox txtDisassembly;
         private System.Windows.Forms.Button btnResume;
     }
 }

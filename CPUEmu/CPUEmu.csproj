@@ -96,7 +96,7 @@
     <Compile Include="Aarch32\InstructionType.cs" />
     <Compile Include="Aarch32\ShiftType.cs" />
     <Compile Include="Assemblies\TestArmAssemblyAdapter.cs" />
-    <Compile Include="BetterListBox.cs">
+    <Compile Include="CodingListBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Defaults\BigEndianMemoryMap.cs" />
@@ -106,6 +106,8 @@
     <Compile Include="Defaults\LittleEndianMemoryMap.cs" />
     <Compile Include="Executor.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="IndexEventArgs.cs" />
+    <Compile Include="InstructionExecuteEventArgs.cs" />
     <Compile Include="Interfaces\ILogger.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -113,7 +115,6 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Interfaces\IExecuter.cs" />
     <Compile Include="Interfaces\IAssemblyAdapter.cs" />
     <Compile Include="Interfaces\ICpuState.cs" />
     <Compile Include="Interfaces\IEnvironment.cs" />

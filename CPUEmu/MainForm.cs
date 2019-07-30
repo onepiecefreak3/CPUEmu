@@ -160,6 +160,14 @@ namespace CPUEmu
             }
         }
 
+        private void SetCurrentInstruction(int index)
+        {
+            if (txtDisassembly.InvokeRequired)
+                txtDisassembly.Invoke(new MethodInvoker(() => SetCurrentInstruction(index)));
+            else
+                txtDisassembly.SetCurrentInstructionIndex(index);
+        }
+
         #endregion
 
         #region UI
@@ -240,10 +248,11 @@ namespace CPUEmu
 
         #region Events
 
-        private void Executor_ExecutionHalted(object sender, EventArgs e)
+        private void Executor_ExecutionHalted(object sender, InstructionExecuteEventArgs e)
         {
             SetupUiExecutionHalted();
             LoadFlagsAndRegisters();
+            SetCurrentInstruction(e.Index);
             WriteLogLine("Execution halted.");
         }
 
@@ -251,15 +260,18 @@ namespace CPUEmu
         {
             SetupUiExecutionAborted();
             LoadFlagsAndRegisters();
+            SetCurrentInstruction(-1);
             WriteLogLine("Execution aborted.");
         }
 
-        private void Executor_InstructionExecuted(object sender, EventArgs e)
+        private void Executor_InstructionExecuted(object sender, InstructionExecuteEventArgs e)
         {
         }
 
-        private void Executor_InstructionExecuting(object sender, EventArgs e)
+        private void Executor_InstructionExecuting(object sender, InstructionExecuteEventArgs e)
         {
+            if (_adapter.Executor.IsHalted)
+                SetCurrentInstruction(e.Index);
         }
 
         private void Executor_ExecutionStarted(object sender, EventArgs e)
@@ -273,13 +285,15 @@ namespace CPUEmu
         {
             SetupUiExecutionFinished();
             LoadFlagsAndRegisters();
+            SetCurrentInstruction(-1);
             WriteLogLine("Execution finished normally.");
         }
 
-        private void Executor_BreakpointReached(object sender, EventArgs e)
+        private void Executor_BreakpointReached(object sender, InstructionExecuteEventArgs e)
         {
             SetupUiExecutionHalted();
             LoadFlagsAndRegisters();
+            SetCurrentInstruction(e.Index);
             WriteLogLine("Breakpoint reached.");
         }
 
@@ -335,32 +349,24 @@ namespace CPUEmu
             SetBreakpoint(absoluteLine);
         }
 
-        private void TxtDisassembly_TopIndexChanged(object sender, EventArgs e)
+        private void TxtDisassembly_BreakpointAdded(object sender, IndexEventArgs e)
         {
-            DrawBreakpoints();
+            _adapter?.Executor.SetBreakpoint(_adapter.Instructions[e.AbsoluteIndex]);
         }
 
-        private void TxtDisassembly_DrawItem(object sender, DrawItemEventArgs e)
+        private void TxtDisassembly_BreakpointDisabled(object sender, IndexEventArgs e)
         {
-            e.DrawBackground();
+            _adapter?.Executor.DisableBreakpoint(_adapter.Instructions[e.AbsoluteIndex]);
+        }
 
-            var absoluteLine = Math.Min(_adapter.Instructions.Count - 1, e.Index);
-            var g = e.Graphics;
+        private void TxtDisassembly_BreakpointEnabled(object sender, IndexEventArgs e)
+        {
+            _adapter?.Executor.EnableBreakpoint(_adapter.Instructions[e.AbsoluteIndex]);
+        }
 
-            // Background
-            SolidBrush backgroundBrush;
-            if (_adapter.Executor.IsHalted && _adapter.Executor.CurrentInstruction == _adapter.Instructions[absoluteLine])
-                backgroundBrush = new SolidBrush(_currentInstructionColor);
-            else if (_adapter.Executor.GetActiveBreakpoints().Contains(_adapter.Instructions[absoluteLine]))
-                backgroundBrush = new SolidBrush(_breakPointColor);
-            else
-                backgroundBrush = new SolidBrush(txtDisassembly.BackColor);
-            g.FillRectangle(backgroundBrush, e.Bounds);
-
-            // Text
-            g.DrawString(txtDisassembly.Items[e.Index].ToString(), e.Font, new SolidBrush(txtDisassembly.ForeColor), txtDisassembly.GetItemRectangle(e.Index).Location);
-
-            e.DrawFocusRectangle();
+        private void TxtDisassembly_BreakpointRemoved(object sender, IndexEventArgs e)
+        {
+            _adapter?.Executor.RemoveBreakpoint(_adapter.Instructions[e.AbsoluteIndex]);
         }
 
         #endregion
