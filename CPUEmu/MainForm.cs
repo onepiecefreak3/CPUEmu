@@ -117,33 +117,6 @@ namespace CPUEmu
                 txtlog.AppendText(message + Environment.NewLine);
         }
 
-        private void SetBreakpoint(int absoluteIndex)
-        {
-            if (absoluteIndex >= _adapter.Instructions.Count)
-                return;
-
-            _adapter.Executor.SetBreakpoint(_adapter.Instructions[absoluteIndex]);
-            DrawBreakpoints();
-        }
-
-        private void DrawBreakpoints()
-        {
-            var gr = pnBreakPoints.CreateGraphics();
-            gr.Clear(pnBreakPoints.BackColor);
-
-            var activeBreakpoints = _adapter.Executor.GetActiveBreakpoints().ToArray();
-            for (int i = 0; i < Math.Min(_adapter.Instructions.Count, txtDisassembly.Height / txtDisassembly.ItemHeight); i++)
-            {
-                if (activeBreakpoints.Contains(txtDisassembly.Items[i + txtDisassembly.TopIndex]))
-                {
-                    gr.FillEllipse(new SolidBrush(_breakPointColor),
-                        new Rectangle(0, i * (int)TwipsToPixel(LineSpacingInTwips_) + 5, _breakPointSize, _breakPointSize));
-                }
-            }
-
-            gr.Dispose();
-        }
-
         private void LoadDisassembly()
         {
             txtDisassembly.Items.AddRange(_adapter.Instructions.ToArray());
@@ -180,7 +153,6 @@ namespace CPUEmu
             txtDisassembly.Items.Clear();
 
             _adapter.Executor.ResetBreakpoints();
-            DrawBreakpoints();
         }
 
         private void SetupUiOpenFile()
@@ -337,16 +309,6 @@ namespace CPUEmu
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             _adapter?.Dispose();
-        }
-
-        private void pnBreakPoints_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (_currentFileStream == null)
-                return;
-
-            var currentLine = (int)Math.Floor(e.Y / TwipsToPixel(LineSpacingInTwips_));
-            var absoluteLine = txtDisassembly.TopIndex + currentLine;
-            SetBreakpoint(absoluteLine);
         }
 
         private void TxtDisassembly_BreakpointAdded(object sender, IndexEventArgs e)

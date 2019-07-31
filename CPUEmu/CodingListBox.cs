@@ -174,6 +174,8 @@ namespace CPUEmu
             e.DrawBackground();
 
             var absoluteLine = Math.Min(Items.Count - 1, e.Index);
+            if (absoluteLine < 0)
+                return;
 
             // Breakpoint area
             DrawBreakpointArea(e, absoluteLine);
@@ -185,7 +187,7 @@ namespace CPUEmu
         private void CodingListBox_MouseUp(object sender, MouseEventArgs e)
         {
             var mouseLine = e.Y / ItemHeight;
-            if (TopIndex + mouseLine >= Items.Count)
+            if (TopIndex + mouseLine >= Items.Count || e.X > _breakpointAreaWidth)
                 return;
 
             var absoluteLine = Math.Min(Items.Count - 1, TopIndex + mouseLine);
@@ -246,7 +248,7 @@ namespace CPUEmu
             if (CurrentInstructionIndex > 0 &&
                 CurrentInstructionIndex == absoluteIndex &&
                 CurrentInstructionIndex >= TopIndex &&
-                TopIndex + CurrentInstructionIndex < Height / ItemHeight)
+                CurrentInstructionIndex - TopIndex < Height / ItemHeight)
                 backgroundBrush = new SolidBrush(CurrentInstructionColor);
             else if (_breakpoints.ContainsKey(absoluteIndex) && _breakpoints[absoluteIndex])
                 backgroundBrush = new SolidBrush(BreakpointColor);
