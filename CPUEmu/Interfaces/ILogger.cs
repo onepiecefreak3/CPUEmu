@@ -2,8 +2,8 @@
 
 namespace CPUEmu.Interfaces
 {
-    public interface ILogger:IDisposable
+    public interface ILogger : IDisposable
     {
-        void Log(string message);
+        void Log(LogLevel logLevel, string message);
     }
 }

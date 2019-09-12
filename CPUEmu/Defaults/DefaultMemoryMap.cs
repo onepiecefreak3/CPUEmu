@@ -1,5 +1,6 @@
 ﻿using System;
 using CPUEmu.Interfaces;
+using System.Linq;
 
 namespace CPUEmu.Defaults
 {
@@ -13,6 +14,11 @@ namespace CPUEmu.Defaults
         {
             Memory = new byte[memorySizeInBytes];
             Length = memorySizeInBytes;
+        }
+
+        public void Clear()
+        {
+            Array.Clear(Memory, 0, Memory.Length);
         }
 
         public virtual byte ReadByte(int offset)

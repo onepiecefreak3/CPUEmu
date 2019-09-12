@@ -11,6 +11,7 @@ namespace CPUEmu
     public partial class MainForm : Form
     {
         private readonly PluginLoader _pluginLoader = PluginLoader.Instance;
+        private readonly ILogger _logger;
 
         private IAssemblyAdapter _adapter;
         private string _currentFileName;
@@ -27,6 +28,8 @@ namespace CPUEmu
         public MainForm()
         {
             InitializeComponent();
+
+            _logger = new DefaultLogger(txtlog);
         }
 
         #region Methods
@@ -79,14 +82,10 @@ namespace CPUEmu
 
         private void SelectAdapter()
         {
-            _adapter = _pluginLoader.Adapters.FirstOrDefault(x =>
-            {
-                var startPosition = _currentFileStream.Position;
-                var res = x.Identify(_currentFileStream);
-                _currentFileStream.Position = startPosition;
-                return res;
-            });
-            _adapter = _pluginLoader.Adapters.First();
+            _pluginLoader.SetLogger(_logger);
+
+            // TODO: Properly select adapters dynamically
+            _adapter = _pluginLoader.CreateAssemblyAdapter("TestArm");
         }
 
         private void LoadAdapter()
@@ -287,7 +286,7 @@ namespace CPUEmu
         private void BtnStartExecution_Click(object sender, EventArgs e)
         {
             // TODO: Choose interrupter in GUI
-            _adapter.Environment.InterruptBroker = new DefaultInterruptBroker(new DefaultLogger(txtlog));
+            _adapter.Environment.InterruptBroker = new DefaultInterruptBroker(_logger);
             StartExecution();
         }
 

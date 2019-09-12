@@ -10,7 +10,7 @@ namespace CPUEmu.Aarch32
 {
     class Aarch32ArchitectureParser
     {
-        public static IList<IInstruction> Parse(Stream assembly)
+        public static IList<IInstruction> Parse(Stream assembly, ILogger logger = null)
         {
             var result = new List<IInstruction>();
             var startPosition = assembly.Position;
@@ -30,10 +30,12 @@ namespace CPUEmu.Aarch32
 
                     case InstructionType.Multiply:
                         // TODO: Implement multiply
+                        logger?.Log(LogLevel.Fatal,"Unimplemented Instructiontype 'Multiply'.");
                         break;
 
                     case InstructionType.MultiplyLong:
                         // TODO: Implement Multiply long
+                        logger?.Log(LogLevel.Fatal, "Unimplemented Instructiontype 'MultiplyLong'.");
                         break;
 
                     case InstructionType.SingleDataSwap:
@@ -42,14 +44,17 @@ namespace CPUEmu.Aarch32
 
                     case InstructionType.BranchExchange:
                         // TODO: Implement branch exchange
+                        logger?.Log(LogLevel.Fatal, "Unimplemented Instructiontype 'BranchExchange'.");
                         break;
 
                     case InstructionType.HalfwordDataTransferReg:
                         // TODO: Implement halfword data transfer reg
+                        logger?.Log(LogLevel.Fatal, "Unimplemented Instructiontype 'HalfwordDataTransferReg'.");
                         break;
 
                     case InstructionType.HalfwordDataTransferImm:
                         // TODO: Implement halfword data transer imm
+                        logger?.Log(LogLevel.Fatal, "Unimplemented Instructiontype 'HalfwordDataTransferImm'.");
                         break;
 
                     case InstructionType.SingleDataTransfer:
@@ -65,12 +70,15 @@ namespace CPUEmu.Aarch32
                         break;
 
                     case InstructionType.CoprocessorDataTransfer:
+                        logger?.Log(LogLevel.Fatal, "Unimplemented Instructiontype 'CoprocessorDataTransfer'.");
                         break;
 
                     case InstructionType.CoprocessorDataOperation:
+                        logger?.Log(LogLevel.Fatal, "Unimplemented Instructiontype 'CoprocessorDataOperation'.");
                         break;
 
                     case InstructionType.CoprocessorRegTransfer:
+                        logger?.Log(LogLevel.Fatal, "Unimplemented Instructiontype 'CoprocessorRegTransfer'.");
                         break;
 
                     case InstructionType.SoftwareInterrupt:

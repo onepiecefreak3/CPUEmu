@@ -99,7 +99,7 @@ namespace CPUEmu.Aarch32.Instructions
             result += ConditionHelper.ToString(_condition);
             result += _l == _p ? "E" : "F";
             result += _l == _u ? "D" : "A";
-            result += "R" + _rn;
+            result += " R" + _rn;
             if (_w)
                 result += "!";
             result += ", {" + string.Join(",", listRegs) + "}";

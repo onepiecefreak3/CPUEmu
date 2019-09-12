@@ -6,6 +6,8 @@ namespace CPUEmu.Interfaces
     {
         int Length { get; }
 
+        void Clear();
+
         byte ReadByte(int offset);
         void WriteByte(int offset, byte value);
 

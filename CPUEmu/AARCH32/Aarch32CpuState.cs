@@ -31,9 +31,10 @@ namespace CPUEmu.Aarch32
             set => Registers[15] = value;
         }
 
-        public Aarch32CpuState()
+        public Aarch32CpuState(uint stackAddress)
         {
             Registers = new uint[16];
+            SP = stackAddress;
         }
 
         private Aarch32CpuState(uint[] registers, bool z, bool c, bool n, bool v)

@@ -19,7 +19,7 @@
         {
             var result = "TEQ";
             result += ConditionHelper.ToString(Condition);
-            result += "R" + Rn + ", ";
+            result += " R" + Rn + ", ";
 
             return result;
         }

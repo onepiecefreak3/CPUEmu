@@ -94,7 +94,7 @@ namespace CPUEmu
 
         public void RemoveBreakpoint(int index)
         {
-            if (_breakpoints.ContainsKey(index))
+            if (!_breakpoints.ContainsKey(index))
                 throw new KeyNotFoundException();
 
             _breakpoints.Remove(index);
@@ -104,7 +104,7 @@ namespace CPUEmu
 
         public void DisableBreakpoint(int index)
         {
-            if (_breakpoints.ContainsKey(index))
+            if (!_breakpoints.ContainsKey(index))
                 throw new KeyNotFoundException();
 
             _breakpoints[index] = false;
@@ -114,7 +114,7 @@ namespace CPUEmu
 
         public void EnableBreakpoint(int index)
         {
-            if (_breakpoints.ContainsKey(index))
+            if (!_breakpoints.ContainsKey(index))
                 throw new KeyNotFoundException();
 
             _breakpoints[index] = true;

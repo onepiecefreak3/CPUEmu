@@ -13,12 +13,14 @@ namespace CPUEmu.Defaults
             _textBox = textBox;
         }
 
-        public void Log(string message)
+        public void Log(LogLevel logLevel, string message)
         {
             if (_textBox.InvokeRequired)
-                _textBox.Invoke(new MethodInvoker(() => { Log(message); }));
+                _textBox.Invoke(new MethodInvoker(() => { Log(logLevel, message); }));
             else
-                _textBox.Text += message + Environment.NewLine;
+            {
+                _textBox.Text += $@"[{logLevel}] " + message + Environment.NewLine;
+            }
         }
 
         public void Dispose()

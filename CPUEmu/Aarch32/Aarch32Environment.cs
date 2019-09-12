@@ -25,10 +25,12 @@ namespace CPUEmu.Aarch32
         private void ResetInternal(int memorySizeInBytes, int payloadAddress, int stackAddress, int stackSize)
         {
             CpuState?.Dispose();
-            MemoryMap?.Dispose();
 
-            CpuState = new Aarch32CpuState();
-            MemoryMap = new LittleEndianMemoryMap(memorySizeInBytes);
+            CpuState = new Aarch32CpuState((uint)stackAddress);
+            if (MemoryMap == null)
+                MemoryMap = new LittleEndianMemoryMap(memorySizeInBytes);
+            else
+                MemoryMap.Clear();
             PayloadAddress = payloadAddress;
             StackAddress = stackAddress;
             StackSize = stackSize;

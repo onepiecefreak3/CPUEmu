@@ -7,12 +7,19 @@ using CPUEmu.Interfaces;
 
 namespace CPUEmu.Assemblies
 {
-    [Export(typeof(IAssemblyAdapter))]
+    [UniqueIdentifier("TestArm")]
     class TestArmAssemblyAdapter : IAssemblyAdapter
     {
+        private ILogger _logger;
+
         public IList<IInstruction> Instructions { get; private set; }
         public IEnvironment Environment { get; private set; }
         public Executor Executor { get; private set; }
+
+        public TestArmAssemblyAdapter(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         public bool Identify(Stream file)
         {
@@ -30,7 +37,7 @@ namespace CPUEmu.Assemblies
             var startPosition = file.Position;
             file.Position = startPosition + 4;
 
-            Instructions = Aarch32ArchitectureParser.Parse(file);
+            Instructions = Aarch32ArchitectureParser.Parse(file,_logger);
 
             var env = new Aarch32Environment(500 * 1024 * 1024, 0x100000, 0x1000000, 0x100000);
 
