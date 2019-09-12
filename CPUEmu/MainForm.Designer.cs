@@ -1,4 +1,7 @@
-﻿namespace CPUEmu
+﻿using System.Drawing;
+using Be.Windows.Forms;
+
+namespace CPUEmu
 {
     partial class MainForm
     {
@@ -38,19 +41,19 @@
             this.btnStop = new System.Windows.Forms.Button();
             this.txtFlags = new System.Windows.Forms.TextBox();
             this.txtRegs = new System.Windows.Forms.TextBox();
-            this.txtDisassembly = new CPUEmu.CodingListBox();
             this.timDisassembly = new System.Windows.Forms.Timer(this.components);
             this.timTable = new System.Windows.Forms.Timer(this.components);
             this.timExecution = new System.Windows.Forms.Timer(this.components);
             this.btnStartExecution = new System.Windows.Forms.Button();
             this.btnResume = new System.Windows.Forms.Button();
+            this.txtDisassembly = new CPUEmu.CodingListBox();
+            this.hexBox = new Be.Windows.Forms.HexBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtlog
             // 
-            this.txtlog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.txtlog.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.txtlog.BackColor = System.Drawing.Color.Black;
             this.txtlog.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtlog.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(65)))));
@@ -58,7 +61,7 @@
             this.txtlog.Name = "txtlog";
             this.txtlog.ReadOnly = true;
             this.txtlog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.txtlog.Size = new System.Drawing.Size(309, 334);
+            this.txtlog.Size = new System.Drawing.Size(309, 335);
             this.txtlog.TabIndex = 0;
             this.txtlog.Text = "";
             // 
@@ -98,6 +101,7 @@
             // 
             // btnAbort
             // 
+            this.btnAbort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAbort.Enabled = false;
             this.btnAbort.Location = new System.Drawing.Point(346, 59);
             this.btnAbort.Name = "btnAbort";
@@ -109,6 +113,7 @@
             // 
             // btnStop
             // 
+            this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnStop.Enabled = false;
             this.btnStop.Location = new System.Drawing.Point(503, 30);
             this.btnStop.Name = "btnStop";
@@ -120,7 +125,8 @@
             // 
             // txtFlags
             // 
-            this.txtFlags.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtFlags.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtFlags.Enabled = false;
             this.txtFlags.ForeColor = System.Drawing.Color.Black;
             this.txtFlags.Location = new System.Drawing.Point(233, 27);
@@ -132,7 +138,7 @@
             // 
             // txtRegs
             // 
-            this.txtRegs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.txtRegs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtRegs.Enabled = false;
             this.txtRegs.ForeColor = System.Drawing.Color.Black;
@@ -140,8 +146,40 @@
             this.txtRegs.Multiline = true;
             this.txtRegs.Name = "txtRegs";
             this.txtRegs.ReadOnly = true;
-            this.txtRegs.Size = new System.Drawing.Size(108, 234);
+            this.txtRegs.Size = new System.Drawing.Size(108, 235);
             this.txtRegs.TabIndex = 6;
+            // 
+            // timDisassembly
+            // 
+            this.timDisassembly.Interval = 40;
+            // 
+            // timTable
+            // 
+            this.timTable.Interval = 16;
+            // 
+            // btnStartExecution
+            // 
+            this.btnStartExecution.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnStartExecution.Enabled = false;
+            this.btnStartExecution.Location = new System.Drawing.Point(347, 30);
+            this.btnStartExecution.Name = "btnStartExecution";
+            this.btnStartExecution.Size = new System.Drawing.Size(150, 23);
+            this.btnStartExecution.TabIndex = 13;
+            this.btnStartExecution.Text = "Start Execution";
+            this.btnStartExecution.UseVisualStyleBackColor = true;
+            this.btnStartExecution.Click += new System.EventHandler(this.BtnStartExecution_Click);
+            // 
+            // btnResume
+            // 
+            this.btnResume.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnResume.Enabled = false;
+            this.btnResume.Location = new System.Drawing.Point(503, 59);
+            this.btnResume.Name = "btnResume";
+            this.btnResume.Size = new System.Drawing.Size(153, 23);
+            this.btnResume.TabIndex = 14;
+            this.btnResume.Text = "Resume Execution";
+            this.btnResume.UseVisualStyleBackColor = true;
+            this.btnResume.Click += new System.EventHandler(this.BtnResume_Click);
             // 
             // txtDisassembly
             // 
@@ -164,41 +202,28 @@
             this.txtDisassembly.BreakpointEnabled += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointEnabled);
             this.txtDisassembly.BreakpointDisabled += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointDisabled);
             // 
-            // timDisassembly
+            // hexBox
             // 
-            this.timDisassembly.Interval = 40;
-            // 
-            // timTable
-            // 
-            this.timTable.Interval = 16;
-            // 
-            // btnStartExecution
-            // 
-            this.btnStartExecution.Enabled = false;
-            this.btnStartExecution.Location = new System.Drawing.Point(347, 30);
-            this.btnStartExecution.Name = "btnStartExecution";
-            this.btnStartExecution.Size = new System.Drawing.Size(150, 23);
-            this.btnStartExecution.TabIndex = 13;
-            this.btnStartExecution.Text = "Start Execution";
-            this.btnStartExecution.UseVisualStyleBackColor = true;
-            this.btnStartExecution.Click += new System.EventHandler(this.BtnStartExecution_Click);
-            // 
-            // btnResume
-            // 
-            this.btnResume.Enabled = false;
-            this.btnResume.Location = new System.Drawing.Point(503, 59);
-            this.btnResume.Name = "btnResume";
-            this.btnResume.Size = new System.Drawing.Size(153, 23);
-            this.btnResume.TabIndex = 14;
-            this.btnResume.Text = "Resume Execution";
-            this.btnResume.UseVisualStyleBackColor = true;
-            this.btnResume.Click += new System.EventHandler(this.BtnResume_Click);
+            this.hexBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.hexBox.ColumnInfoVisible = true;
+            this.hexBox.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.hexBox.LineInfoVisible = true;
+            this.hexBox.Location = new System.Drawing.Point(12, 429);
+            this.hexBox.Name = "hexBox";
+            this.hexBox.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
+            this.hexBox.Size = new System.Drawing.Size(644, 193);
+            this.hexBox.StringViewVisible = true;
+            this.hexBox.TabIndex = 15;
+            this.hexBox.VScrollBarVisible = true;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(668, 434);
+            this.ClientSize = new System.Drawing.Size(668, 634);
+            this.Controls.Add(this.hexBox);
             this.Controls.Add(this.txtDisassembly);
             this.Controls.Add(this.btnResume);
             this.Controls.Add(this.btnStartExecution);
@@ -236,6 +261,7 @@
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private CodingListBox txtDisassembly;
         private System.Windows.Forms.Button btnResume;
+        private HexBox hexBox;
     }
 }
 

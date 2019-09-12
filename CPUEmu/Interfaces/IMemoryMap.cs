@@ -1,4 +1,5 @@
 ﻿using System;
+using Be.Windows.Forms;
 
 namespace CPUEmu.Interfaces
 {

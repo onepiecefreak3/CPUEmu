@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
+using Be.Windows.Forms;
 using CPUEmu.Defaults;
 using CPUEmu.Interfaces;
 
@@ -91,6 +92,8 @@ namespace CPUEmu
         private void LoadAdapter()
         {
             _adapter.Load(_currentFileStream);
+            hexBox.ByteProvider = new MemoryMapByteProvider(_adapter.Environment.MemoryMap);
+            hexBox.Refresh();
             SetupExecutorEvents();
         }
 
@@ -187,6 +190,7 @@ namespace CPUEmu
                 btnStop.Enabled = false;
                 btnResume.Enabled = false;
                 btnAbort.Enabled = false;
+                hexBox.Refresh();
             }
         }
 
@@ -199,6 +203,7 @@ namespace CPUEmu
                 btnStop.Enabled = false;
                 btnResume.Enabled = true;
                 btnAbort.Enabled = true;
+                hexBox.Refresh();
             }
         }
 
@@ -212,6 +217,7 @@ namespace CPUEmu
                 btnStop.Enabled = false;
                 btnResume.Enabled = false;
                 btnAbort.Enabled = false;
+                hexBox.Refresh();
             }
         }
 
