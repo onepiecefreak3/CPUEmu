@@ -245,7 +245,7 @@ namespace CPUEmu
             SolidBrush backgroundBrush;
 
             // Mark current instruction that gets executed
-            if (CurrentInstructionIndex > 0 &&
+            if (CurrentInstructionIndex >= 0 &&
                 CurrentInstructionIndex == absoluteIndex &&
                 CurrentInstructionIndex >= TopIndex &&
                 CurrentInstructionIndex - TopIndex < Height / ItemHeight)

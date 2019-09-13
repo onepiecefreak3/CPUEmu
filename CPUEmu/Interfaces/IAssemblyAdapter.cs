@@ -13,5 +13,7 @@ namespace CPUEmu.Interfaces
         bool Identify(Stream file);
 
         void Load(Stream file);
+
+        void InitializeMemoryMap(Stream file);
     }
 }

@@ -109,6 +109,7 @@ namespace CPUEmu
         private void Reset()
         {
             Environment.Reset();
+            CurrentInstruction = null;
             ResetInternal();
         }
 

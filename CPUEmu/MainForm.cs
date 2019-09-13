@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
-using Be.Windows.Forms;
 using CPUEmu.Defaults;
 using CPUEmu.Interfaces;
 
@@ -17,14 +16,6 @@ namespace CPUEmu
         private IAssemblyAdapter _adapter;
         private string _currentFileName;
         private Stream _currentFileStream;
-
-        private const int LineSpacingInTwips_ = 210;
-
-        private static double TwipsToPixel(int twips) => (int)(twips / 14.9999999999);
-
-        private int _breakPointSize => Math.Max(1, (int)TwipsToPixel(LineSpacingInTwips_) - 3);
-        private Color _breakPointColor = Color.Red;
-        private Color _currentInstructionColor = Color.Yellow;
 
         public MainForm()
         {
@@ -92,8 +83,11 @@ namespace CPUEmu
         private void LoadAdapter()
         {
             _adapter.Load(_currentFileStream);
+            _adapter.InitializeMemoryMap(_currentFileStream);
+
             hexBox.ByteProvider = new MemoryMapByteProvider(_adapter.Environment.MemoryMap);
             hexBox.Refresh();
+
             SetupExecutorEvents();
         }
 
@@ -131,7 +125,7 @@ namespace CPUEmu
             else
             {
                 txtFlags.Text = string.Join(Environment.NewLine, _adapter.Environment.CpuState.GetFlags());
-                txtRegs.Text = string.Join(Environment.NewLine, _adapter.Environment.CpuState.GetRegisters());
+                txtRegs.Text = string.Join(Environment.NewLine, _adapter.Environment.CpuState.GetRegisters().Select(x => $"[{x.Key},{x.Value:X8}]"));
             }
         }
 
@@ -141,6 +135,11 @@ namespace CPUEmu
                 txtDisassembly.Invoke(new MethodInvoker(() => SetCurrentInstruction(index)));
             else
                 txtDisassembly.SetCurrentInstructionIndex(index);
+        }
+
+        private long GetAbsolutePosition()
+        {
+            return hexBox.CurrentPositionInLine - 1 + (hexBox.CurrentLine - 1) * hexBox.BytesPerLine;
         }
 
         #endregion
@@ -177,6 +176,7 @@ namespace CPUEmu
                 btnStop.Enabled = true;
                 btnResume.Enabled = false;
                 btnAbort.Enabled = true;
+                hexBox.ReadOnly = false;
             }
         }
 
@@ -191,6 +191,7 @@ namespace CPUEmu
                 btnResume.Enabled = false;
                 btnAbort.Enabled = false;
                 hexBox.Refresh();
+                hexBox.ReadOnly = true;
             }
         }
 
@@ -210,7 +211,7 @@ namespace CPUEmu
         private void SetupUiExecutionAborted()
         {
             if (btnStartExecution.InvokeRequired)
-                btnStartExecution.Invoke(new MethodInvoker(SetupUiExecutionHalted));
+                btnStartExecution.Invoke(new MethodInvoker(SetupUiExecutionAborted));
             else
             {
                 btnStartExecution.Enabled = true;
@@ -218,6 +219,7 @@ namespace CPUEmu
                 btnResume.Enabled = false;
                 btnAbort.Enabled = false;
                 hexBox.Refresh();
+                hexBox.ReadOnly = true;
             }
         }
 
@@ -334,6 +336,34 @@ namespace CPUEmu
         private void TxtDisassembly_BreakpointRemoved(object sender, IndexEventArgs e)
         {
             _adapter?.Executor.RemoveBreakpoint(_adapter.Instructions[e.AbsoluteIndex]);
+        }
+
+        private void HexBox_CurrentLineChanged(object sender, EventArgs e)
+        {
+            bytePositionTxt.Text = GetAbsolutePosition().ToString("X8");
+        }
+
+        private void HexBox_CurrentPositionInLineChanged(object sender, EventArgs e)
+        {
+            bytePositionTxt.Text = GetAbsolutePosition().ToString("X8");
+        }
+
+        private void BytePositionTxt_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Return)
+            {
+                if (int.TryParse(bytePositionTxt.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+                    out var position))
+                {
+                    bytePositionTxt.Text = position.ToString("X8");
+                    hexBox.ScrollByteIntoView(position + 1);
+                }
+            }
+        }
+
+        private void HexBox_ByteProviderChanged(object sender, EventArgs e)
+        {
+            bytePositionTxt.Enabled = bytePositionTxt.Visible = hexBox.ByteProvider != null;
         }
 
         #endregion

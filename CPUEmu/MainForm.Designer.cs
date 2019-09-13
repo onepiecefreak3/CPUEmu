@@ -46,8 +46,9 @@ namespace CPUEmu
             this.timExecution = new System.Windows.Forms.Timer(this.components);
             this.btnStartExecution = new System.Windows.Forms.Button();
             this.btnResume = new System.Windows.Forms.Button();
-            this.txtDisassembly = new CPUEmu.CodingListBox();
             this.hexBox = new Be.Windows.Forms.HexBox();
+            this.bytePositionTxt = new System.Windows.Forms.TextBox();
+            this.txtDisassembly = new CPUEmu.CodingListBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -181,6 +182,36 @@ namespace CPUEmu
             this.btnResume.UseVisualStyleBackColor = true;
             this.btnResume.Click += new System.EventHandler(this.BtnResume_Click);
             // 
+            // hexBox
+            // 
+            this.hexBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.hexBox.ColumnInfoVisible = true;
+            this.hexBox.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.hexBox.LineInfoVisible = true;
+            this.hexBox.Location = new System.Drawing.Point(12, 429);
+            this.hexBox.Name = "hexBox";
+            this.hexBox.ReadOnly = true;
+            this.hexBox.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
+            this.hexBox.Size = new System.Drawing.Size(644, 193);
+            this.hexBox.StringViewVisible = true;
+            this.hexBox.TabIndex = 15;
+            this.hexBox.VScrollBarVisible = true;
+            this.hexBox.ByteProviderChanged += new System.EventHandler(this.HexBox_ByteProviderChanged);
+            this.hexBox.CurrentLineChanged += new System.EventHandler(this.HexBox_CurrentLineChanged);
+            this.hexBox.CurrentPositionInLineChanged += new System.EventHandler(this.HexBox_CurrentPositionInLineChanged);
+            // 
+            // bytePositionTxt
+            // 
+            this.bytePositionTxt.Enabled = false;
+            this.bytePositionTxt.Location = new System.Drawing.Point(12, 429);
+            this.bytePositionTxt.Name = "bytePositionTxt";
+            this.bytePositionTxt.Size = new System.Drawing.Size(63, 20);
+            this.bytePositionTxt.TabIndex = 16;
+            this.bytePositionTxt.Visible = false;
+            this.bytePositionTxt.KeyUp += new System.Windows.Forms.KeyEventHandler(this.BytePositionTxt_KeyUp);
+            // 
             // txtDisassembly
             // 
             this.txtDisassembly.BreakpointAreaWidth = 17;
@@ -202,27 +233,12 @@ namespace CPUEmu
             this.txtDisassembly.BreakpointEnabled += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointEnabled);
             this.txtDisassembly.BreakpointDisabled += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointDisabled);
             // 
-            // hexBox
-            // 
-            this.hexBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.hexBox.ColumnInfoVisible = true;
-            this.hexBox.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.hexBox.LineInfoVisible = true;
-            this.hexBox.Location = new System.Drawing.Point(12, 429);
-            this.hexBox.Name = "hexBox";
-            this.hexBox.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
-            this.hexBox.Size = new System.Drawing.Size(644, 193);
-            this.hexBox.StringViewVisible = true;
-            this.hexBox.TabIndex = 15;
-            this.hexBox.VScrollBarVisible = true;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(668, 634);
+            this.Controls.Add(this.bytePositionTxt);
             this.Controls.Add(this.hexBox);
             this.Controls.Add(this.txtDisassembly);
             this.Controls.Add(this.btnResume);
@@ -262,6 +278,7 @@ namespace CPUEmu
         private CodingListBox txtDisassembly;
         private System.Windows.Forms.Button btnResume;
         private HexBox hexBox;
+        private System.Windows.Forms.TextBox bytePositionTxt;
     }
 }
 
