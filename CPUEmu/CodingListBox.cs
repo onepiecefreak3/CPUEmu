@@ -75,11 +75,25 @@ namespace CPUEmu
 
         public void SetCurrentInstructionIndex(int index)
         {
+            // Remember old and new instruction index
             var previousCurrentInstruction = CurrentInstructionIndex;
             CurrentInstructionIndex = index;
+
+            // Redraw previous item if index changed
             if (CurrentInstructionIndex != previousCurrentInstruction)
                 RedrawItem(previousCurrentInstruction);
+
+            // Jump list content to current instruction as top instruction
+            SetTopIndex(index);
+
+            // Redraw current instruction item
             RedrawItem(index);
+        }
+
+        private void SetTopIndex(int index)
+        {
+            var newTopIndex = Math.Max(0, Math.Min(index, Items.Count - 1 - Height / ItemHeight));
+            TopIndex = newTopIndex;
         }
 
         public void AddBreakpoint(int index)
@@ -179,6 +193,8 @@ namespace CPUEmu
 
             // Breakpoint area
             DrawBreakpointArea(e, absoluteLine);
+
+            // Text lines
             DrawTextLine(e, absoluteLine);
 
             e.DrawFocusRectangle();

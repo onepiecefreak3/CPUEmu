@@ -219,6 +219,7 @@ namespace CPUEmu
             btnStop.Enabled = false;
             btnAbort.Enabled = false;
             btnResume.Enabled = false;
+            btnStep.Enabled = false;
 
             hexBox.ByteProvider = new MemoryMapByteProvider(_executionEnvironment.MemoryMap);
             hexBox.Refresh();
@@ -234,6 +235,7 @@ namespace CPUEmu
                 btnStop.Enabled = true;
                 btnResume.Enabled = false;
                 btnAbort.Enabled = true;
+                btnStep.Enabled = false;
                 hexBox.ReadOnly = false;
             }
         }
@@ -248,6 +250,8 @@ namespace CPUEmu
                 btnStop.Enabled = false;
                 btnResume.Enabled = false;
                 btnAbort.Enabled = false;
+                btnStep.Enabled = false;
+
                 hexBox.Refresh();
                 hexBox.ReadOnly = true;
             }
@@ -262,6 +266,8 @@ namespace CPUEmu
                 btnStop.Enabled = false;
                 btnResume.Enabled = true;
                 btnAbort.Enabled = true;
+                btnStep.Enabled = true;
+
                 hexBox.Refresh();
             }
         }
@@ -276,6 +282,8 @@ namespace CPUEmu
                 btnStop.Enabled = false;
                 btnResume.Enabled = false;
                 btnAbort.Enabled = false;
+                btnStep.Enabled = false;
+
                 hexBox.Refresh();
                 hexBox.ReadOnly = true;
             }
@@ -297,6 +305,7 @@ namespace CPUEmu
         {
             SetupUiExecutionAborted();
             LoadFlagsAndRegisters();
+            WriteLogLine("Aborted on instruction: " + _executor.CurrentInstruction);
             SetCurrentInstruction(-1);
             WriteLogLine("Execution aborted.");
         }
@@ -474,5 +483,10 @@ namespace CPUEmu
         }
 
         #endregion
+
+        private void BtnStep_Click(object sender, EventArgs e)
+        {
+            _executor.StepExecution();
+        }
     }
 }

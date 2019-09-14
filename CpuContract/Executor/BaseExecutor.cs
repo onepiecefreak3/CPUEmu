@@ -12,7 +12,6 @@ namespace CpuContract.Executor
         private ConcurrentDictionary<IInstruction, bool> _breakPoints;
         private IInstruction _breakPointInstruction;
 
-        private bool _doStep;
         private Thread _executionTask;
 
         protected abstract bool IsFinished { get; set; }
@@ -57,7 +56,7 @@ namespace CpuContract.Executor
 
             while (!IsFinished && !IsAborted)
             {
-                if (IsHalted && !_doStep)
+                if (IsHalted)
                 {
                     try
                     {
@@ -74,11 +73,7 @@ namespace CpuContract.Executor
                     }
                 }
 
-                if (_doStep)
-                    _doStep = false;
-
-                if (CurrentInstruction == null)
-                    SetCurrentInstruction(environment, instructions);
+                SetCurrentInstruction(environment, instructions);
                 if (_breakPointInstruction != CurrentInstruction && _breakPoints.ContainsKey(CurrentInstruction) && _breakPoints[CurrentInstruction])
                 {
                     BreakExecution(CurrentInstruction, instructions.IndexOf(CurrentInstruction));
@@ -101,7 +96,6 @@ namespace CpuContract.Executor
                 }
 
                 InstructionExecuted?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, instructions.IndexOf(CurrentInstruction)));
-                CurrentInstruction = null;
             }
 
             if (!IsAborted)
@@ -137,6 +131,11 @@ namespace CpuContract.Executor
         {
             AbortExecution(true);
             AbortThread();
+        }
+
+        public void StepExecution()
+        {
+            _executionTask.Interrupt();
         }
 
         protected void AbortExecution(bool invokeEvent)

@@ -24,6 +24,7 @@ namespace CpuContract.Executor
         void HaltExecution();
         void ResumeExecution();
         void AbortExecution();
+        void StepExecution();
 
         bool SetBreakpoint(IInstruction instructionToBreakOn);
         void DisableBreakpoint(IInstruction breakpointToDisable);

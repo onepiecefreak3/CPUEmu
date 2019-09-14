@@ -31,7 +31,6 @@ namespace CPUEmu
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.txtlog = new System.Windows.Forms.RichTextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -41,14 +40,12 @@ namespace CPUEmu
             this.btnStop = new System.Windows.Forms.Button();
             this.txtFlags = new System.Windows.Forms.TextBox();
             this.txtRegs = new System.Windows.Forms.TextBox();
-            this.timDisassembly = new System.Windows.Forms.Timer(this.components);
-            this.timTable = new System.Windows.Forms.Timer(this.components);
-            this.timExecution = new System.Windows.Forms.Timer(this.components);
             this.btnStartExecution = new System.Windows.Forms.Button();
             this.btnResume = new System.Windows.Forms.Button();
             this.hexBox = new Be.Windows.Forms.HexBox();
             this.bytePositionTxt = new System.Windows.Forms.TextBox();
             this.txtDisassembly = new CPUEmu.CodingListBox();
+            this.btnStep = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -58,11 +55,11 @@ namespace CPUEmu
             this.txtlog.BackColor = System.Drawing.Color.Black;
             this.txtlog.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtlog.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(255)))), ((int)(((byte)(65)))));
-            this.txtlog.Location = new System.Drawing.Point(347, 88);
+            this.txtlog.Location = new System.Drawing.Point(347, 117);
             this.txtlog.Name = "txtlog";
             this.txtlog.ReadOnly = true;
             this.txtlog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.txtlog.Size = new System.Drawing.Size(309, 335);
+            this.txtlog.Size = new System.Drawing.Size(309, 306);
             this.txtlog.TabIndex = 0;
             this.txtlog.Text = "";
             // 
@@ -74,7 +71,7 @@ namespace CPUEmu
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(668, 24);
             this.menuStrip1.TabIndex = 1;
-            this.menuStrip1.Text = "menuStrip1";
+            this.menuStrip1.Text = "mainMenuStrip";
             // 
             // fileToolStripMenuItem
             // 
@@ -149,14 +146,6 @@ namespace CPUEmu
             this.txtRegs.ReadOnly = true;
             this.txtRegs.Size = new System.Drawing.Size(108, 235);
             this.txtRegs.TabIndex = 6;
-            // 
-            // timDisassembly
-            // 
-            this.timDisassembly.Interval = 40;
-            // 
-            // timTable
-            // 
-            this.timTable.Interval = 16;
             // 
             // btnStartExecution
             // 
@@ -233,12 +222,25 @@ namespace CPUEmu
             this.txtDisassembly.BreakpointEnabled += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointEnabled);
             this.txtDisassembly.BreakpointDisabled += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointDisabled);
             // 
+            // btnStep
+            // 
+            this.btnStep.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnStep.Enabled = false;
+            this.btnStep.Location = new System.Drawing.Point(346, 88);
+            this.btnStep.Name = "btnStep";
+            this.btnStep.Size = new System.Drawing.Size(310, 23);
+            this.btnStep.TabIndex = 17;
+            this.btnStep.Text = "Step Execution";
+            this.btnStep.UseVisualStyleBackColor = true;
+            this.btnStep.Click += new System.EventHandler(this.BtnStep_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(668, 634);
             this.Controls.Add(this.bytePositionTxt);
+            this.Controls.Add(this.btnStep);
             this.Controls.Add(this.hexBox);
             this.Controls.Add(this.txtDisassembly);
             this.Controls.Add(this.btnResume);
@@ -270,15 +272,13 @@ namespace CPUEmu
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.TextBox txtFlags;
         private System.Windows.Forms.TextBox txtRegs;
-        private System.Windows.Forms.Timer timDisassembly;
-        private System.Windows.Forms.Timer timTable;
-        private System.Windows.Forms.Timer timExecution;
         private System.Windows.Forms.Button btnStartExecution;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private CodingListBox txtDisassembly;
         private System.Windows.Forms.Button btnResume;
         private HexBox hexBox;
         private System.Windows.Forms.TextBox bytePositionTxt;
+        private System.Windows.Forms.Button btnStep;
     }
 }
 
