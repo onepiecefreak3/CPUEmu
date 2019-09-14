@@ -19,8 +19,17 @@ namespace adapter_arm32Test
 
         public void Reset()
         {
-            CpuState.SetRegister("PC",MemoryMap.Payload.Address);
+            CpuState.SetRegister("PC", MemoryMap.Payload.Address);
             CpuState.SetRegister("SP", MemoryMap.Stack.Address);
+
+            for (int i = 0; i < 13; i++)
+                CpuState.SetRegister("R" + i, 0);
+            CpuState.SetRegister("LR", 0);
+
+            CpuState.SetFlag("C",false);
+            CpuState.SetFlag("N", false);
+            CpuState.SetFlag("V", false);
+            CpuState.SetFlag("Z", false);
         }
 
         public void Dispose()

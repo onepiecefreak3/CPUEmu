@@ -82,7 +82,10 @@ namespace assembly_aarch32
         public void SetRegister(string register, object value)
         {
             if (Regex.IsMatch(register, "R\\d+"))
+            {
                 Registers[Convert.ToInt32(register.Substring(1))] = Convert.ToUInt32(value);
+                return;
+            }
 
             switch (register)
             {

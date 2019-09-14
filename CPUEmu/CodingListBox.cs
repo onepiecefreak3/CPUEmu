@@ -92,7 +92,7 @@ namespace CPUEmu
 
         private void SetTopIndex(int index)
         {
-            var newTopIndex = Math.Max(0, Math.Min(index, Items.Count - 1 - Height / ItemHeight));
+            var newTopIndex = Math.Max(0, Math.Min(index, Items.Count - Height / ItemHeight));
             TopIndex = newTopIndex;
         }
 

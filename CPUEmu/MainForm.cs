@@ -223,6 +223,8 @@ namespace CPUEmu
 
             hexBox.ByteProvider = new MemoryMapByteProvider(_executionEnvironment.MemoryMap);
             hexBox.Refresh();
+
+            LoadFlagsAndRegisters();
         }
 
         private void SetupUiExecutionStart()
@@ -359,6 +361,7 @@ namespace CPUEmu
                 _currentFileName = fileStream.Name;
                 _currentFileStream = fileStream;
 
+                _executionEnvironment.Reset();
                 SetupUiOpenFile();
                 SetupExecutorEvents();
 
