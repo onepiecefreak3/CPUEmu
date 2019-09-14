@@ -1,14 +1,14 @@
 ﻿using System;
 using Be.Windows.Forms;
-using CPUEmu.Interfaces;
+using CpuContract.Memory;
 
 namespace CPUEmu.Defaults
 {
     class MemoryMapByteProvider : IByteProvider
     {
-        private readonly IMemoryMap _memoryMap;
+        private readonly BaseMemoryMap _memoryMap;
 
-        public MemoryMapByteProvider(IMemoryMap memoryMap)
+        public MemoryMapByteProvider(BaseMemoryMap memoryMap)
         {
             _memoryMap = memoryMap;
         }

@@ -1,9 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUEmu", "CPUEmu\CPUEmu.csproj", "{927D6B90-5088-48D8-8A8D-D43FB166E495}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "assembly_aarch32", "plugins\assembly_aarch32\assembly_aarch32.csproj", "{DF648315-0904-4161-844B-7A50B2CF4007}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CpuContract", "CpuContract\CpuContract.csproj", "{8AEF7830-964A-4BEA-B2EC-8B9CC46388DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "adapter_arm32Test", "plugins\adapter_arm32Test\adapter_arm32Test.csproj", "{DC5A2748-ABB2-4E79-8B38-BB7292309473}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{3C3D7B3D-F322-43D2-8FEF-E99A047B0BF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +23,25 @@ Global
 		{927D6B90-5088-48D8-8A8D-D43FB166E495}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{927D6B90-5088-48D8-8A8D-D43FB166E495}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{927D6B90-5088-48D8-8A8D-D43FB166E495}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF648315-0904-4161-844B-7A50B2CF4007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF648315-0904-4161-844B-7A50B2CF4007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF648315-0904-4161-844B-7A50B2CF4007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF648315-0904-4161-844B-7A50B2CF4007}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AEF7830-964A-4BEA-B2EC-8B9CC46388DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AEF7830-964A-4BEA-B2EC-8B9CC46388DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AEF7830-964A-4BEA-B2EC-8B9CC46388DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AEF7830-964A-4BEA-B2EC-8B9CC46388DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC5A2748-ABB2-4E79-8B38-BB7292309473}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC5A2748-ABB2-4E79-8B38-BB7292309473}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC5A2748-ABB2-4E79-8B38-BB7292309473}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC5A2748-ABB2-4E79-8B38-BB7292309473}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DF648315-0904-4161-844B-7A50B2CF4007} = {3C3D7B3D-F322-43D2-8FEF-E99A047B0BF3}
+		{DC5A2748-ABB2-4E79-8B38-BB7292309473} = {3C3D7B3D-F322-43D2-8FEF-E99A047B0BF3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1FE64A0E-AC64-4CC8-8232-C1342C62DA0E}

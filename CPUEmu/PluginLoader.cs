@@ -1,64 +1,88 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
-using CPUEmu.Interfaces;
+using CpuContract;
+using CpuContract.Attributes;
+using CpuContract.DependencyInjection;
+using CpuContract.Executor;
+using CpuContract.Logging;
+using CPUEmu.ServiceProviders;
 
 namespace CPUEmu
 {
     class PluginLoader
     {
         private WindsorContainer _container;
-        private ILogger _logger;
-        private (Type, UniqueIdentifierAttribute)[] _assemblyAdapters;
+        private IList<object> _serviceProviders;
 
-        private Type _currentLoggerType;
+        public string PluginFolder { get; }
 
-        private static readonly Lazy<PluginLoader> Lazy = new Lazy<PluginLoader>(() => new PluginLoader());
-        public static PluginLoader Instance => Lazy.Value;
-
-        public PluginLoader()
+        public PluginLoader(ILogger logger, string pluginFolder)
         {
+            PluginFolder = pluginFolder;
+
             _container = new WindsorContainer();
+            _serviceProviders = new List<object>();
+            RegisterServices();
 
-            RegisterAdapters();
-
-            _container.Register(Component.For<ILogger>().UsingFactoryMethod(CreateLogger));
+            _container.Register(Component.For<ILogger>().Instance(logger));
         }
 
-        public void SetLogger(ILogger logger)
+        public IServiceProvider<TService> GetServiceProvider<TService>()
         {
-            _logger = logger;
+            var serviceProvider = _serviceProviders.FirstOrDefault(x => x is IServiceProvider<TService>);
+
+            return (IServiceProvider<TService>)serviceProvider;
         }
 
-        public IAssemblyAdapter CreateAssemblyAdapter(string assemblyAdapterId)
+        private void RegisterServices()
         {
-            if (_assemblyAdapters.All(x => x.Item2.UniqueIdentifier != assemblyAdapterId))
-                throw new InvalidOperationException($"Unknown assemblyAdapterId '{assemblyAdapterId}'.");
+            // Gather all assemblies
+            var assemblies = GetAssemblies();
 
-            var assemblyType = _assemblyAdapters.First(x => x.Item2.UniqueIdentifier == assemblyAdapterId).Item1;
-            return (IAssemblyAdapter)_container.Resolve(assemblyType);
+            // Register service providers
+            RegisterServiceProvider<IAssemblyAdapter>(assemblies);
+            RegisterServiceProvider<IExecutor>(assemblies);
+            RegisterServiceProvider<ICpuState>(assemblies);
+            RegisterServiceProvider<IInterruptBroker>(assemblies);
+            RegisterServiceProvider<IArchitectureParser>(assemblies);
         }
 
-        private void RegisterAdapters()
+        private Assembly[] GetAssemblies()
         {
-            _assemblyAdapters = typeof(PluginLoader).Assembly.GetTypes()
-                .Where(x => x.IsClass && typeof(IAssemblyAdapter).IsAssignableFrom(x))
-                .Where(x => x.GetCustomAttribute(typeof(UniqueIdentifierAttribute)) != null)
-                .Select(x => (x, x.GetCustomAttribute<UniqueIdentifierAttribute>()))
+            return Directory.GetFiles(PluginFolder, "*.dll", SearchOption.AllDirectories)
+                .Select(x => Assembly.LoadFile(Path.GetFullPath(x)))
+                .Concat(new[] { Assembly.GetAssembly(typeof(PluginLoader)) })
                 .ToArray();
-
-            foreach (var assemblyAdapter in _assemblyAdapters)
-            {
-                _container.Register(Component.For(assemblyAdapter.Item1));
-            }
         }
 
-        private ILogger CreateLogger()
+        private void RegisterServiceProvider<TService>(Assembly[] assemblies)
         {
-            return _logger;
+            var types = GetTypes<TService>(assemblies);
+
+            // Register service provider
+            var serviceProvider = new DefaultServiceProvider<TService>(_container, types);
+            _serviceProviders.Add(serviceProvider);
+            _container.Register(Component.For(typeof(IServiceProvider<TService>)).
+                Instance(serviceProvider));
+
+            // Register types themselves
+            foreach (var type in types)
+                _container.Register(Component.For(type.Item2));
+        }
+
+        private (string, Type)[] GetTypes<TService>(Assembly[] assemblies)
+        {
+            var types = assemblies.SelectMany(x => x.GetExportedTypes())
+                .Where(type => typeof(TService).IsAssignableFrom(type) && type.IsClass)
+                .Where(type => type.GetCustomAttribute<UniqueIdentifierAttribute>() != null);
+
+            return types.Select(type => (type.GetCustomAttribute<UniqueIdentifierAttribute>().UniqueIdentifier, type))
+                .ToArray();
         }
     }
 }

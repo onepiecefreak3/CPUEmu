@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\dist\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,7 +28,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\dist\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -74,71 +74,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Aarch32\Aarch32ArchitectureParser.cs" />
-    <Compile Include="Aarch32\Aarch32CpuState.cs" />
-    <Compile Include="Aarch32\Aarch32Environment.cs" />
-    <Compile Include="Aarch32\Aarch32Executor.cs" />
-    <Compile Include="Aarch32\BarrelShifter.cs" />
-    <Compile Include="Aarch32\ConditionHelper.cs" />
-    <Compile Include="Aarch32\Exceptions\UndefinedInstructionException.cs" />
-    <Compile Include="Aarch32\Exceptions\UnknownConditionException.cs" />
-    <Compile Include="Aarch32\Exceptions\UnknownShiftTypeException.cs" />
-    <Compile Include="Aarch32\Instructions\BlockDataTransferInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingAdcInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingAddInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingAndInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingBicInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingCmnInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingCmpInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingEorInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\Branch\BranchInstruction.cs" />
-    <Compile Include="Aarch32\Factories\DataProcessingInstructionFactory.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingMovInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingMvnInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingOrrInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingRsbInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingRscInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingSbcInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingSubInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingTeqInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\DataProcessing\DataProcessingTstInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\SingleDataTransferInstruction.cs" />
-    <Compile Include="Aarch32\Instructions\SvcInstruction.cs" />
-    <Compile Include="Aarch32\InstructionType.cs" />
-    <Compile Include="Aarch32\ShiftType.cs" />
-    <Compile Include="Assemblies\TestArmAssemblyAdapter.cs" />
     <Compile Include="CodingListBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Defaults\BigEndianMemoryMap.cs" />
     <Compile Include="Defaults\DefaultInterruptBroker.cs" />
     <Compile Include="Defaults\DefaultLogger.cs" />
-    <Compile Include="Defaults\DefaultMemoryMap.cs" />
-    <Compile Include="Defaults\LittleEndianMemoryMap.cs" />
     <Compile Include="Defaults\MemoryMapByteProvider.cs" />
-    <Compile Include="Executor.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IndexEventArgs.cs" />
-    <Compile Include="InstructionExecuteEventArgs.cs" />
-    <Compile Include="Interfaces\ILogger.cs" />
-    <Compile Include="Interfaces\LogLevel.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Interfaces\IAssemblyAdapter.cs" />
-    <Compile Include="Interfaces\ICpuState.cs" />
-    <Compile Include="Interfaces\IEnvironment.cs" />
-    <Compile Include="Interfaces\IInstruction.cs" />
-    <Compile Include="Interfaces\IInterruptBroker.cs" />
-    <Compile Include="Interfaces\IMemoryMap.cs" />
     <Compile Include="PluginLoader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UniqueIdentifierAttribute.cs" />
+    <Compile Include="ServiceProviders\DefaultServiceProvider.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -167,7 +120,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="80386\" />
-    <Folder Include="Abstracts\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CpuContract\CpuContract.csproj">
+      <Project>{8aef7830-964a-4bea-b2ec-8b9cc46388da}</Project>
+      <Name>CpuContract</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

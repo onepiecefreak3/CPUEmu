@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Windows.Forms;
-using CPUEmu.Interfaces;
+using CpuContract.Logging;
 
 namespace CPUEmu.Defaults
 {
-    class DefaultLogger : ILogger
+    public class DefaultLogger : ILogger
     {
         private RichTextBox _textBox;
 

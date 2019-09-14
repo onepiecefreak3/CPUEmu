@@ -1,8 +1,11 @@
-﻿using CPUEmu.Interfaces;
+﻿using CpuContract;
+using CpuContract.Attributes;
+using CpuContract.Logging;
 
 namespace CPUEmu.Defaults
 {
-    class DefaultInterruptBroker : IInterruptBroker
+    [UniqueIdentifier("Default")]
+    public class DefaultInterruptBroker : IInterruptBroker
     {
         private ILogger _logger;
 
@@ -11,9 +14,10 @@ namespace CPUEmu.Defaults
             _logger = logger;
         }
 
-        public void Execute(int svc, IEnvironment cpuState)
+        public void Execute(int svc, IExecutionEnvironment environment)
         {
             // Do nothing
+            _logger.Log(LogLevel.Warning, $"Svc {svc} stubbed.");
         }
 
         public void Dispose()
