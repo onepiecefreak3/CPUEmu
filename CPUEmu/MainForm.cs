@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
 using System.IO;
@@ -9,11 +10,16 @@ using CpuContract.DependencyInjection;
 using CpuContract.Executor;
 using CpuContract.Logging;
 using CPUEmu.Defaults;
+using CPUEmu.Forms;
+using CPUEmu.MemoryManipulation;
 
 namespace CPUEmu
 {
     public partial class MainForm : Form
     {
+        private readonly MemoryManipulationForm _memManipulationForm;
+        private IList<IMemoryManipulation> _memoryManipulations;
+
         private readonly PluginLoader _pluginLoader;
         private readonly ILogger _logger;
 
@@ -28,6 +34,9 @@ namespace CPUEmu
         {
             InitializeComponent();
 
+            _memManipulationForm = new MemoryManipulationForm();
+            _memoryManipulations = new List<IMemoryManipulation>();
+
             _logger = new DefaultLogger(txtlog);
             _pluginLoader = new PluginLoader(_logger, "plugins");
         }
@@ -36,7 +45,16 @@ namespace CPUEmu
 
         private void StartExecution()
         {
+            // Reset environment
             _executionEnvironment.Reset();
+
+            // Manipulate memory
+            foreach (var memoryManipulation in _memoryManipulations)
+            {
+                memoryManipulation.Execute(_executionEnvironment.MemoryMap);
+            }
+
+            // Execute instructions async
             _executor.ExecuteAsync(_executionEnvironment, _instructions, 0);
         }
 
@@ -179,8 +197,11 @@ namespace CPUEmu
                 txtFlags.Invoke(new MethodInvoker(LoadFlagsAndRegisters));
             else
             {
-                txtFlags.Text = string.Join(Environment.NewLine, _executionEnvironment.CpuState.GetFlags());
-                txtRegs.Text = string.Join(Environment.NewLine, _executionEnvironment.CpuState.GetRegisters().Select(x => $"[{x.Key},{x.Value:X8}]"));
+                txtFlags.Items.Clear();
+                txtRegisters.Items.Clear();
+
+                txtFlags.Items.AddRange(_executionEnvironment.CpuState.GetFlags().Select(x => (object)new FlagRegisterItem(x.Key, x.Value)).ToArray());
+                txtRegisters.Items.AddRange(_executionEnvironment.CpuState.GetRegisters().Select(x => (object)new FlagRegisterItem(x.Key, x.Value)).ToArray());
             }
         }
 
@@ -204,8 +225,8 @@ namespace CPUEmu
         private void ResetUi()
         {
             txtlog.Clear();
-            txtFlags.Clear();
-            txtRegs.Clear();
+            txtFlags.Items.Clear();
+            txtRegisters.Items.Clear();
             txtDisassembly.Items.Clear();
 
             _executor.ResetBreakpoints();
@@ -220,6 +241,7 @@ namespace CPUEmu
             btnAbort.Enabled = false;
             btnResume.Enabled = false;
             btnStep.Enabled = false;
+            btnAddManipulation.Enabled = true;
 
             hexBox.ByteProvider = new MemoryMapByteProvider(_executionEnvironment.MemoryMap);
             hexBox.Refresh();
@@ -239,6 +261,7 @@ namespace CPUEmu
                 btnAbort.Enabled = true;
                 btnStep.Enabled = false;
                 hexBox.ReadOnly = false;
+                btnAddManipulation.Enabled = false;
             }
         }
 
@@ -253,6 +276,7 @@ namespace CPUEmu
                 btnResume.Enabled = false;
                 btnAbort.Enabled = false;
                 btnStep.Enabled = false;
+                btnAddManipulation.Enabled = true;
 
                 hexBox.Refresh();
                 hexBox.ReadOnly = true;
@@ -285,6 +309,7 @@ namespace CPUEmu
                 btnResume.Enabled = false;
                 btnAbort.Enabled = false;
                 btnStep.Enabled = false;
+                btnAddManipulation.Enabled = true;
 
                 hexBox.Refresh();
                 hexBox.ReadOnly = true;
@@ -490,6 +515,91 @@ namespace CPUEmu
         private void BtnStep_Click(object sender, EventArgs e)
         {
             _executor.StepExecution();
+        }
+
+        private void BtnAddManipulation_Click(object sender, EventArgs e)
+        {
+            if (_memManipulationForm.ShowDialog() == DialogResult.OK)
+            {
+                _memoryManipulations.Add(_memManipulationForm.CurrentMemoryManipulation);
+                manipulationTxt.AppendText(_memManipulationForm.CurrentMemoryManipulation + Environment.NewLine);
+            }
+        }
+
+        private void TxtEditFlagRegister_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // If Return was pressed
+            if (e.KeyChar == 13)
+                SetFlagRegisterValue();
+        }
+
+        private void TxtEditFlagRegister_Leave(object sender, EventArgs e)
+        {
+            SetFlagRegisterValue();
+        }
+
+        private void SetFlagRegisterValue()
+        {
+            var listBox = (ListBox)txtEditFlagRegister.Tag;
+            var flagRegisterItem = listBox.Items[listBox.SelectedIndex] as FlagRegisterItem;
+            flagRegisterItem?.SetValue(txtEditFlagRegister.Text);
+            listBox.Items[listBox.SelectedIndex] = flagRegisterItem;
+
+            if (listBox == txtFlags)
+                _executionEnvironment.CpuState.SetFlag(flagRegisterItem?.Name, flagRegisterItem?.Value);
+            if (listBox == txtRegisters)
+                _executionEnvironment.CpuState.SetRegister(flagRegisterItem?.Name, flagRegisterItem?.Value);
+
+            txtEditFlagRegister.Hide();
+        }
+
+        private void TxtFlags_DoubleClick(object sender, EventArgs e)
+        {
+            ActivateFlagRegisterEdit(sender as ListBox, 5);
+        }
+
+        private void TxtFlags_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 13)
+                ActivateFlagRegisterEdit(sender as ListBox, 5);
+        }
+
+        private void ActivateFlagRegisterEdit(ListBox listBox, int delta)
+        {
+            if (listBox.SelectedIndex < 0)
+                return;
+
+            var listBoxPosition = Point.Empty;
+            Control control = listBox;
+            while (control != this)
+            {
+                listBoxPosition = new Point(listBoxPosition.X + control.Location.X, listBoxPosition.Y + control.Location.Y);
+                control = control.Parent;
+            }
+
+            var itemSelected = listBox.SelectedIndex;
+            //var formPoint = listBox.PointToScreen(Point.Empty);
+            //formPoint = new Point(formPoint.X - Location.X, formPoint.Y - Location.Y);
+            var item = (FlagRegisterItem)listBox.Items[itemSelected];
+
+            txtEditFlagRegister.Tag = listBox;
+            txtEditFlagRegister.Location = new Point(listBoxPosition.X + delta, listBoxPosition.Y + itemSelected * listBox.ItemHeight + delta);
+            txtEditFlagRegister.Show();
+
+            txtEditFlagRegister.Text = item.Value.ToString();
+            txtEditFlagRegister.Focus();
+            txtEditFlagRegister.SelectAll();
+        }
+
+        private void TxtRegisters_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 13)
+                ActivateFlagRegisterEdit(sender as ListBox, 5);
+        }
+
+        private void TxtRegisters_DoubleClick(object sender, EventArgs e)
+        {
+            ActivateFlagRegisterEdit(sender as ListBox, 5);
         }
     }
 }

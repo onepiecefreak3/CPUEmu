@@ -81,6 +81,13 @@
     <Compile Include="Defaults\DefaultLogger.cs" />
     <Compile Include="Defaults\MemoryMapByteProvider.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="FlagRegisterItem.cs" />
+    <Compile Include="Forms\MemoryManipulation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MemoryManipulation.Designer.cs">
+      <DependentUpon>MemoryManipulation.cs</DependentUpon>
+    </Compile>
     <Compile Include="IndexEventArgs.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -88,10 +95,16 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MemoryManipulation\FileMemoryManipulation.cs" />
+    <Compile Include="MemoryManipulation\IMemoryManipulation.cs" />
+    <Compile Include="MemoryManipulation\ValueMemoryManipulation.cs" />
     <Compile Include="PluginLoader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceProviders\DefaultServiceProvider.cs" />
+    <EmbeddedResource Include="Forms\MemoryManipulation.resx">
+      <DependentUpon>MemoryManipulation.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
