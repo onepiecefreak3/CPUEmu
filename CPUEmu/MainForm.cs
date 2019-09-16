@@ -61,6 +61,7 @@ namespace CPUEmu
         private void ResumeExecution()
         {
             _executor.ResumeExecution();
+            SetupUiExecutionStart();
         }
 
         private void HaltExecution()
@@ -542,7 +543,7 @@ namespace CPUEmu
         {
             var listBox = (ListBox)txtEditFlagRegister.Tag;
             var flagRegisterItem = listBox.Items[listBox.SelectedIndex] as FlagRegisterItem;
-            flagRegisterItem?.SetValue(txtEditFlagRegister.Text);
+            flagRegisterItem?.SetValue(int.Parse(txtEditFlagRegister.Text, NumberStyles.HexNumber));
             listBox.Items[listBox.SelectedIndex] = flagRegisterItem;
 
             if (listBox == txtFlags)
@@ -578,15 +579,13 @@ namespace CPUEmu
             }
 
             var itemSelected = listBox.SelectedIndex;
-            //var formPoint = listBox.PointToScreen(Point.Empty);
-            //formPoint = new Point(formPoint.X - Location.X, formPoint.Y - Location.Y);
             var item = (FlagRegisterItem)listBox.Items[itemSelected];
 
             txtEditFlagRegister.Tag = listBox;
             txtEditFlagRegister.Location = new Point(listBoxPosition.X + delta, listBoxPosition.Y + itemSelected * listBox.ItemHeight + delta);
             txtEditFlagRegister.Show();
 
-            txtEditFlagRegister.Text = item.Value.ToString();
+            txtEditFlagRegister.Text = Convert.ToInt32(item.Value).ToString("X8");
             txtEditFlagRegister.Focus();
             txtEditFlagRegister.SelectAll();
         }

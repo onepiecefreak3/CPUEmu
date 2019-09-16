@@ -77,10 +77,6 @@ namespace assembly_aarch32.Instructions
                     cpuState.Registers[_rd] = memoryMap.ReadByte((int)baseAddress);
                 else
                     cpuState.Registers[_rd] = memoryMap.ReadUInt32((int)baseAddress);
-
-                // TODO: Legacy code that called a method to reset the instruction queue to the new PC after it was changed
-                //if (_rd == 0xF)
-                //    cpuState.SetRegister("PC", cpuState.GetRegister($"R{_rd}"));
             }
             else
             {
@@ -96,7 +92,8 @@ namespace assembly_aarch32.Instructions
                 else
                     baseAddress -= newOffset;
 
-            if (_w)
+            // Post indexed modifications always write back; the w bit is redundant in this case and basically ignored
+            if (_w || !_p)
                 cpuState.Registers[_rn] = (uint)baseAddress;
         }
 
@@ -125,7 +122,7 @@ namespace assembly_aarch32.Instructions
                 else
                 {
                     result += ", ";
-                    result+=_u?"+":"-";
+                    result += _u ? "+" : "-";
                     result += "R" + (_offset & 0xF);
                     if (shiftValue > 0)
                     {

@@ -58,32 +58,38 @@ namespace assembly_aarch32.Instructions
             for (var i = 0; i < 16; i++)
                 if (((_list >> i) & 0x1) == 1)
                     bytesToWrite += 4;
-            var address = (int)(cpuState.Registers[_rn] - (_u ? 0 : bytesToWrite));
+            var registerAddress = (int)(cpuState.Registers[_rn] - (_u ? 0 : bytesToWrite - (_p ? -4 : 4)));
 
+            // Registers are always written from lowest to highest
+            // From lowest to highest memory address
             var writtenBack = false;
             for (var i = 0; i < 16; i++)
             {
                 if (((_list >> i) & 0x1) == 1)
                 {
-                    if (_p || !_u)
-                        address += 4;
+                    if (_p)
+                        registerAddress += 4;
 
                     if (_l)
-                        cpuState.Registers[i] = memoryMap.ReadUInt32(address);
+                        cpuState.Registers[i] = memoryMap.ReadUInt32(registerAddress);
                     else
-                        memoryMap.WriteUInt32(address, cpuState.Registers[i]);
+                    {
+                        if (i == 15)
+                            // If PC is to be stored, we store the offset of this STM instruction + 12
+                            memoryMap.WriteUInt32(registerAddress, (uint)Position + 12);
+                        else
+                            memoryMap.WriteUInt32(registerAddress, cpuState.Registers[i]);
+                    }
 
-                    if (!_p || _u)
-                        address += 4;
+                    if (!_p)
+                        registerAddress += 4;
 
-                    if (_w && !writtenBack)
+                    // A load instruction will always overwrite an updated base register, therefore we don't need to do a write back
+                    // A store instruction will write back after the first register was written, no matter which register it was
+                    if (!_l && _w && !writtenBack)
                     {
                         writtenBack = true;
-                        var rnValue = cpuState.Registers[_rn];
-                        cpuState.Registers[_rn] = (uint)(rnValue + bytesToWrite);
-                        // TODO: Check increment/decrement
-                        //_reg[desc.rn] -= bytesToWrite;
-                        //_reg[desc.rn] += bytesToWrite;
+                        cpuState.Registers[_rn] = (uint)(cpuState.Registers[_rn] + (_u ? bytesToWrite : -bytesToWrite));
                     }
                 }
             }
@@ -98,8 +104,18 @@ namespace assembly_aarch32.Instructions
 
             var result = _l ? "LDM" : "STM";
             result += ConditionHelper.ToString(_condition);
-            result += _l == _p ? "E" : "F";
-            result += _l == _u ? "D" : "A";
+
+            if (_rn == 13)
+            {
+                result += _l == _p ? "E" : "F";
+                result += _l == _u ? "D" : "A";
+            }
+            else
+            {
+                result += _u ? "I" : "D";
+                result += _p ? "B" : "A";
+            }
+
             result += " R" + _rn;
             if (_w)
                 result += "!";

@@ -56,12 +56,14 @@ namespace CPUEmu.Forms
 
         private void TxtOffset_KeyUp(object sender, KeyEventArgs e)
         {
-            FinishMemoryManipulation();
+            if (e.KeyCode == Keys.Return)
+                FinishMemoryManipulation();
         }
 
         private void TxtManipulationValue_KeyUp(object sender, KeyEventArgs e)
         {
-            FinishMemoryManipulation();
+            if (e.KeyCode == Keys.Return)
+                FinishMemoryManipulation();
         }
 
         private void FinishMemoryManipulation()
@@ -82,7 +84,7 @@ namespace CPUEmu.Forms
             switch (cmbType.Text)
             {
                 case "Value":
-                    if (!byte.TryParse(txtManipulationValue.Text, out var value))
+                    if (!byte.TryParse(txtManipulationValue.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var value))
                     {
                         MessageBox.Show("The value doesn't fit in a byte.", "Invalid value", MessageBoxButtons.OK,
                             MessageBoxIcon.Error);

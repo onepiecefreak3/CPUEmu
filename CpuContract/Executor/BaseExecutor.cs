@@ -10,7 +10,6 @@ namespace CpuContract.Executor
     public abstract class BaseExecutor : IExecutor
     {
         private ConcurrentDictionary<IInstruction, bool> _breakPoints;
-        private IInstruction _breakPointInstruction;
 
         private Thread _executionTask;
 
@@ -56,6 +55,22 @@ namespace CpuContract.Executor
 
             while (!IsFinished && !IsAborted)
             {
+                // Set the instruction for this cycle
+                SetCurrentInstruction(environment, instructions);
+
+                // Check if instruction is marked as a breakpoint and if it is active
+                if (_breakPoints.ContainsKey(CurrentInstruction) && _breakPoints[CurrentInstruction])
+                {
+                    BreakExecution(CurrentInstruction, instructions.IndexOf(CurrentInstruction));
+                }
+                else if (IsHalted)
+                {
+                    // If instruction is not a breakpoint and IsHalted was already true, we stepped one instruction further
+                    // We fire the HaltExecution event in that case
+                    HaltExecution();
+                }
+
+                // Halt the thread if a breakpoint was reached
                 if (IsHalted)
                 {
                     try
@@ -64,24 +79,18 @@ namespace CpuContract.Executor
                     }
                     catch (ThreadInterruptedException)
                     {
-                        // Through the interrupt in ResumeExecution, the thread will continue from here
+                        // Through an interrupt, the thread will continue from here
                     }
                     catch (ThreadAbortException)
                     {
+                        // The further execution will be aborted
                         IsAborted = true;
                         break;
                     }
                 }
 
-                SetCurrentInstruction(environment, instructions);
-                if (_breakPointInstruction != CurrentInstruction && _breakPoints.ContainsKey(CurrentInstruction) && _breakPoints[CurrentInstruction])
-                {
-                    BreakExecution(CurrentInstruction, instructions.IndexOf(CurrentInstruction));
-                    _breakPointInstruction = CurrentInstruction;
-                    continue;
-                }
-
-                InstructionExecuting?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, instructions.IndexOf(CurrentInstruction)));
+                // Execute instruction
+                InstructionExecuting?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, CurrentInstructionIndex));
 
                 Thread.Sleep(waitMs);
                 try
@@ -90,12 +99,13 @@ namespace CpuContract.Executor
                 }
                 catch (Exception e)
                 {
+                    // Abort execution when the instruction throws
                     Logger.Log(LogLevel.Fatal, e.Message);
                     AbortExecution(true);
                     break;
                 }
 
-                InstructionExecuted?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, instructions.IndexOf(CurrentInstruction)));
+                InstructionExecuted?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, CurrentInstructionIndex));
             }
 
             if (!IsAborted)
@@ -123,8 +133,8 @@ namespace CpuContract.Executor
 
         public void ResumeExecution()
         {
-            _executionTask.Interrupt();
             IsHalted = false;
+            _executionTask.Interrupt();
         }
 
         public void AbortExecution()
@@ -141,7 +151,7 @@ namespace CpuContract.Executor
         protected void AbortExecution(bool invokeEvent)
         {
             IsAborted = true;
-            _breakPointInstruction = null;
+            //_breakPointInstruction = null;
             if (invokeEvent)
                 ExecutionAborted?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, CurrentInstructionIndex));
         }

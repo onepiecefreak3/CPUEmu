@@ -33,6 +33,7 @@ namespace assembly_aarch32
             }
 
             CurrentInstruction = _instructionBuffer.Dequeue();
+            CurrentInstructionIndex = instructions.IndexOf(CurrentInstruction);
         }
 
         protected override void ExecuteInternal(IExecutionEnvironment environment, IList<IInstruction> instructions)

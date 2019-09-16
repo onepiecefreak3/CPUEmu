@@ -19,8 +19,8 @@ namespace CpuContract.Memory
 
         public override void WriteUInt16(int offset, ushort value)
         {
-            _buffer[0] = (byte)offset;
-            _buffer[1] = (byte)(offset >> 8);
+            _buffer[0] = (byte)value;
+            _buffer[1] = (byte)(value >> 8);
             Write(_buffer, 0, 2, offset);
         }
 
@@ -32,11 +32,11 @@ namespace CpuContract.Memory
 
         public override void WriteUInt32(int offset, uint value)
         {
-            _buffer[0] = (byte)offset;
-            _buffer[1] = (byte)(offset >> 8);
-            _buffer[2] = (byte)(offset >> 16);
-            _buffer[3] = (byte)(offset >> 24);
-            Write(_buffer, 0, 2, offset);
+            _buffer[0] = (byte)value;
+            _buffer[1] = (byte)(value >> 8);
+            _buffer[2] = (byte)(value >> 16);
+            _buffer[3] = (byte)(value >> 24);
+            Write(_buffer, 0, 4, offset);
         }
     }
 }

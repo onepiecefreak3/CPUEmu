@@ -13,7 +13,7 @@ namespace CPUEmu
             Value = value;
         }
 
-        public void SetValue(string newValue)
+        public void SetValue(object newValue)
         {
             try
             {
