@@ -118,7 +118,11 @@ namespace assembly_aarch32.Instructions
                 result += "]";
             if (_offset != 0 || _i)
                 if (!_i)
-                    result += $", #0x{_offset:X}";
+                {
+                    result += ", #";
+                    result += _u ? "" : "-";
+                    result += $"0x{_offset:X}";
+                }
                 else
                 {
                     result += ", ";

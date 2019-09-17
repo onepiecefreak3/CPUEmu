@@ -49,7 +49,7 @@ namespace assembly_aarch32
                 throw new InvalidOperationException("CpuState is not supported.");
 
             // If a branch was executed
-            if (CurrentInstruction is BranchInstruction branchInstruction)
+            if (CurrentInstruction is BranchInstruction branchInstruction && branchInstruction.IsBranching)
             {
                 // Clear buffer and and get 2 new instructions from new PC
                 _instructionBuffer.Clear();

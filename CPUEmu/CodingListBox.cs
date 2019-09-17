@@ -83,11 +83,12 @@ namespace CPUEmu
             if (CurrentInstructionIndex != previousCurrentInstruction)
                 RedrawItem(previousCurrentInstruction);
 
-            if(index<0)
+            if (index < 0)
                 return;
 
-            // Jump list content to current instruction as top instruction
-            SetTopIndex(index);
+            // Jump list content to current instruction as top instruction, only if the current line is out of scope
+            if (index < TopIndex || index >= TopIndex + Height / ItemHeight)
+                SetTopIndex(index);
 
             // Redraw current instruction item
             RedrawItem(index);
