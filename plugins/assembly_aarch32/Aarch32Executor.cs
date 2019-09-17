@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using assembly_aarch32.Instructions.Branch;
 using CpuContract;
 using CpuContract.Attributes;
 using CpuContract.Executor;
@@ -39,12 +40,18 @@ namespace assembly_aarch32
         protected override void ExecuteInternal(IExecutionEnvironment environment, IList<IInstruction> instructions)
         {
             CurrentInstruction.Execute(environment);
+            if (CurrentInstruction is BranchAndExchangeInstruction baeInstruction)
+                // TODO: Implement thumb mode
+                if (baeInstruction.IsThumbMode)
+                    throw new InvalidOperationException("Thumb mode is not supported.");
 
             if (!(environment.CpuState is Aarch32CpuState armCpuState))
                 throw new InvalidOperationException("CpuState is not supported.");
 
-            if (CurrentInstruction.Position + 0x8 != armCpuState.PC)
+            // If a branch was executed
+            if (CurrentInstruction is BranchInstruction branchInstruction)
             {
+                // Clear buffer and and get 2 new instructions from new PC
                 _instructionBuffer.Clear();
 
                 // Buffer next 2 instructions
@@ -53,6 +60,7 @@ namespace assembly_aarch32
             }
             else
             {
+                // Otherwise buffer the next instruction
                 GetNextInstruction(environment, instructions);
             }
 

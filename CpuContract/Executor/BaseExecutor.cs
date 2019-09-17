@@ -29,6 +29,7 @@ namespace CpuContract.Executor
         public event EventHandler<InstructionExecuteEventArgs> ExecutionHalted;
         public event EventHandler<InstructionExecuteEventArgs> ExecutionAborted;
         public event EventHandler<InstructionExecuteEventArgs> BreakpointReached;
+        public event EventHandler<InstructionExecuteEventArgs> ExecutionStepped;
 
         protected BaseExecutor(ILogger logger)
         {
@@ -66,8 +67,7 @@ namespace CpuContract.Executor
                 else if (IsHalted)
                 {
                     // If instruction is not a breakpoint and IsHalted was already true, we stepped one instruction further
-                    // We fire the HaltExecution event in that case
-                    HaltExecution();
+                    ExecutionStepped?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, CurrentInstructionIndex));
                 }
 
                 // Halt the thread if a breakpoint was reached

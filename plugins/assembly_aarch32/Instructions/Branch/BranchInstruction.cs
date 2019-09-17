@@ -10,6 +10,8 @@ namespace assembly_aarch32.Instructions.Branch
         private readonly int _offset;
         private readonly bool _l;
 
+        public bool IsBranching { get; private set; }
+
         public int Position { get; }
 
         private BranchInstruction(int position, byte condition, int offset, bool l)
@@ -25,9 +27,10 @@ namespace assembly_aarch32.Instructions.Branch
         {
             var offset = (int)((instruction & 0xFFFFFF) << 2);
 
-            //sign extend offset
-            var sign = offset >> 23;
-            for (int i = 24; i < 32; i++)
+            // Sign extend offset
+            // Offset value contains of 26 bits in total after its shift, and we want to sign extend the 25th (0-indexed)
+            var sign = offset >> 25;
+            for (int i = 26; i < 32; i++)
                 offset |= sign << i;
 
             var l = ((instruction >> 24) & 0x1) == 1;
@@ -41,13 +44,17 @@ namespace assembly_aarch32.Instructions.Branch
             {
                 case Aarch32CpuState armCpuState:
                     if (!ConditionHelper.CanExecute(armCpuState, _condition))
+                    {
+                        IsBranching = false;
                         return;
+                    }
 
                     var pc = armCpuState.PC;
                     if (_l)
                         armCpuState.LR = pc - 4;
 
                     armCpuState.PC = (uint)(pc + _offset);
+                    IsBranching = true;
                     break;
                 default:
                     throw new InvalidOperationException("Unknown cpu state.");

@@ -51,11 +51,11 @@ namespace assembly_aarch32
 
                     case InstructionType.SingleDataSwap:
                         // TODO: Implement Data swap
+                        _logger?.Log(LogLevel.Fatal, "Unimplemented Instructiontype 'SingleDataSwap'.");
                         break;
 
                     case InstructionType.BranchExchange:
-                        // TODO: Implement branch exchange
-                        _logger?.Log(LogLevel.Fatal, "Unimplemented Instructiontype 'BranchExchange'.");
+                        result.Add(BranchAndExchangeInstruction.Parse(instructionPosition, condition, instruction));
                         break;
 
                     case InstructionType.HalfwordDataTransferReg:

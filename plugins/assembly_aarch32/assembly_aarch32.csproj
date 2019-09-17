@@ -49,6 +49,7 @@
     <Compile Include="Exceptions\UnknownShiftTypeException.cs" />
     <Compile Include="Factories\DataProcessingInstructionFactory.cs" />
     <Compile Include="Instructions\BlockDataTransferInstruction.cs" />
+    <Compile Include="Instructions\Branch\BranchAndExchangeInstruction.cs" />
     <Compile Include="Instructions\Branch\BranchInstruction.cs" />
     <Compile Include="Instructions\DataProcessing\DataProcessingAdcInstruction.cs" />
     <Compile Include="Instructions\DataProcessing\DataProcessingAddInstruction.cs" />

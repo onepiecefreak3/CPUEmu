@@ -87,7 +87,7 @@ namespace CPUEmu
             this.txtlog.Name = "txtlog";
             this.txtlog.ReadOnly = true;
             this.txtlog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.txtlog.Size = new System.Drawing.Size(276, 297);
+            this.txtlog.Size = new System.Drawing.Size(300, 297);
             this.txtlog.TabIndex = 0;
             this.txtlog.Text = "";
             // 
@@ -97,7 +97,7 @@ namespace CPUEmu
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(822, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(888, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "mainMenuStrip";
             // 
@@ -132,7 +132,7 @@ namespace CPUEmu
             this.btnAbort.Enabled = false;
             this.btnAbort.Location = new System.Drawing.Point(0, 34);
             this.btnAbort.Name = "btnAbort";
-            this.btnAbort.Size = new System.Drawing.Size(133, 23);
+            this.btnAbort.Size = new System.Drawing.Size(144, 23);
             this.btnAbort.TabIndex = 3;
             this.btnAbort.Text = "Abort Execution";
             this.btnAbort.UseVisualStyleBackColor = true;
@@ -145,7 +145,7 @@ namespace CPUEmu
             this.btnStop.Enabled = false;
             this.btnStop.Location = new System.Drawing.Point(0, 0);
             this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(139, 23);
+            this.btnStop.Size = new System.Drawing.Size(152, 23);
             this.btnStop.TabIndex = 4;
             this.btnStop.Text = "Halt Execution";
             this.btnStop.UseVisualStyleBackColor = true;
@@ -158,7 +158,7 @@ namespace CPUEmu
             this.btnStartExecution.Enabled = false;
             this.btnStartExecution.Location = new System.Drawing.Point(0, 0);
             this.btnStartExecution.Name = "btnStartExecution";
-            this.btnStartExecution.Size = new System.Drawing.Size(133, 23);
+            this.btnStartExecution.Size = new System.Drawing.Size(144, 23);
             this.btnStartExecution.TabIndex = 13;
             this.btnStartExecution.Text = "Start Execution";
             this.btnStartExecution.UseVisualStyleBackColor = true;
@@ -171,7 +171,7 @@ namespace CPUEmu
             this.btnResume.Enabled = false;
             this.btnResume.Location = new System.Drawing.Point(0, 34);
             this.btnResume.Name = "btnResume";
-            this.btnResume.Size = new System.Drawing.Size(139, 23);
+            this.btnResume.Size = new System.Drawing.Size(152, 23);
             this.btnResume.TabIndex = 14;
             this.btnResume.Text = "Resume Execution";
             this.btnResume.UseVisualStyleBackColor = true;
@@ -213,7 +213,7 @@ namespace CPUEmu
             this.btnStep.Enabled = false;
             this.btnStep.Location = new System.Drawing.Point(0, 63);
             this.btnStep.Name = "btnStep";
-            this.btnStep.Size = new System.Drawing.Size(277, 23);
+            this.btnStep.Size = new System.Drawing.Size(301, 23);
             this.btnStep.TabIndex = 17;
             this.btnStep.Text = "Step Execution";
             this.btnStep.UseVisualStyleBackColor = true;
@@ -228,7 +228,7 @@ namespace CPUEmu
             this.manipulationTxt.Multiline = true;
             this.manipulationTxt.Name = "manipulationTxt";
             this.manipulationTxt.ReadOnly = true;
-            this.manipulationTxt.Size = new System.Drawing.Size(153, 164);
+            this.manipulationTxt.Size = new System.Drawing.Size(219, 164);
             this.manipulationTxt.TabIndex = 18;
             // 
             // btnAddManipulation
@@ -238,7 +238,7 @@ namespace CPUEmu
             this.btnAddManipulation.Enabled = false;
             this.btnAddManipulation.Location = new System.Drawing.Point(657, 429);
             this.btnAddManipulation.Name = "btnAddManipulation";
-            this.btnAddManipulation.Size = new System.Drawing.Size(152, 23);
+            this.btnAddManipulation.Size = new System.Drawing.Size(218, 23);
             this.btnAddManipulation.TabIndex = 19;
             this.btnAddManipulation.Text = "Add memory manipulation";
             this.btnAddManipulation.UseVisualStyleBackColor = true;
@@ -259,7 +259,7 @@ namespace CPUEmu
             this.txtDisassembly.Name = "txtDisassembly";
             this.txtDisassembly.ScrollAlwaysVisible = true;
             this.txtDisassembly.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.txtDisassembly.Size = new System.Drawing.Size(380, 390);
+            this.txtDisassembly.Size = new System.Drawing.Size(410, 390);
             this.txtDisassembly.TabIndex = 0;
             this.txtDisassembly.BreakpointAdded += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointAdded);
             this.txtDisassembly.BreakpointRemoved += new System.EventHandler<CPUEmu.IndexEventArgs>(this.TxtDisassembly_BreakpointRemoved);
@@ -272,7 +272,7 @@ namespace CPUEmu
             this.txtFlags.FormattingEnabled = true;
             this.txtFlags.Location = new System.Drawing.Point(0, 0);
             this.txtFlags.Name = "txtFlags";
-            this.txtFlags.Size = new System.Drawing.Size(133, 117);
+            this.txtFlags.Size = new System.Drawing.Size(145, 117);
             this.txtFlags.TabIndex = 20;
             this.txtFlags.DoubleClick += new System.EventHandler(this.TxtFlags_DoubleClick);
             this.txtFlags.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtFlags_KeyPress);
@@ -283,7 +283,7 @@ namespace CPUEmu
             this.txtRegisters.FormattingEnabled = true;
             this.txtRegisters.Location = new System.Drawing.Point(0, 0);
             this.txtRegisters.Name = "txtRegisters";
-            this.txtRegisters.Size = new System.Drawing.Size(133, 265);
+            this.txtRegisters.Size = new System.Drawing.Size(145, 265);
             this.txtRegisters.TabIndex = 21;
             this.txtRegisters.DoubleClick += new System.EventHandler(this.TxtRegisters_DoubleClick);
             this.txtRegisters.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtRegisters_KeyPress);
@@ -301,8 +301,8 @@ namespace CPUEmu
             // assemblyContainer.Panel2
             // 
             this.assemblyContainer.Panel2.Controls.Add(this.registerFlagsContainer);
-            this.assemblyContainer.Size = new System.Drawing.Size(517, 390);
-            this.assemblyContainer.SplitterDistance = 380;
+            this.assemblyContainer.Size = new System.Drawing.Size(559, 390);
+            this.assemblyContainer.SplitterDistance = 410;
             this.assemblyContainer.TabIndex = 22;
             // 
             // registerFlagsContainer
@@ -320,7 +320,7 @@ namespace CPUEmu
             // registerFlagsContainer.Panel2
             // 
             this.registerFlagsContainer.Panel2.Controls.Add(this.txtRegisters);
-            this.registerFlagsContainer.Size = new System.Drawing.Size(133, 390);
+            this.registerFlagsContainer.Size = new System.Drawing.Size(145, 390);
             this.registerFlagsContainer.SplitterDistance = 117;
             this.registerFlagsContainer.SplitterIncrement = 13;
             this.registerFlagsContainer.SplitterWidth = 8;
@@ -352,7 +352,7 @@ namespace CPUEmu
             // executionContainer.Panel2
             // 
             this.executionContainer.Panel2.Controls.Add(this.txtlog);
-            this.executionContainer.Size = new System.Drawing.Size(276, 390);
+            this.executionContainer.Size = new System.Drawing.Size(300, 390);
             this.executionContainer.SplitterDistance = 89;
             this.executionContainer.TabIndex = 23;
             // 
@@ -372,8 +372,8 @@ namespace CPUEmu
             // 
             this.subBtnContainer.Panel2.Controls.Add(this.btnStop);
             this.subBtnContainer.Panel2.Controls.Add(this.btnResume);
-            this.subBtnContainer.Size = new System.Drawing.Size(276, 57);
-            this.subBtnContainer.SplitterDistance = 133;
+            this.subBtnContainer.Size = new System.Drawing.Size(300, 57);
+            this.subBtnContainer.SplitterDistance = 144;
             this.subBtnContainer.TabIndex = 18;
             // 
             // mainContainer
@@ -390,15 +390,15 @@ namespace CPUEmu
             // mainContainer.Panel2
             // 
             this.mainContainer.Panel2.Controls.Add(this.executionContainer);
-            this.mainContainer.Size = new System.Drawing.Size(797, 390);
-            this.mainContainer.SplitterDistance = 517;
+            this.mainContainer.Size = new System.Drawing.Size(863, 390);
+            this.mainContainer.SplitterDistance = 559;
             this.mainContainer.TabIndex = 24;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(822, 634);
+            this.ClientSize = new System.Drawing.Size(888, 634);
             this.Controls.Add(this.bytePositionTxt);
             this.Controls.Add(this.txtEditFlagRegister);
             this.Controls.Add(this.mainContainer);

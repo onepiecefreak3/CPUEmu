@@ -175,6 +175,7 @@ namespace CPUEmu
 
             _executor.ExecutionHalted += Executor_ExecutionHalted;
             _executor.ExecutionAborted += Executor_ExecutionAborted;
+            _executor.ExecutionStepped += Executor_ExecutionStepped;
 
             _executor.BreakpointReached += Executor_BreakpointReached;
         }
@@ -261,7 +262,10 @@ namespace CPUEmu
                 btnResume.Enabled = false;
                 btnAbort.Enabled = true;
                 btnStep.Enabled = false;
+                txtDisassembly.SetCurrentInstructionIndex(-1);
+
                 hexBox.ReadOnly = false;
+
                 btnAddManipulation.Enabled = false;
             }
         }
@@ -336,6 +340,13 @@ namespace CPUEmu
             WriteLogLine("Aborted on instruction: " + _executor.CurrentInstruction);
             SetCurrentInstruction(-1);
             WriteLogLine("Execution aborted.");
+        }
+
+        private void Executor_ExecutionStepped(object sender, InstructionExecuteEventArgs e)
+        {
+            SetupUiExecutionHalted();
+            LoadFlagsAndRegisters();
+            SetCurrentInstruction(e.Index);
         }
 
         private void Executor_InstructionExecuted(object sender, InstructionExecuteEventArgs e)
@@ -516,6 +527,7 @@ namespace CPUEmu
         private void BtnStep_Click(object sender, EventArgs e)
         {
             _executor.StepExecution();
+            SetupUiExecutionStart();
         }
 
         private void BtnAddManipulation_Click(object sender, EventArgs e)
@@ -543,7 +555,14 @@ namespace CPUEmu
         {
             var listBox = (ListBox)txtEditFlagRegister.Tag;
             var flagRegisterItem = listBox.Items[listBox.SelectedIndex] as FlagRegisterItem;
-            flagRegisterItem?.SetValue(int.Parse(txtEditFlagRegister.Text, NumberStyles.HexNumber));
+
+            if (!int.TryParse(txtEditFlagRegister.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+                out var value))
+            {
+                return;
+            }
+
+            flagRegisterItem?.SetValue(value);
             listBox.Items[listBox.SelectedIndex] = flagRegisterItem;
 
             if (listBox == txtFlags)

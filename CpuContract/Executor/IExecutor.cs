@@ -13,6 +13,7 @@ namespace CpuContract.Executor
         event EventHandler<InstructionExecuteEventArgs> ExecutionHalted;
         event EventHandler<InstructionExecuteEventArgs> ExecutionAborted;
         event EventHandler<InstructionExecuteEventArgs> BreakpointReached;
+        event EventHandler<InstructionExecuteEventArgs> ExecutionStepped;
 
         IInstruction CurrentInstruction { get; }
 
