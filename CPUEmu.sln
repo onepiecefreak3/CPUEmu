@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "adapter_arm32Test", "plugin
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{3C3D7B3D-F322-43D2-8FEF-E99A047B0BF3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "assembly_aarch64", "plugins\assembly_aarch64\assembly_aarch64.csproj", "{BDB0000B-1C7E-4B6F-A03C-48B0CEFE8984}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{DC5A2748-ABB2-4E79-8B38-BB7292309473}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC5A2748-ABB2-4E79-8B38-BB7292309473}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC5A2748-ABB2-4E79-8B38-BB7292309473}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDB0000B-1C7E-4B6F-A03C-48B0CEFE8984}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDB0000B-1C7E-4B6F-A03C-48B0CEFE8984}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDB0000B-1C7E-4B6F-A03C-48B0CEFE8984}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDB0000B-1C7E-4B6F-A03C-48B0CEFE8984}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -42,6 +48,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{DF648315-0904-4161-844B-7A50B2CF4007} = {3C3D7B3D-F322-43D2-8FEF-E99A047B0BF3}
 		{DC5A2748-ABB2-4E79-8B38-BB7292309473} = {3C3D7B3D-F322-43D2-8FEF-E99A047B0BF3}
+		{BDB0000B-1C7E-4B6F-A03C-48B0CEFE8984} = {3C3D7B3D-F322-43D2-8FEF-E99A047B0BF3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1FE64A0E-AC64-4CC8-8232-C1342C62DA0E}
