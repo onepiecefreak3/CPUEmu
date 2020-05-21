@@ -26,8 +26,7 @@ namespace assembly_aarch32.Instructions.Branch
             _l = l;
 
             _linkValue = (uint)(position + 4);
-            _pcValue = (uint)(position + offset + 8);
-        }
+            _pcValue = (uint)(position + offset + 8);        }
 
         public static IInstruction Parse(int position, byte condition, uint instruction)
         {
@@ -38,7 +37,6 @@ namespace assembly_aarch32.Instructions.Branch
             var signExtend = 0xFC000000;
             if ((offset & 0x02000000) != 0)
                 offset |= signExtend;
-
             var l = ((instruction >> 24) & 0x1) == 1;
 
             return new BranchInstruction(position, condition, (int)offset, l);
@@ -54,17 +52,15 @@ namespace assembly_aarch32.Instructions.Branch
                         IsBranching = false;
                         return;
                     }
-
-                    armCpuState.PC = _pcValue;
                     if (_l)
                         armCpuState.LR = _linkValue;
+                    armCpuState.PC = _pcValue;
 
                     IsBranching = true;
                     break;
                 default:
                     throw new InvalidOperationException("Unknown cpu state.");
             }
-
         }
 
         public override string ToString()
@@ -73,6 +69,7 @@ namespace assembly_aarch32.Instructions.Branch
             if (_l)
                 result += "L";
             result += ConditionHelper.ToString(_condition);
+
             result += $" #{_offset + 8}";
             return result;
         }

@@ -92,7 +92,7 @@ namespace assembly_aarch32.Instructions
                 else
                     baseAddress -= newOffset;
 
-            // Post indexed modifications always write back; the w bit is redundant in this case and basically ignored
+            // Post indexed modifications always write back; the w bit is redundant in this case
             if (_w || !_p)
                 cpuState.Registers[_rn] = (uint)baseAddress;
         }
