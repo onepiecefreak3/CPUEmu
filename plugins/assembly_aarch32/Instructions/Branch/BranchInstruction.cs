@@ -10,6 +10,9 @@ namespace assembly_aarch32.Instructions.Branch
         private readonly int _offset;
         private readonly bool _l;
 
+        private readonly uint _linkValue;
+        private readonly uint _pcValue;
+
         public bool IsBranching { get; private set; }
 
         public int Position { get; }
@@ -21,21 +24,24 @@ namespace assembly_aarch32.Instructions.Branch
             _condition = condition;
             _offset = offset;
             _l = l;
+
+            _linkValue = (uint)(position + 4);
+            _pcValue = (uint)(position + offset + 8);
         }
 
         public static IInstruction Parse(int position, byte condition, uint instruction)
         {
-            var offset = (int)((instruction & 0xFFFFFF) << 2);
+            var offset = (instruction & 0xFFFFFF) << 2;
 
             // Sign extend offset
             // Offset value contains of 26 bits in total after its shift, and we want to sign extend the 25th (0-indexed)
-            var sign = offset >> 25;
-            for (int i = 26; i < 32; i++)
-                offset |= sign << i;
+            var signExtend = 0xFC000000;
+            if ((offset & 0x02000000) != 0)
+                offset |= signExtend;
 
             var l = ((instruction >> 24) & 0x1) == 1;
 
-            return new BranchInstruction(position, condition, offset, l);
+            return new BranchInstruction(position, condition, (int)offset, l);
         }
 
         public void Execute(IExecutionEnvironment env)
@@ -49,11 +55,10 @@ namespace assembly_aarch32.Instructions.Branch
                         return;
                     }
 
-                    var pc = armCpuState.PC;
+                    armCpuState.PC = _pcValue;
                     if (_l)
-                        armCpuState.LR = pc - 4;
+                        armCpuState.LR = _linkValue;
 
-                    armCpuState.PC = (uint)(pc + _offset);
                     IsBranching = true;
                     break;
                 default:
@@ -68,7 +73,7 @@ namespace assembly_aarch32.Instructions.Branch
             if (_l)
                 result += "L";
             result += ConditionHelper.ToString(_condition);
-            result += $" #{_offset}";
+            result += $" #{_offset + 8}";
             return result;
         }
 

@@ -327,26 +327,26 @@ namespace CPUEmu
 
         private void Executor_ExecutionHalted(object sender, InstructionExecuteEventArgs e)
         {
-            SetupUiExecutionHalted();
             LoadFlagsAndRegisters();
             SetCurrentInstruction(e.Index);
             WriteLogLine("Execution halted.");
+            SetupUiExecutionHalted();
         }
 
         private void Executor_ExecutionAborted(object sender, EventArgs e)
         {
-            SetupUiExecutionAborted();
             LoadFlagsAndRegisters();
             WriteLogLine("Aborted on instruction: " + _executor.CurrentInstruction);
             SetCurrentInstruction(-1);
             WriteLogLine("Execution aborted.");
+            SetupUiExecutionAborted();
         }
 
         private void Executor_ExecutionStepped(object sender, InstructionExecuteEventArgs e)
         {
-            SetupUiExecutionHalted();
             LoadFlagsAndRegisters();
             SetCurrentInstruction(e.Index);
+            SetupUiExecutionHalted();
         }
 
         private void Executor_InstructionExecuted(object sender, InstructionExecuteEventArgs e)
@@ -361,25 +361,25 @@ namespace CPUEmu
 
         private void Executor_ExecutionStarted(object sender, EventArgs e)
         {
-            SetupUiExecutionStart();
             LoadFlagsAndRegisters();
             WriteLogLine("Execution started.");
+            SetupUiExecutionStart();
         }
 
         private void Executor_ExecutionFinished(object sender, EventArgs e)
         {
-            SetupUiExecutionFinished();
             LoadFlagsAndRegisters();
             SetCurrentInstruction(-1);
             WriteLogLine("Execution finished normally.");
+            SetupUiExecutionFinished();
         }
 
         private void Executor_BreakpointReached(object sender, InstructionExecuteEventArgs e)
         {
-            SetupUiExecutionHalted();
             LoadFlagsAndRegisters();
             SetCurrentInstruction(e.Index);
             WriteLogLine("Breakpoint reached.");
+            SetupUiExecutionHalted();
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)

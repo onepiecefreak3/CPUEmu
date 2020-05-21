@@ -9,6 +9,8 @@ using CpuContract;
 using CpuContract.Attributes;
 using CpuContract.Logging;
 
+/* http://vision.gel.ulaval.ca/~jflalonde/cours/1001/h17/docs/arm-instructionset.pdf */
+
 namespace assembly_aarch32
 {
     [UniqueIdentifier("Aarch32")]
