@@ -7,8 +7,8 @@ namespace CPUEmu
 {
     class CodingListBox : ListBox
     {
-        private const int WmVscroll = 0x115; // Vertical scroll
-        private const int WmMousewheel = 0x20a; // Mouse wheel
+        private const int WmVscroll_ = 0x115; // Vertical scroll
+        private const int WmMousewheel_ = 0x20a; // Mouse wheel
 
         private readonly Dictionary<int, bool> _breakpoints;
 
@@ -142,12 +142,12 @@ namespace CPUEmu
 
         protected override void WndProc(ref Message m)
         {
-            if (m.Msg == WmVscroll || m.Msg == WmMousewheel)
+            if (m.Msg == WmVscroll_ || m.Msg == WmMousewheel_)
                 OnScrolling(new EventArgs());
 
             base.WndProc(ref m);
 
-            if (m.Msg == WmVscroll || m.Msg == WmMousewheel)
+            if (m.Msg == WmVscroll_ || m.Msg == WmMousewheel_)
                 OnScrolled(new EventArgs());
         }
 

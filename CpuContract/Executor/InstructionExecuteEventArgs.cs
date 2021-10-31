@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CpuContract
+namespace CpuContract.Executor
 {
     public class InstructionExecuteEventArgs:EventArgs
     {

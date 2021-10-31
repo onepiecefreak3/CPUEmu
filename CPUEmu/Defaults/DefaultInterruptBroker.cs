@@ -1,6 +1,6 @@
 ﻿using CpuContract;
 using CpuContract.Attributes;
-using CpuContract.Logging;
+using Serilog;
 
 namespace CPUEmu.Defaults
 {
@@ -14,15 +14,14 @@ namespace CPUEmu.Defaults
             _logger = logger;
         }
 
-        public void Execute(int svc, IExecutionEnvironment environment)
+        public void Execute(int svc, DeviceEnvironment environment)
         {
             // Do nothing
-            _logger.Log(LogLevel.Warning, $"Svc {svc} stubbed.");
+            _logger?.Warning($"Svc {svc} stubbed.");
         }
 
         public void Dispose()
         {
-            _logger.Dispose();
             _logger = null;
         }
     }

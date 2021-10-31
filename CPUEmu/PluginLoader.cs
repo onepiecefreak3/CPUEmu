@@ -8,16 +8,15 @@ using Castle.Windsor;
 using CpuContract;
 using CpuContract.Attributes;
 using CpuContract.DependencyInjection;
-using CpuContract.Executor;
-using CpuContract.Logging;
 using CPUEmu.ServiceProviders;
+using Serilog;
 
 namespace CPUEmu
 {
     class PluginLoader
     {
-        private WindsorContainer _container;
-        private IList<object> _serviceProviders;
+        private readonly WindsorContainer _container;
+        private readonly IList<object> _serviceProviders;
 
         public string PluginFolder { get; }
 
@@ -32,7 +31,19 @@ namespace CPUEmu
             _container.Register(Component.For<ILogger>().Instance(logger));
         }
 
-        public IServiceProvider<TService> GetServiceProvider<TService>()
+        public TService GetService<TService>(string serviceName)
+        {
+            var serviceProvider = GetServiceProvider<TService>();
+            return serviceProvider.GetService(serviceName);
+        }
+
+        public IEnumerable<TService> EnumerateServices<TService>()
+        {
+            var serviceProvider = GetServiceProvider<TService>();
+            return serviceProvider.EnumerateServices();
+        }
+
+        private IServiceProvider<TService> GetServiceProvider<TService>()
         {
             var serviceProvider = _serviceProviders.FirstOrDefault(x => x is IServiceProvider<TService>);
 
@@ -45,11 +56,11 @@ namespace CPUEmu
             var assemblies = GetAssemblies();
 
             // Register service providers
-            RegisterServiceProvider<IAssemblyAdapter>(assemblies);
-            RegisterServiceProvider<IExecutor>(assemblies);
-            RegisterServiceProvider<ICpuState>(assemblies);
+            RegisterServiceProvider<IAssembly>(assemblies);
+            RegisterServiceProvider<IArchitectureProvider>(assemblies);
+
+            // TODO: How to properly incorporate interrupt brokers with current code design
             RegisterServiceProvider<IInterruptBroker>(assemblies);
-            RegisterServiceProvider<IArchitectureParser>(assemblies);
         }
 
         private Assembly[] GetAssemblies()

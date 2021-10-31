@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CpuContract.Memory;
 
 namespace CpuContract
 {
-    // TODO: Condense more?
-    public interface ICpuState
+    public interface ICpuState : IDisposable
     {
         IDictionary<string, object> GetRegisters();
         object GetRegister(string register);
@@ -16,5 +13,7 @@ namespace CpuContract
         IDictionary<string, object> GetFlags();
         object GetFlag(string flag);
         void SetFlag(string flag, object value);
+
+        void Reset(IMemoryMap memoryMap);
     }
 }

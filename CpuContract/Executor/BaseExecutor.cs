@@ -3,24 +3,40 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using CpuContract.Logging;
+using CpuContract.Memory;
+using Serilog;
 
 namespace CpuContract.Executor
 {
-    public abstract class BaseExecutor : IExecutor
+    public abstract class BaseExecutor<TCpuState> : IExecutor
+        where TCpuState : ICpuState
     {
-        private ConcurrentDictionary<IInstruction, bool> _breakPoints;
+        private readonly IExecutableInstructionParser<TCpuState> _instructionParser;
 
+        private ConcurrentDictionary<IInstruction, bool> _breakPoints;
         private Thread _executionTask;
+
+        #region Properties
 
         protected abstract bool IsFinished { get; set; }
         protected bool IsAborted { get; set; }
+
+        protected TCpuState InternalCpuState { get; }
         protected ILogger Logger { get; }
+
+        protected IList<IExecutableInstruction<TCpuState>> ExecutableInstructions => _instructionParser.Instructions;
+        protected int CurrentInstructionIndex { get; set; }
+        protected IExecutableInstruction<TCpuState> CurrentExecutableInstruction { get; set; }
 
         public bool IsHalted { get; private set; }
 
-        public abstract IInstruction CurrentInstruction { get; protected set; }
-        protected abstract int CurrentInstructionIndex { get; set; }
+        public ICpuState CpuState => InternalCpuState;
+        public IList<IInstruction> Instructions => ExecutableInstructions.Cast<IInstruction>().ToArray();
+        public IInstruction CurrentInstruction => CurrentExecutableInstruction;
+
+        #endregion
+
+        #region Events
 
         public event EventHandler<InstructionExecuteEventArgs> InstructionExecuting;
         public event EventHandler<InstructionExecuteEventArgs> InstructionExecuted;
@@ -31,23 +47,29 @@ namespace CpuContract.Executor
         public event EventHandler<InstructionExecuteEventArgs> BreakpointReached;
         public event EventHandler<InstructionExecuteEventArgs> ExecutionStepped;
 
-        protected BaseExecutor(ILogger logger)
+        #endregion
+
+        protected BaseExecutor(TCpuState cpuState, IExecutableInstructionParser<TCpuState> instructionParser, ILogger logger)
         {
+            InternalCpuState = cpuState;
             Logger = logger;
+
+            _instructionParser = instructionParser;
             _breakPoints = new ConcurrentDictionary<IInstruction, bool>();
         }
 
-        public void ExecuteAsync(IExecutionEnvironment environment, IList<IInstruction> instructions, int waitMs = 0)
+        public void ExecuteAsync(DeviceEnvironment environment, int waitMs = 0)
         {
-            CurrentInstruction = null;
-            _executionTask = new Thread(() => Execute(environment, instructions, waitMs));
+            CurrentExecutableInstruction = null;
+            _executionTask = new Thread(() => Execute(environment, waitMs));
             _executionTask.Start();
         }
 
         // Event invocation, break handling and so on
-        private void Execute(IExecutionEnvironment environment, IList<IInstruction> instructions, int waitMs)
+        private void Execute(DeviceEnvironment environment, int waitMs)
         {
-            Reset();
+            Reset(environment.MemoryMap);
+
             IsFinished = false;
             IsAborted = false;
             IsHalted = false;
@@ -56,13 +78,21 @@ namespace CpuContract.Executor
 
             while (!IsFinished && !IsAborted)
             {
-                // Set the instruction for this cycle
-                SetCurrentInstruction(environment, instructions);
+                // Get the instruction for the current cycle
+                var currentInstruction = GetCurrentInstruction(environment);
+                if (currentInstruction == null)
+                {
+                    IsFinished = true;
+                    continue;
+                }
+
+                CurrentExecutableInstruction = currentInstruction;
+                CurrentInstructionIndex = ExecutableInstructions.IndexOf(currentInstruction);
 
                 // Check if instruction is marked as a breakpoint and if it is active
                 if (_breakPoints.ContainsKey(CurrentInstruction) && _breakPoints[CurrentInstruction])
                 {
-                    BreakExecution(CurrentInstruction, instructions.IndexOf(CurrentInstruction));
+                    BreakExecution(CurrentInstruction, ExecutableInstructions.IndexOf(CurrentExecutableInstruction));
                 }
                 else if (IsHalted)
                 {
@@ -83,7 +113,7 @@ namespace CpuContract.Executor
                     }
                     catch (ThreadAbortException)
                     {
-                        // The further execution will be aborted
+                        // Further execution will be aborted
                         IsAborted = true;
                         break;
                     }
@@ -92,16 +122,20 @@ namespace CpuContract.Executor
                 // Execute instruction
                 InstructionExecuting?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, CurrentInstructionIndex));
 
-                Thread.Sleep(waitMs);
+                if (waitMs > 0)
+                    Thread.Sleep(waitMs);
+
                 try
                 {
-                    ExecuteInternal(environment, instructions);
+                    CurrentExecutableInstruction.Execute(InternalCpuState, environment);
+                    AfterInstructionExecute(environment);
                 }
                 catch (Exception e)
                 {
                     // Abort execution when the instruction throws
-                    Logger.Log(LogLevel.Fatal, e.Message);
+                    Logger.Fatal("An exception occurred when executing an instruction.", e);
                     AbortExecution(true);
+
                     break;
                 }
 
@@ -112,12 +146,12 @@ namespace CpuContract.Executor
                 ExecutionFinished?.Invoke(this, new EventArgs());
         }
 
-        protected abstract void SetCurrentInstruction(IExecutionEnvironment environment, IList<IInstruction> instructions);
+        protected abstract IExecutableInstruction<TCpuState> GetCurrentInstruction(DeviceEnvironment environment);
 
-        // Should set IsFinished at some point
-        protected abstract void ExecuteInternal(IExecutionEnvironment environment, IList<IInstruction> instructions);
+        // HINT: Should set IsFinished at some point
+        protected abstract void AfterInstructionExecute(DeviceEnvironment environment);
 
-        public abstract void Reset();
+        public abstract void Reset(IMemoryMap memoryMap);
 
         public void HaltExecution()
         {
@@ -151,7 +185,7 @@ namespace CpuContract.Executor
         protected void AbortExecution(bool invokeEvent)
         {
             IsAborted = true;
-            //_breakPointInstruction = null;
+
             if (invokeEvent)
                 ExecutionAborted?.Invoke(this, new InstructionExecuteEventArgs(CurrentInstruction, CurrentInstructionIndex));
         }
@@ -195,6 +229,7 @@ namespace CpuContract.Executor
         {
             AbortExecution(false);
             AbortThread();
+
             _executionTask = null;
         }
     }

@@ -43,22 +43,28 @@
   <ItemGroup>
     <Compile Include="Attributes\UniqueIdentifierAttribute.cs" />
     <Compile Include="DependencyInjection\IServiceProvider.cs" />
+    <Compile Include="Exceptions\UndefinedInstructionException.cs" />
     <Compile Include="Executor\BaseExecutor.cs" />
     <Compile Include="Executor\IExecutor.cs" />
     <Compile Include="Executor\InstructionExecuteEventArgs.cs" />
-    <Compile Include="IArchitectureParser.cs" />
-    <Compile Include="IAssemblyAdapter.cs" />
+    <Compile Include="IArchitectureProvider.cs" />
+    <Compile Include="IInstructionParser.cs" />
+    <Compile Include="IAssembly.cs" />
     <Compile Include="ICpuState.cs" />
-    <Compile Include="IExecutionEnvironment.cs" />
+    <Compile Include="DeviceEnvironment.cs" />
     <Compile Include="IInstruction.cs" />
     <Compile Include="IInterruptBroker.cs" />
-    <Compile Include="Logging\ILogger.cs" />
-    <Compile Include="Logging\LogLevel.cs" />
-    <Compile Include="Memory\BaseMemoryMap.cs" />
-    <Compile Include="Memory\BigEndianMemoryMap.cs" />
-    <Compile Include="Memory\LittleEndianMemoryMap.cs" />
+    <Compile Include="Memory\IMemoryMap.cs" />
     <Compile Include="Memory\MemoryRegion.cs" />
+    <Compile Include="Memory\BaseMemoryMapMap.cs" />
+    <Compile Include="Memory\BigEndianMemoryMapMap.cs" />
+    <Compile Include="Memory\LittleEndianMemoryMapMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Serilog">
+      <Version>2.11.0-dev-01371</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

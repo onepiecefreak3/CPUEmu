@@ -7,10 +7,10 @@ namespace CPUEmu
     public static class RichTextBoxExtensions
     {
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr SendMessage(HandleRef hWnd, int msg, int wParam, ref PARAFORMAT lParam);
+        private static extern IntPtr SendMessage(HandleRef hWnd, int msg, int wParam, ref Paraformat lParam);
         public static void SetLineSpacing(this RichTextBox rtb, int space)
         {
-            PARAFORMAT fmt = new PARAFORMAT();
+            Paraformat fmt = new Paraformat();
             fmt.cbSize = Marshal.SizeOf(fmt);
             fmt.dwMask = 0x100;
 
@@ -27,7 +27,7 @@ namespace CPUEmu
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct PARAFORMAT
+        public struct Paraformat
         {
             public int cbSize;
             public uint dwMask;

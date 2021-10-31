@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using CpuContract;
 using CpuContract.Memory;
 
 namespace CPUEmu.MemoryManipulation
@@ -15,7 +16,7 @@ namespace CPUEmu.MemoryManipulation
             _filename = filename;
         }
 
-        public void Execute(BaseMemoryMap memoryMap)
+        public void Execute(IMemoryMap memoryMapMap)
         {
             if (!File.Exists(_filename))
                 return;
@@ -25,7 +26,7 @@ namespace CPUEmu.MemoryManipulation
             file.Read(buffer, 0, buffer.Length);
             file.Close();
 
-            memoryMap.Write(buffer, 0, buffer.Length, Offset);
+            memoryMapMap.Write(buffer, 0, buffer.Length, Offset);
         }
 
         public override string ToString()

@@ -8,8 +8,8 @@ namespace CPUEmu.ServiceProviders
 {
     public class DefaultServiceProvider<TService> : IServiceProvider<TService>
     {
-        private IWindsorContainer _container;
-        private (string, Type)[] _adapterTypes;
+        private readonly IWindsorContainer _container;
+        private readonly (string, Type)[] _adapterTypes;
 
         public DefaultServiceProvider(IWindsorContainer container, (string, Type)[] adapterTypes)
         {

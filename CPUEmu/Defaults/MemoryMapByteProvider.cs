@@ -1,26 +1,27 @@
 ﻿using System;
 using Be.Windows.Forms;
+using CpuContract;
 using CpuContract.Memory;
 
 namespace CPUEmu.Defaults
 {
     class MemoryMapByteProvider : IByteProvider
     {
-        private readonly BaseMemoryMap _memoryMap;
+        private readonly IMemoryMap _memoryMapMap;
 
-        public MemoryMapByteProvider(BaseMemoryMap memoryMap)
+        public MemoryMapByteProvider(IMemoryMap memoryMapMap)
         {
-            _memoryMap = memoryMap;
+            _memoryMapMap = memoryMapMap;
         }
 
         public byte ReadByte(long index)
         {
-            return _memoryMap.ReadByte((int)index);
+            return _memoryMapMap.ReadByte((int)index);
         }
 
         public void WriteByte(long index, byte value)
         {
-            _memoryMap.WriteByte((int)index, value);
+            _memoryMapMap.WriteByte((int)index, value);
         }
 
         public void InsertBytes(long index, byte[] bs)
@@ -57,7 +58,7 @@ namespace CPUEmu.Defaults
             return false;
         }
 
-        public long Length => _memoryMap.Length;
+        public long Length => _memoryMapMap.Length;
 
         public event EventHandler LengthChanged;
         public event EventHandler Changed;

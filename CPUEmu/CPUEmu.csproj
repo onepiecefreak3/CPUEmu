@@ -44,6 +44,9 @@
     <Reference Include="Castle.Windsor, Version=5.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\packages\Castle.Windsor.5.0.0\lib\net45\Castle.Windsor.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.2.11.0-dev-01371\lib\net46\Serilog.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
@@ -78,7 +81,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Defaults\DefaultInterruptBroker.cs" />
-    <Compile Include="Defaults\DefaultLogger.cs" />
+    <Compile Include="Defaults\RichTextBoxSink.cs" />
     <Compile Include="Defaults\MemoryMapByteProvider.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FlagRegisterItem.cs" />
@@ -131,9 +134,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="80386\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\CpuContract\CpuContract.csproj">
       <Project>{8aef7830-964a-4bea-b2ec-8b9cc46388da}</Project>

@@ -1,4 +1,5 @@
-﻿using CpuContract.Memory;
+﻿using CpuContract;
+using CpuContract.Memory;
 
 namespace CPUEmu.MemoryManipulation
 {
@@ -14,9 +15,9 @@ namespace CPUEmu.MemoryManipulation
             _value = value;
         }
 
-        public void Execute(BaseMemoryMap memoryMap)
+        public void Execute(IMemoryMap memoryMapMap)
         {
-            memoryMap.WriteByte(Offset, _value);
+            memoryMapMap.WriteByte(Offset, _value);
         }
 
         public override string ToString()

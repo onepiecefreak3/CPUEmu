@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CpuContract
 {
     public interface IInterruptBroker : IDisposable
     {
-        void Execute(int svc, IExecutionEnvironment environment);
+        void Execute(int svc, DeviceEnvironment environment);
     }
 }

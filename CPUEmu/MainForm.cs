@@ -6,26 +6,24 @@ using System.Windows.Forms;
 using System.IO;
 using System.Linq;
 using CpuContract;
-using CpuContract.DependencyInjection;
 using CpuContract.Executor;
-using CpuContract.Logging;
 using CPUEmu.Defaults;
 using CPUEmu.Forms;
 using CPUEmu.MemoryManipulation;
+using Serilog;
 
 namespace CPUEmu
 {
     public partial class MainForm : Form
     {
         private readonly MemoryManipulationForm _memManipulationForm;
-        private IList<IMemoryManipulation> _memoryManipulations;
+        private readonly IList<IMemoryManipulation> _memoryManipulations;
 
         private readonly PluginLoader _pluginLoader;
-        private readonly ILogger _logger;
 
         private IList<IInstruction> _instructions;
-        private IExecutionEnvironment _executionEnvironment;
         private IExecutor _executor;
+        private DeviceEnvironment _deviceEnvironment;
 
         private string _currentFileName;
         private Stream _currentFileStream;
@@ -37,25 +35,27 @@ namespace CPUEmu
             _memManipulationForm = new MemoryManipulationForm();
             _memoryManipulations = new List<IMemoryManipulation>();
 
-            _logger = new DefaultLogger(txtlog);
-            _pluginLoader = new PluginLoader(_logger, "plugins");
+            var logger = new LoggerConfiguration().WriteTo.Sink(new RichTextBoxSink(txtlog)).CreateLogger();
+            _pluginLoader = new PluginLoader(logger, "plugins");
         }
 
         #region Methods
 
+        #region Execution
+
         private void StartExecution()
         {
             // Reset environment
-            _executionEnvironment.Reset();
+            _deviceEnvironment.Reset();
 
             // Manipulate memory
             foreach (var memoryManipulation in _memoryManipulations)
             {
-                memoryManipulation.Execute(_executionEnvironment.MemoryMap);
+                memoryManipulation.Execute(_deviceEnvironment.MemoryMap);
             }
 
             // Execute instructions async
-            _executor.ExecuteAsync(_executionEnvironment, _instructions, 0);
+            _executor.ExecuteAsync(_deviceEnvironment, 0);
         }
 
         private void ResumeExecution()
@@ -74,6 +74,10 @@ namespace CPUEmu
             _executor.AbortExecution();
         }
 
+        #endregion
+
+        #region File
+
         private FileStream OpenFile()
         {
             var ofd = new OpenFileDialog();
@@ -90,76 +94,32 @@ namespace CPUEmu
 
         private void CloseFile()
         {
-            _currentFileStream.Close();
+            ResetUi();
+
+            _currentFileStream?.Close();
             _currentFileName = null;
 
-            _instructions.Clear();
             _instructions = null;
 
-            _executionEnvironment.Dispose();
-            _executionEnvironment = null;
+            _deviceEnvironment?.Dispose();
+            _deviceEnvironment = null;
 
             _executor.Dispose();
             _executor = null;
-
-            ResetUi();
         }
 
-        private IAssemblyAdapter SelectAdapter(Stream assembly, IServiceProvider<IAssemblyAdapter> adapterProvider)
+        #endregion
+        
+        private IAssembly SelectAssemblyParser(Stream assembly)
         {
-            foreach (var adapter in adapterProvider.EnumerateServices())
+            foreach (var parser in _pluginLoader.EnumerateServices<IAssembly>())
             {
                 assembly.Position = 0;
-                if (adapter.Identify(assembly))
-                    return adapter;
-                adapterProvider.ReleaseService(adapter);
-            }
+                if (!parser.CanIdentify)
+                    continue;
 
-            return null;
-        }
-
-        private IList<IInstruction> LoadInstructions(IAssemblyAdapter adapter, Stream assembly)
-        {
-            try
-            {
-                assembly.Position = 0;
-                return adapter.ParseAssembly(assembly);
-            }
-            catch (Exception e)
-            {
-                _logger.Log(LogLevel.Fatal, "Instructions could not be parsed.");
-                _logger.Log(LogLevel.Fatal, e.Message);
-            }
-
-            return null;
-        }
-
-        private IExecutionEnvironment CreateExecutionEnvironment(IAssemblyAdapter adapter, Stream assembly)
-        {
-            try
-            {
-                assembly.Position = 0;
-                return adapter.CreateExecutionEnvironment(assembly);
-            }
-            catch (Exception e)
-            {
-                _logger.Log(LogLevel.Fatal, "Execution environment could not be created.");
-                _logger.Log(LogLevel.Fatal, e.Message);
-            }
-
-            return null;
-        }
-
-        private IExecutor CreateExecutor(IAssemblyAdapter adapter)
-        {
-            try
-            {
-                return adapter.CreateExecutor();
-            }
-            catch (Exception e)
-            {
-                _logger.Log(LogLevel.Fatal, "Executor could not be created.");
-                _logger.Log(LogLevel.Fatal, e.Message);
+                if (parser.Identify(assembly))
+                    return parser;
             }
 
             return null;
@@ -202,8 +162,8 @@ namespace CPUEmu
                 txtFlags.Items.Clear();
                 txtRegisters.Items.Clear();
 
-                txtFlags.Items.AddRange(_executionEnvironment.CpuState.GetFlags().Select(x => (object)new FlagRegisterItem(x.Key, x.Value)).ToArray());
-                txtRegisters.Items.AddRange(_executionEnvironment.CpuState.GetRegisters().Select(x => (object)new FlagRegisterItem(x.Key, x.Value)).ToArray());
+                txtFlags.Items.AddRange(_executor.CpuState.GetFlags().Select(x => (object)new FlagRegisterItem(x.Key, x.Value)).ToArray());
+                txtRegisters.Items.AddRange(_executor.CpuState.GetRegisters().Select(x => (object)new FlagRegisterItem(x.Key, x.Value)).ToArray());
             }
         }
 
@@ -231,7 +191,7 @@ namespace CPUEmu
             txtRegisters.Items.Clear();
             txtDisassembly.Items.Clear();
 
-            _executor.ResetBreakpoints();
+            _executor?.ResetBreakpoints();
         }
 
         private void SetupUiOpenFile()
@@ -245,7 +205,7 @@ namespace CPUEmu
             btnStep.Enabled = false;
             btnAddManipulation.Enabled = true;
 
-            hexBox.ByteProvider = new MemoryMapByteProvider(_executionEnvironment.MemoryMap);
+            hexBox.ByteProvider = new MemoryMapByteProvider(_deviceEnvironment.MemoryMap);
             hexBox.Refresh();
 
             LoadFlagsAndRegisters();
@@ -388,7 +348,7 @@ namespace CPUEmu
             if (fileStream != null)
             {
                 LoadAssembly(fileStream);
-                if (_instructions == null || _executionEnvironment == null || _executor == null)
+                if (_instructions == null || _deviceEnvironment == null)
                 {
                     fileStream.Close();
                     return;
@@ -398,7 +358,7 @@ namespace CPUEmu
                 _currentFileName = fileStream.Name;
                 _currentFileStream = fileStream;
 
-                _executionEnvironment.Reset();
+                _deviceEnvironment.Reset();
                 SetupUiOpenFile();
                 SetupExecutorEvents();
 
@@ -406,35 +366,32 @@ namespace CPUEmu
             }
         }
 
-        private void LoadAssembly(Stream assembly)
+        private void LoadAssembly(Stream assembly, string parserName = null)
         {
-            // First try to select an adapter
-            var adapterProvider = _pluginLoader.GetServiceProvider<IAssemblyAdapter>();
-            var adapter = SelectAdapter(assembly, adapterProvider);
-            if (adapter == null)
+            // Get assembly parser
+            var assemblyParser = !string.IsNullOrEmpty(parserName) ?
+                _pluginLoader.GetService<IAssembly>(parserName) :
+                SelectAssemblyParser(assembly);
+
+            // TODO: Make unidentifiable parser selectable?
+            if (assemblyParser == null)
+                return;
+
+            // Get architecture provider
+            var architectureProvider = _pluginLoader.GetService<IArchitectureProvider>(assemblyParser.Architecture);
+            if (architectureProvider == null)
                 return;
 
             // Load instructions
-            var instructions = LoadInstructions(adapter, assembly);
-            if (instructions == null)
-                return;
+            assembly.Position = 0;
+            assemblyParser.LoadPayload(assembly, architectureProvider.InstructionParser);
 
             // Load execution environment
-            var executionEnvironment = CreateExecutionEnvironment(adapter, assembly);
-            if (executionEnvironment == null)
-                return;
+            assembly.Position = 0;
+            _executor = architectureProvider.Executor;
+            _deviceEnvironment = assemblyParser.CreateExecutionEnvironment(assembly, _executor);
 
-            // Load executor
-            var executor = CreateExecutor(adapter);
-            if (executor == null)
-                return;
-
-            _instructions = instructions;
-            _executionEnvironment = executionEnvironment;
-            _executor = executor;
-
-            // Release adapter
-            adapterProvider.ReleaseService(adapter);
+            _instructions = _executor.Instructions;
         }
 
         private void CloseToolStripMenuItem_Click(object sender, EventArgs e)
@@ -464,14 +421,7 @@ namespace CPUEmu
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _instructions?.Clear();
-            _instructions = null;
-
-            _executionEnvironment?.Dispose();
-            _executionEnvironment = null;
-
-            _executor?.Dispose();
-            _executor = null;
+            CloseFile();
         }
 
         private void TxtDisassembly_BreakpointAdded(object sender, IndexEventArgs e)
@@ -566,9 +516,9 @@ namespace CPUEmu
             listBox.Items[listBox.SelectedIndex] = flagRegisterItem;
 
             if (listBox == txtFlags)
-                _executionEnvironment.CpuState.SetFlag(flagRegisterItem?.Name, flagRegisterItem?.Value);
+                _executor.CpuState.SetFlag(flagRegisterItem?.Name, flagRegisterItem?.Value);
             if (listBox == txtRegisters)
-                _executionEnvironment.CpuState.SetRegister(flagRegisterItem?.Name, flagRegisterItem?.Value);
+                _executor.CpuState.SetRegister(flagRegisterItem?.Name, flagRegisterItem?.Value);
 
             txtEditFlagRegister.Hide();
         }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CpuContract
 {
@@ -10,6 +6,12 @@ namespace CpuContract
     {
         int Position { get; }
 
-        void Execute(IExecutionEnvironment env);
+        uint Length { get; }
+    }
+
+    public interface IExecutableInstruction<in TCpuState> : IInstruction 
+        where TCpuState : ICpuState
+    {
+        void Execute(TCpuState cpuState, DeviceEnvironment env);
     }
 }

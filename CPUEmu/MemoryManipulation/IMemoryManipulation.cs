@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CpuContract;
 using CpuContract.Memory;
 
 namespace CPUEmu.MemoryManipulation
@@ -11,6 +7,6 @@ namespace CPUEmu.MemoryManipulation
     {
         int Offset { get; }
 
-        void Execute(BaseMemoryMap memoryMap);
+        void Execute(IMemoryMap memoryMapMap);
     }
 }
