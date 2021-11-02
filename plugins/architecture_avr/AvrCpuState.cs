@@ -215,7 +215,9 @@ namespace architecture_avr
         public void Reset(IMemoryMap memoryMap)
         {
             Pc = (uint)memoryMap.Payload.Address / 2;
-            Sp = (ushort)memoryMap.Stack.Address;
+
+            // Stack gets read rom end to start, so start stack at the end of its range
+            Sp = (ushort)(memoryMap.Stack.Address + memoryMap.Stack.Length);
 
             for (var i = 0; i < 32; i++)
                 Registers[i] = 0;

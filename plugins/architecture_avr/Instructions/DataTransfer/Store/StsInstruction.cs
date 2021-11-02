@@ -1,13 +1,13 @@
 ﻿using CpuContract;
 
-namespace architecture_avr.Instructions.DataTransfer
+namespace architecture_avr.Instructions.DataTransfer.Store
 {
-    class LdsInstruction : BaseInstruction
+    class StsInstruction : BaseInstruction
     {
         private int _rd;
         private int _address;
 
-        public LdsInstruction(int position, int rd, int address) : base(position, 4)
+        public StsInstruction(int position, int rd, int address) : base(position, 4)
         {
             _rd = rd;
             _address = address;
@@ -15,12 +15,12 @@ namespace architecture_avr.Instructions.DataTransfer
 
         public override void Execute(AvrCpuState cpuState, DeviceEnvironment env)
         {
-            cpuState.Registers[_rd] = env.MemoryMap.ReadByte(_address);
+            env.MemoryMap.WriteByte(_address, cpuState.Registers[_rd]);
         }
 
         public override string ToString()
         {
-            return $"LDS R{_rd}, {_address}";
+            return $"STS {_address}, R{_rd}";
         }
     }
 }

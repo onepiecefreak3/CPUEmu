@@ -58,13 +58,23 @@
     <Compile Include="Instructions\ArithmeticLogical\CpiInstruction.cs" />
     <Compile Include="Instructions\Branch\CmpInstruction.cs" />
     <Compile Include="Instructions\Branch\CpseInstruction.cs" />
-    <Compile Include="Instructions\DataTransfer\LdsInstruction.cs" />
-    <Compile Include="Instructions\DataTransfer\StdInstruction.cs" />
-    <Compile Include="Instructions\DataTransfer\LddInstruction.cs" />
-    <Compile Include="Instructions\DataTransfer\LdInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\Load\LacInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\Load\LasInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\Load\LatInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\Load\LdsInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\PopInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\PushInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\Store\StdInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\Load\LddInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\Load\LdInstruction.cs" />
     <Compile Include="Instructions\DataTransfer\MovInstruction.cs" />
     <Compile Include="Instructions\DataTransfer\MovwInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\Store\StInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\Store\StsInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\XchInstruction.cs" />
     <Compile Include="Instructions\NopInstruction.cs" />
+    <Compile Include="Models\Pointer.cs" />
+    <Compile Include="Models\PointerManipulation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\FlagHelper.cs" />
   </ItemGroup>

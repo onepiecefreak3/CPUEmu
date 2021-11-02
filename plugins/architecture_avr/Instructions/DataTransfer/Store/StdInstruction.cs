@@ -1,6 +1,6 @@
 ﻿using CpuContract;
 
-namespace architecture_avr.Instructions.DataTransfer
+namespace architecture_avr.Instructions.DataTransfer.Store
 {
     class StdInstruction : BaseInstruction
     {

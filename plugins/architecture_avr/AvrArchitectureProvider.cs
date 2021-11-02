@@ -13,7 +13,7 @@ namespace architecture_avr
 
         public AvrArchitectureProvider(ILogger logger)
         {
-            var instructionParser = new AvrInstructionParser();
+            var instructionParser = new AvrInstructionParser(logger);
 
             InstructionParser = instructionParser;
             Executor = new AvrExecutor(new AvrCpuState(), instructionParser, logger);

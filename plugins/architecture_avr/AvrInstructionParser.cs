@@ -4,8 +4,12 @@ using architecture_avr.Instructions;
 using architecture_avr.Instructions.ArithmeticLogical;
 using architecture_avr.Instructions.Branch;
 using architecture_avr.Instructions.DataTransfer;
+using architecture_avr.Instructions.DataTransfer.Load;
+using architecture_avr.Instructions.DataTransfer.Store;
+using architecture_avr.Models;
 using CpuContract;
 using CpuContract.Exceptions;
+using Serilog;
 
 /* http://ww1.microchip.com/downloads/en/devicedoc/atmel-0856-avr-instruction-set-manual.pdf */
 /* https://en.wikipedia.org/wiki/Atmel_AVR_instruction_set */
@@ -14,7 +18,14 @@ namespace architecture_avr
 {
     class AvrInstructionParser : IExecutableInstructionParser<AvrCpuState>
     {
+        private ILogger _logger;
+
         public IList<IExecutableInstruction<AvrCpuState>> Instructions { get; private set; }
+
+        public AvrInstructionParser(ILogger logger = null)
+        {
+            _logger = logger;
+        }
 
         public void LoadPayload(Stream file, int baseAddress)
         {
@@ -101,34 +112,55 @@ namespace architecture_avr
                     var rd = (instruction & 0x1F0) >> 4;
                     var s = (instruction & 0x200) != 0;
                     var y = (instruction & 0x8) != 0;
-                    var q = (instruction & 0x2) != 0;
+                    //var q = (instruction & 0x2) != 0;
 
                     if ((instruction & 0xF) == 0)
-                        Instructions.Add();
+                        if (s)
+                            Instructions.Add(new StsInstruction(instructionPosition, rd, ReadUInt16(file)));
+                        else
+                            Instructions.Add(new LdsInstruction(instructionPosition, rd, ReadUInt16(file)));
                     else if ((instruction & 0x7) == 1)
-                        Instructions.Add();
+                        if (s)
+                            Instructions.Add(new StInstruction(instructionPosition, rd, y ? Pointer.Y : Pointer.Z, PointerModification.PostIncrement));
+                        else
+                            Instructions.Add(new LdInstruction(instructionPosition, rd, y ? Pointer.Y : Pointer.Z, PointerModification.PostIncrement));
                     else if ((instruction & 0x7) == 2)
-                        Instructions.Add();
+                        if (s)
+                            Instructions.Add(new StInstruction(instructionPosition, rd, y ? Pointer.Y : Pointer.Z, PointerModification.PreDecrement));
+                        else
+                            Instructions.Add(new LdInstruction(instructionPosition, rd, y ? Pointer.Y : Pointer.Z, PointerModification.PreDecrement));
                     else if ((instruction & 0xD) == 4)
-                        Instructions.Add();
+                        _logger?.Fatal("Unimplemented Instructiontype 'ELPM Rd,Z'.");
                     else if ((instruction & 0xD) == 5)
-                        Instructions.Add();
+                        _logger?.Fatal("Unimplemented Instructiontype 'ELPM Rd,Z+'.");
                     else if ((instruction & 0x20F) == 0x204)
-                        Instructions.Add();
+                        Instructions.Add(new XchInstruction(instructionPosition, rd));
                     else if ((instruction & 0x20F) == 0x205)
-                        Instructions.Add();
+                        Instructions.Add(new LasInstruction(instructionPosition, rd));
                     else if ((instruction & 0x20F) == 0x206)
-                        Instructions.Add();
+                        Instructions.Add(new LacInstruction(instructionPosition, rd));
                     else if ((instruction & 0x20F) == 0x207)
-                        Instructions.Add();
+                        Instructions.Add(new LatInstruction(instructionPosition, rd));
                     else if ((instruction & 0xF) == 0xC)
-                        Instructions.Add();
+                        if (s)
+                            Instructions.Add(new StInstruction(instructionPosition, rd, Pointer.X, PointerModification.None));
+                        else
+                            Instructions.Add(new LdInstruction(instructionPosition, rd, Pointer.X, PointerModification.None));
                     else if ((instruction & 0xF) == 0xD)
-                        Instructions.Add();
+                        if (s)
+                            Instructions.Add(new StInstruction(instructionPosition, rd, Pointer.X, PointerModification.PostIncrement));
+                        else
+                            Instructions.Add(new LdInstruction(instructionPosition, rd, Pointer.X, PointerModification.PostIncrement));
                     else if ((instruction & 0xF) == 0xE)
-                        Instructions.Add();
+                        if (s)
+                            Instructions.Add(new StInstruction(instructionPosition, rd, Pointer.X, PointerModification.PreDecrement));
+                        else
+                            Instructions.Add(new LdInstruction(instructionPosition, rd, Pointer.X, PointerModification.PreDecrement));
                     else if ((instruction & 0xF) == 0xF)
-                        Instructions.Add();
+                        if (s)
+                            Instructions.Add(new PushInstruction(instructionPosition, rd));
+                        else
+                            Instructions.Add(new PopInstruction(instructionPosition, rd));
                 }
                 else if ((instruction & 0xFC08) == 0x9400)
                 {
