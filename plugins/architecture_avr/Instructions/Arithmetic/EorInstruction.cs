@@ -1,35 +1,33 @@
 ﻿using CpuContract;
 
-namespace architecture_avr.Instructions.ArithmeticLogical
+namespace architecture_avr.Instructions.Arithmetic
 {
-    class OrInstruction : BaseInstruction
+    // HINT: Acts as CLR instruction if rd and rr are equal
+    class EorInstruction : BaseInstruction
     {
         private int _rd;
         private int _rr;
-        private bool _imm;
 
-        public OrInstruction(int position, int rd, int rr, bool imm = false) : base(position, 2)
+        public EorInstruction(int position, int rd, int rr) : base(position, 2)
         {
             _rd = rd;
             _rr = rr;
-            _imm = imm;
         }
 
         public override void Execute(AvrCpuState cpuState, DeviceEnvironment env)
         {
-            var v1 = cpuState.Registers[_rd];
-            var v2 = _imm ? (byte)_rr : cpuState.Registers[_rr];
-            var res = (byte)(v1 | v2);
+            var res = (byte)(cpuState.Registers[_rd] ^ cpuState.Registers[_rr]);
             cpuState.Registers[_rd] = res;
 
             cpuState.V = false;
             cpuState.N = (res & 0x80) == 0x80;
             cpuState.Z = res == 0;
+            cpuState.S = cpuState.N ^ cpuState.V;
         }
 
         public override string ToString()
         {
-            return $"OR{(_imm ? "I" : "")} R{_rd}, {(_imm ? "" : "R")}{_rr}";
+            return _rd == _rr ? $"CLR R{_rd}" : $"EOR R{_rd}, R{_rr}";
         }
     }
 }

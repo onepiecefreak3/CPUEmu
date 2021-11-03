@@ -1,7 +1,8 @@
 ﻿using CpuContract;
 
-namespace architecture_avr.Instructions.ArithmeticLogical
+namespace architecture_avr.Instructions.Arithmetic
 {
+    // HINT: Acts as the CBR instruction, if an immediate is set
     class AndInstruction : BaseInstruction
     {
         private int _rd;
@@ -25,6 +26,7 @@ namespace architecture_avr.Instructions.ArithmeticLogical
             cpuState.V = false;
             cpuState.N = (res & 0x80) == 0x80;
             cpuState.Z = res == 0;
+            cpuState.S = cpuState.N ^ cpuState.V;
         }
 
         public override string ToString()

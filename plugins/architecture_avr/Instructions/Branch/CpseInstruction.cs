@@ -19,5 +19,10 @@ namespace architecture_avr.Instructions.Branch
         {
             IsSkipping = cpuState.Registers[_rd] == cpuState.Registers[_rr];
         }
+
+        public override string ToString()
+        {
+            return $"CPSE R{_rd}, R{_rr}";
+        }
     }
 }

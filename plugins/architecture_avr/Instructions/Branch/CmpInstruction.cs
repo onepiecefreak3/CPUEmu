@@ -28,6 +28,7 @@ namespace architecture_avr.Instructions.Branch
             cpuState.Z = _c ? res == 0 && cpuState.Z : res == 0;
             cpuState.V = FlagHelper.IsTwoComplementCarry(v1, v2, res, true);
             cpuState.C = v2 + (_c ? cv : 0) > v1;
+            cpuState.S = cpuState.N ^ cpuState.V;
         }
 
         public override string ToString()

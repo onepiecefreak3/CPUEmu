@@ -14,7 +14,7 @@ namespace architecture_avr
         internal bool C { get; set; }
         internal bool N { get; set; }
         internal bool V { get; set; }
-        internal bool S => N ^ V;
+        internal bool S { get; set; }
         internal bool H { get; set; }
         internal bool T { get; set; }
         internal bool I { get; set; }

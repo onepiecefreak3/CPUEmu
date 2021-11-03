@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using architecture_avr.Instructions;
-using architecture_avr.Instructions.ArithmeticLogical;
+using architecture_avr.Instructions.Arithmetic;
+using architecture_avr.Instructions.Bitwise;
 using architecture_avr.Instructions.Branch;
+using architecture_avr.Instructions.Call;
 using architecture_avr.Instructions.DataTransfer;
 using architecture_avr.Instructions.DataTransfer.Load;
 using architecture_avr.Instructions.DataTransfer.Store;
@@ -16,6 +18,7 @@ using Serilog;
 
 namespace architecture_avr
 {
+    // TODO: Remove bit pattern checks with > and >=, since they lead to false positives
     class AvrInstructionParser : IExecutableInstructionParser<AvrCpuState>
     {
         private ILogger _logger;
@@ -162,41 +165,103 @@ namespace architecture_avr
                         else
                             Instructions.Add(new PopInstruction(instructionPosition, rd));
                 }
-                else if ((instruction & 0xFC08) == 0x9400)
+                else if ((instruction & 0xFE08) == 0x9400)
                 {
+                    var rd = (instruction & 0x1F0) >> 4;
 
+                    if ((instruction & 0xF) == 0)
+                        Instructions.Add(new ComInstruction(instructionPosition, rd));
+                    else if ((instruction & 0xF) == 1)
+                        Instructions.Add(new NegInstruction(instructionPosition, rd));
+                    else if ((instruction & 0xF) == 2)
+                        Instructions.Add(new SwapInstruction(instructionPosition, rd));
+                    else if ((instruction & 0xF) == 3)
+                        Instructions.Add(new IncInstruction(instructionPosition, rd));
+                    else if ((instruction & 0xF) == 5)
+                        Instructions.Add(new AsrInstruction(instructionPosition, rd));
+                    else if ((instruction & 0xF) == 6)
+                        Instructions.Add(new LsrInstruction(instructionPosition, rd));
+                    else if ((instruction & 0xF) == 7)
+                        Instructions.Add(new RorInstruction(instructionPosition, rd));
                 }
-                else if ((instruction & 0xFC08) == 0x9400 || (instruction & 0xFE08) == 0x9408)
+                else if ((instruction & 0xFF0F) == 0x9408)
                 {
-
+                    if ((instruction & 0x80) != 0)
+                        Instructions.Add(new ClInstruction(instructionPosition, (Flag)((instruction & 0x70) >> 4)));
+                    else
+                        Instructions.Add(new SeInstruction(instructionPosition, (Flag)((instruction & 0x70) >> 4)));
                 }
                 else if ((instruction & 0xFF0F) == 0x9508)
                 {
-
+                    if ((instruction & 0xF0) == 0)
+                        Instructions.Add(new RetInstruction(instructionPosition));
+                    else if ((instruction & 0xF0) == 0x10)
+                        Instructions.Add(new RetiInstruction(instructionPosition));
+                    else if ((instruction & 0xF0) == 0x80)
+                        _logger?.Fatal("Unimplemented Instructiontype 'SLEEP'.");
+                    else if ((instruction & 0xF0) == 0x90)
+                        _logger?.Fatal("Unimplemented Instructiontype 'BREAK'.");
+                    else if ((instruction & 0xF0) == 0xA0)
+                        _logger?.Fatal("Unimplemented Instructiontype 'WDR'.");
+                    else if ((instruction & 0xF0) == 0xC0)
+                        _logger?.Fatal("Unimplemented Instructiontype 'LPM'.");
+                    else if ((instruction & 0xF0) == 0xD0)
+                        _logger?.Fatal("Unimplemented Instructiontype 'ELPM'.");
+                    else if ((instruction & 0xF0) == 0xE0)
+                        _logger?.Fatal("Unimplemented Instructiontype 'SPM'.");
+                    else if ((instruction & 0xF0) == 0xF0)
+                        _logger?.Fatal("Unimplemented Instructiontype 'SPM Z+'.");
                 }
-                else if ((instruction & 0xFE00) == 0x9400 && (instruction & 0x000C) >= 0x0008)
+                else if ((instruction & 0xFE0F) >= 0x9409)
                 {
+                    if ((instruction & 0xF) == 0x9)
+                    {
+                        if ((instruction & 0x10) != 0)
+                            _logger?.Fatal("Unimplemented Instructiontype 'EIJMP' and 'EICALL'.");
 
+                        if ((instruction & 0x100) == 0)
+                            Instructions.Add(new IjmpInstructioncs(instructionPosition, (instruction & 0x10) != 0));
+                        else
+                            Instructions.Add(new IcallInstruction(instructionPosition, (instruction & 0x10) != 0));
+                    }
+                    else if ((instruction & 0xF) == 0xA)
+                        Instructions.Add(new DecInstruction(instructionPosition, (instruction & 0x1F0) >> 4));
+                    else if ((instruction & 0xF) == 0xB)
+                        _logger?.Fatal("Unimplemented Instructiontype 'DES k'.");
+                    else if ((instruction & 0xC) == 0xC)
+                    {
+                        if ((instruction & 0x2) == 0)
+                            Instructions.Add(new JmpInstruction(instructionPosition, ((instruction & 0x1F0) << 13) | ((instruction & 1) << 12) | ReadUInt16(file)));
+                        else
+                            Instructions.Add(new CallInstruction(instructionPosition, ((instruction & 0x1F0) << 13) | ((instruction & 1) << 12) | ReadUInt16(file)));
+                    }
                 }
-                else if ((instruction & 0xFE00) == 0x9600 || (instruction & 0x9800) == 0x9800)
+                else if ((instruction & 0xFE00) == 0x9600)
                 {
-
+                    // ADIW and SBIW
+                }
+                else if ((instruction & 0xFC00) == 0x9800)
+                {
+                    // CBI and SBIC
+                }
+                else if ((instruction & 0xFC00) == 0x9C00)
+                {
+                    // MUL
                 }
                 else if ((instruction & 0xE000) >= 0xA000)
                 {
-
+                    if ((instruction & 0xE000) == 0xC000)
+                        if ((instruction & 0x1000) == 0)
+                            Instructions.Add(new RjmpInstruction(instructionPosition, (short)(((instruction & 0x800) == 0 ? 0 : 0xF000) | (instruction & 0xFFF))));
+                        else
+                            Instructions.Add(new RcallInstruction(instructionPosition, (short)(((instruction & 0x800) == 0 ? 0 : 0xF000) | (instruction & 0xFFF))));
+                    else if ((instruction & 0xF000) == 0xE000)
+                        Instructions.Add(new LdiInstruction(instructionPosition, (instruction & 0xF0) >> 4, (byte)(((instruction & 0xF00) >> 4) | (instruction & 0xF))));
                 }
                 else
                 {
                     throw new UndefinedInstructionException(instruction, instructionPosition);
                 }
-
-                /*
-                 * CALL   1001010xxxxx111x xxxxxxxxxxxxxxxx
-                 * JMP    1001010xxxxx110x xxxxxxxxxxxxxxxx
-                 * LDS    1001000xxxxx0000 xxxxxxxxxxxxxxxx
-                 * STS    1001001xxxxx0000 xxxxxxxxxxxxxxxx
-                 */
             }
         }
 

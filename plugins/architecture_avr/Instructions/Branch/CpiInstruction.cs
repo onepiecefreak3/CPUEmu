@@ -1,7 +1,7 @@
 ﻿using architecture_avr.Support;
 using CpuContract;
 
-namespace architecture_avr.Instructions.ArithmeticLogical
+namespace architecture_avr.Instructions.Branch
 {
     class CpiInstruction : BaseInstruction
     {
@@ -24,6 +24,7 @@ namespace architecture_avr.Instructions.ArithmeticLogical
             cpuState.Z = res == 0;
             cpuState.V = FlagHelper.IsTwoComplementCarry(rn, _imm, res, false);
             cpuState.C = _imm > rn;
+            cpuState.S = cpuState.N ^ cpuState.V;
         }
 
         public override string ToString()

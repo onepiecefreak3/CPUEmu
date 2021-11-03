@@ -1,6 +1,6 @@
 ﻿using CpuContract;
 
-namespace architecture_avr.Instructions.ArithmeticLogical
+namespace architecture_avr.Instructions.Arithmetic
 {
     class FmulsInstruction : BaseInstruction
     {

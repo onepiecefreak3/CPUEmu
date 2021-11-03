@@ -1,13 +1,13 @@
 ﻿using CpuContract;
 
-namespace architecture_avr.Instructions.ArithmeticLogical
+namespace architecture_avr.Instructions.Arithmetic
 {
-    class MulsInstruction : BaseInstruction
+    class MulsuInstruction : BaseInstruction
     {
         private int _rd;
         private int _rr;
 
-        public MulsInstruction(int position, int rd, int rr) : base(position, 2)
+        public MulsuInstruction(int position, int rd, int rr) : base(position, 2)
         {
             _rd = rd + 16;
             _rr = rr + 16;
@@ -16,7 +16,7 @@ namespace architecture_avr.Instructions.ArithmeticLogical
         public override void Execute(AvrCpuState cpuState, DeviceEnvironment env)
         {
             var v1 = (sbyte)cpuState.Registers[_rd];
-            var v2 = (sbyte)cpuState.Registers[_rr];
+            var v2 = cpuState.Registers[_rr];
             var res = v1 * v2;
 
             cpuState.Registers[0] = (byte)res;
@@ -28,7 +28,7 @@ namespace architecture_avr.Instructions.ArithmeticLogical
 
         public override string ToString()
         {
-            return $"MULS R{_rd}, R{_rr}";
+            return $"MULSU R{_rd}, R{_rr}";
         }
     }
 }
