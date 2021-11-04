@@ -10,7 +10,7 @@ namespace architecture_avr.Instructions.DataTransfer.Load
 
         public LdiInstruction(int position, int rd, byte imm) : base(position, 2)
         {
-            _rd = rd;
+            _rd = 16 + rd;
             _imm = imm;
         }
 

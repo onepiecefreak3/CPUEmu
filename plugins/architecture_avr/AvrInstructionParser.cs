@@ -70,7 +70,7 @@ namespace architecture_avr
                     else
                         throw new UndefinedInstructionException(instruction, instructionPosition);
                 }
-                else if ((instruction & 0xFC00) < 0x3000)
+                else if ((instruction & 0xF000) == 0x2000)
                 {
                     if ((instruction & 0xC00) == 0)
                         Instructions.Add(new AndInstruction(instructionPosition, (instruction & 0x1F0) >> 4, ((instruction & 0x200) >> 5) | (instruction & 0xF)));
@@ -164,6 +164,8 @@ namespace architecture_avr
                             Instructions.Add(new PushInstruction(instructionPosition, rd));
                         else
                             Instructions.Add(new PopInstruction(instructionPosition, rd));
+                    else
+	                    throw new UndefinedInstructionException(instruction, instructionPosition);
                 }
                 else if ((instruction & 0xFE08) == 0x9400)
                 {
@@ -183,6 +185,8 @@ namespace architecture_avr
                         Instructions.Add(new LsrInstruction(instructionPosition, rd));
                     else if ((instruction & 0xF) == 7)
                         Instructions.Add(new RorInstruction(instructionPosition, rd));
+                    else
+	                    throw new UndefinedInstructionException(instruction, instructionPosition);
                 }
                 else if ((instruction & 0xFF0F) == 0x9408)
                 {
@@ -211,8 +215,10 @@ namespace architecture_avr
                         _logger?.Fatal("Unimplemented Instructiontype 'SPM'.");
                     else if ((instruction & 0xF0) == 0xF0)
                         _logger?.Fatal("Unimplemented Instructiontype 'SPM Z+'.");
+                    else
+	                    throw new UndefinedInstructionException(instruction, instructionPosition);
                 }
-                else if ((instruction & 0xFE0F) >= 0x9409)
+                else if ((instruction & 0xFE08) == 0x9408)
                 {
                     if ((instruction & 0xF) == 0x9)
                     {
@@ -235,6 +241,8 @@ namespace architecture_avr
                         else
                             Instructions.Add(new CallInstruction(instructionPosition, ((instruction & 0x1F0) << 13) | ((instruction & 1) << 12) | ReadUInt16(file)));
                     }
+                    else
+	                    throw new UndefinedInstructionException(instruction, instructionPosition);
                 }
                 else if ((instruction & 0xFE00) == 0x9600)
                 {
@@ -257,10 +265,8 @@ namespace architecture_avr
                             Instructions.Add(new RcallInstruction(instructionPosition, (short)(((instruction & 0x800) == 0 ? 0 : 0xF000) | (instruction & 0xFFF))));
                     else if ((instruction & 0xF000) == 0xE000)
                         Instructions.Add(new LdiInstruction(instructionPosition, (instruction & 0xF0) >> 4, (byte)(((instruction & 0xF00) >> 4) | (instruction & 0xF))));
-                }
-                else
-                {
-                    throw new UndefinedInstructionException(instruction, instructionPosition);
+                    //else
+	                //    throw new UndefinedInstructionException(instruction, instructionPosition);
                 }
             }
         }

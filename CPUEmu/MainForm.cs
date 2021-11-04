@@ -104,7 +104,7 @@ namespace CPUEmu
             _deviceEnvironment?.Dispose();
             _deviceEnvironment = null;
 
-            _executor.Dispose();
+            _executor?.Dispose();
             _executor = null;
         }
 
