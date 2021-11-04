@@ -13,8 +13,8 @@ namespace architecture_avr.Instructions.Call
 
         public override void Execute(AvrCpuState cpuState, DeviceEnvironment env)
         {
-            env.MemoryMap.WriteByte(cpuState.Sp--, (byte) (cpuState.Pc + 1));
-            env.MemoryMap.WriteByte(cpuState.Sp--, (byte) ((cpuState.Pc + 1) >> 8));
+            env.MemoryMap.WriteByte((int)cpuState.Sp--, (byte) (cpuState.Pc + 1));
+            env.MemoryMap.WriteByte((int)cpuState.Sp--, (byte) ((cpuState.Pc + 1) >> 8));
 
             cpuState.Pc = (uint) (cpuState.Pc + _immAdd + 1);
         }

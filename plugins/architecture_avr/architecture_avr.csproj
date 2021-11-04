@@ -64,6 +64,7 @@
     <Compile Include="Instructions\Arithmetic\SubInstruction.cs" />
     <Compile Include="Instructions\BaseInstruction.cs" />
     <Compile Include="Instructions\Bitwise\SeInstruction.cs" />
+    <Compile Include="Instructions\Branch\BrInstruction.cs" />
     <Compile Include="Instructions\Branch\CpiInstruction.cs" />
     <Compile Include="Instructions\Branch\CmpInstruction.cs" />
     <Compile Include="Instructions\Branch\CpseInstruction.cs" />
@@ -75,11 +76,13 @@
     <Compile Include="Instructions\Call\RcallInstruction.cs" />
     <Compile Include="Instructions\Call\RetiInstruction.cs" />
     <Compile Include="Instructions\Call\RetInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\InInstruction.cs" />
     <Compile Include="Instructions\DataTransfer\Load\LacInstruction.cs" />
     <Compile Include="Instructions\DataTransfer\Load\LasInstruction.cs" />
     <Compile Include="Instructions\DataTransfer\Load\LatInstruction.cs" />
     <Compile Include="Instructions\DataTransfer\Load\LdiInstruction.cs" />
     <Compile Include="Instructions\DataTransfer\Load\LdsInstruction.cs" />
+    <Compile Include="Instructions\DataTransfer\OutInstruction.cs" />
     <Compile Include="Instructions\DataTransfer\PopInstruction.cs" />
     <Compile Include="Instructions\DataTransfer\PushInstruction.cs" />
     <Compile Include="Instructions\DataTransfer\Store\StdInstruction.cs" />

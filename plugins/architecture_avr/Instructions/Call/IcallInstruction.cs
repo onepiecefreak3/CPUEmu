@@ -17,8 +17,8 @@ namespace architecture_avr.Instructions.Call
             if (_ext)
                 throw new InvalidOperationException("Unsupported extended JMP/CALL");
 
-            env.MemoryMap.WriteByte(cpuState.Sp--, (byte)(cpuState.Pc + 1));
-            env.MemoryMap.WriteByte(cpuState.Sp--, (byte)((cpuState.Pc + 1) >> 8));
+            env.MemoryMap.WriteByte((int)cpuState.Sp--, (byte)(cpuState.Pc + 1));
+            env.MemoryMap.WriteByte((int)cpuState.Sp--, (byte)((cpuState.Pc + 1) >> 8));
 
             cpuState.Pc = cpuState.RegZ;
         }

@@ -2,24 +2,25 @@
 
 namespace architecture_avr.Instructions.DataTransfer
 {
-    class PushInstruction : BaseInstruction
+    class OutInstruction : BaseInstruction
     {
         private int _rd;
+        private int _io;
 
-        public PushInstruction(int position, int rd) : base(position, 2)
+        public OutInstruction(int position, int rd, int io) : base(position, 2)
         {
             _rd = rd;
+            _io = io;
         }
 
         public override void Execute(AvrCpuState cpuState, DeviceEnvironment env)
         {
-            env.MemoryMap.WriteByte((int)cpuState.Sp, cpuState.Registers[_rd]);
-            cpuState.Sp--;
+            env.MemoryMap[0x20 + _io] = cpuState.Registers[_rd];
         }
 
         public override string ToString()
         {
-            return $"PUSH R{_rd}";
+            return $"OUT {_io}, R{_rd}";
         }
     }
 }

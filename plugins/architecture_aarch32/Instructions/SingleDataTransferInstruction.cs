@@ -20,7 +20,7 @@ namespace assembly_aarch32.Instructions
 
         public int Position { get; }
 
-        public int Length => 4;
+        public uint Length => 4;
 
         private SingleDataTransferInstruction(int position, byte condition, bool i, bool p, bool u, bool b, bool w, bool l, byte rn, byte rd, uint offset)
         {

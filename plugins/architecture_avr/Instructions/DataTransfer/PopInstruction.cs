@@ -14,7 +14,7 @@ namespace architecture_avr.Instructions.DataTransfer
         public override void Execute(AvrCpuState cpuState, DeviceEnvironment env)
         {
             cpuState.Sp++;
-            cpuState.Registers[_rd] = env.MemoryMap.ReadByte(cpuState.Sp);
+            cpuState.Registers[_rd] = env.MemoryMap.ReadByte((int)cpuState.Sp);
         }
 
         public override string ToString()

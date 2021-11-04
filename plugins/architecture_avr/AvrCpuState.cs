@@ -19,7 +19,7 @@ namespace architecture_avr
         internal bool T { get; set; }
         internal bool I { get; set; }
 
-        internal byte[] Registers { get; private set; }
+        internal IMemoryRegion Registers { get; private set; }
 
         internal ushort RegX
         {
@@ -51,31 +51,10 @@ namespace architecture_avr
             }
         }
 
-        internal ushort Sp { get; set; }
+        internal uint Sp { get; set; }
 
         // HINT: PC counts in words (2-byte values)
         internal uint Pc { get; set; }
-
-        #endregion
-
-        #region Constructors
-
-        public AvrCpuState()
-        {
-            Registers = new byte[32];
-        }
-
-        private AvrCpuState(byte[] registers, bool z, bool c, bool n, bool v, bool h, bool t, bool i)
-        {
-            Registers = registers;
-            Z = z;
-            C = c;
-            N = n;
-            V = v;
-            H = h;
-            T = t;
-            I = i;
-        }
 
         #endregion
 
@@ -84,7 +63,7 @@ namespace architecture_avr
             var result = new Dictionary<string, object>();
 
             for (var i = 0; i < 32; i++)
-                result.Add("R" + i, Registers[i]);
+                result.Add("R" + i, Registers?[i] ?? 0);
 
             result.Add("SP", Sp);
             result.Add("PC", Pc);
@@ -95,7 +74,7 @@ namespace architecture_avr
         public object GetRegister(string register)
         {
             if (Regex.IsMatch(register, "R\\d+"))
-                return Registers[Convert.ToInt32(register.Substring(1))];
+                return Registers?[Convert.ToInt32(register.Substring(1))] ?? 0;
 
             switch (register)
             {
@@ -112,6 +91,9 @@ namespace architecture_avr
         {
             if (Regex.IsMatch(register, "R\\d+"))
             {
+                if (Registers == null)
+                    return;
+
                 Registers[Convert.ToInt32(register.Substring(1))] = Convert.ToByte(value);
                 return;
             }
@@ -216,11 +198,12 @@ namespace architecture_avr
         {
             Pc = (uint)memoryMap.Payload.Address / 2;
 
-            // Stack gets read rom end to start, so start stack at the end of its range
-            Sp = (ushort)(memoryMap.Stack.Address + memoryMap.Stack.Length);
+            // Stack gets read from end to start, so start stack at the end of its range
+            Sp = (uint)(memoryMap.Stack.Address + memoryMap.Stack.Length - 1);
 
-            for (var i = 0; i < 32; i++)
-                Registers[i] = 0;
+            // Registers and IO are mapped at the start of the memory
+            Registers = memoryMap.GetRegion(0, 0x20);
+            Registers.ClearAll();
 
             C = N = V = Z = H = T = I = false;
         }

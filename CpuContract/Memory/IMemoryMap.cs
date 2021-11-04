@@ -2,25 +2,11 @@
 
 namespace CpuContract.Memory
 {
-    public interface IMemoryMap : IDisposable
+    public interface IMemoryMap : IMemoryRegion, IDisposable
     {
-        MemoryRegion Payload { get; }
-        MemoryRegion Stack { get; }
-        int Length { get; }
+        IMemoryRegion Payload { get; }
+        IMemoryRegion Stack { get; }
 
-        byte ReadByte(int offset);
-        void WriteByte(int offset, byte value);
-
-        ushort ReadUInt16(int offset);
-        void WriteUInt16(int offset, ushort value);
-
-        uint ReadUInt32(int offset);
-        void WriteUInt32(int offset, uint value);
-
-        void Read(byte[] buffer, int offset, int size, int offsetInMemory);
-        void Write(byte[] buffer, int offset, int size, int offsetInMemory);
-
-        void Clear(int offsetInMemory, int count);
-        void ClearAll();
+        IMemoryRegion GetRegion(int offset, int size);
     }
 }

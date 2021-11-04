@@ -45,15 +45,6 @@ namespace assembly_aarch32
             Registers = new uint[16];
         }
 
-        private Aarch32CpuState(uint[] registers, bool z, bool c, bool n, bool v)
-        {
-            Registers = registers;
-            Z = z;
-            C = c;
-            N = n;
-            V = v;
-        }
-
         #endregion
 
         public IDictionary<string, object> GetRegisters()
@@ -180,14 +171,6 @@ namespace assembly_aarch32
                 Registers[i] = 0;
 
             C = N = V = Z = false;
-        }
-
-        public ICpuState Clone()
-        {
-            var newRegs = new uint[16];
-            Array.Copy(Registers, newRegs, 16);
-
-            return new Aarch32CpuState(newRegs, Z, C, N, V);
         }
 
         public void Dispose()

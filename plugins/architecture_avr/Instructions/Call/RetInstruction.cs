@@ -11,8 +11,8 @@ namespace architecture_avr.Instructions.Call
         public override void Execute(AvrCpuState cpuState, DeviceEnvironment env)
         {
             var retAdd = 0;
-            retAdd |= env.MemoryMap.ReadByte(++cpuState.Sp) << 8;
-            retAdd |= env.MemoryMap.ReadByte(++cpuState.Sp);
+            retAdd |= env.MemoryMap.ReadByte((int)++cpuState.Sp) << 8;
+            retAdd |= env.MemoryMap.ReadByte((int)++cpuState.Sp);
 
             cpuState.Pc = (uint)retAdd;
         }

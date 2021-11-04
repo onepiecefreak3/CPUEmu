@@ -1,5 +1,4 @@
-﻿using System;
-using assembly_aarch32.Support;
+﻿using assembly_aarch32.Support;
 using CpuContract;
 
 namespace assembly_aarch32.Instructions
@@ -11,7 +10,7 @@ namespace assembly_aarch32.Instructions
 
         public int Position { get; }
 
-        public int Length => 4;
+        public uint Length => 4;
 
         private SvcInstruction(int position, byte condition, int svc)
         {

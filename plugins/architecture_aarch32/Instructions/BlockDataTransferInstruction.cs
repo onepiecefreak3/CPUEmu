@@ -18,7 +18,7 @@ namespace assembly_aarch32.Instructions
 
         public int Position { get; }
 
-        public int Length => 4;
+        public uint Length => 4;
 
         private BlockDataTransferInstruction(int position, byte condition, bool p, bool u, bool s, bool w, bool l, byte rn, uint list)
         {

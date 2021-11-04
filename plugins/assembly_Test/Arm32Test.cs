@@ -3,7 +3,7 @@ using System.Linq;
 using CpuContract;
 using CpuContract.Attributes;
 using CpuContract.Executor;
-using CpuContract.Memory;
+using CpuContract.Memory.MemoryMap;
 
 namespace adapter_arm32Test
 {
@@ -39,7 +39,7 @@ namespace adapter_arm32Test
         public DeviceEnvironment CreateExecutionEnvironment(Stream assembly, IExecutor executor)
         {
             // Create environment instances
-            var memoryMap = new LittleEndianMemoryMapMap(MemorySize_, PayloadAddress_, (int)assembly.Length, StackAddress_, StackSize_);
+            var memoryMap = new LittleEndianMemoryMap(MemorySize_, PayloadAddress_, (int)assembly.Length, StackAddress_, StackSize_);
 
             // Load payload into memory
             var assemblyBuffer = new byte[assembly.Length - 4];

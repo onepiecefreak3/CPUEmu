@@ -55,10 +55,12 @@
     <Compile Include="IInstruction.cs" />
     <Compile Include="IInterruptBroker.cs" />
     <Compile Include="Memory\IMemoryMap.cs" />
-    <Compile Include="Memory\MemoryRegion.cs" />
-    <Compile Include="Memory\BaseMemoryMapMap.cs" />
-    <Compile Include="Memory\BigEndianMemoryMapMap.cs" />
-    <Compile Include="Memory\LittleEndianMemoryMapMap.cs" />
+    <Compile Include="Memory\IMemoryRegion.cs" />
+    <Compile Include="Memory\MemoryRegion\BaseMemoryRegion.cs" />
+    <Compile Include="Memory\MemoryMap\BigEndianMemoryMap.cs" />
+    <Compile Include="Memory\MemoryMap\LittleEndianMemoryMap.cs" />
+    <Compile Include="Memory\MemoryRegion\LittleEndianMemoryRegion.cs" />
+    <Compile Include="Memory\MemoryRegion\BigEndianMemoryRegion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

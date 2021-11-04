@@ -12,7 +12,7 @@ namespace assembly_aarch32.Instructions.Branch
 
         public int Position { get; }
 
-        public int Length => 4;
+        public uint Length => 4;
 
         private BranchAndExchangeInstruction(int position, byte condition, int rn)
         {

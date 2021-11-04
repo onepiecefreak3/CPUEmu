@@ -3,17 +3,17 @@ using System.Linq;
 using CpuContract;
 using CpuContract.Attributes;
 using CpuContract.Executor;
-using CpuContract.Memory;
+using CpuContract.Memory.MemoryMap;
 
 namespace adapter_arm32Test
 {
     [UniqueIdentifier("AvrTest")]
     public class AvrTestAssembly : IAssembly
     {
-        private const int PayloadAddress_ = 0x100000;
-        private const int StackAddress_ = 0x1000000;
-        private const int StackSize_ = 0x100000;
-        private const int MemorySize_ = 512 * 1024 * 1024;
+        private const int PayloadAddress_ = 0x1000;
+        private const int StackAddress_ = 0xF000;
+        private const int StackSize_ = 0x1000;
+        private const int MemorySize_ = 0x10000;
 
         public string Architecture => "Avr";
         public bool CanIdentify => true;
@@ -38,7 +38,7 @@ namespace adapter_arm32Test
         public DeviceEnvironment CreateExecutionEnvironment(Stream assembly, IExecutor executor)
         {
             // Create environment instances
-            var memoryMap = new LittleEndianMemoryMapMap(MemorySize_, PayloadAddress_, (int)assembly.Length, StackAddress_, StackSize_);
+            var memoryMap = new LittleEndianMemoryMap(MemorySize_, PayloadAddress_, (int)assembly.Length, StackAddress_, StackSize_);
 
             // Load payload into memory
             var assemblyBuffer = new byte[assembly.Length - 4];

@@ -16,7 +16,7 @@ namespace assembly_aarch32.Instructions.DataProcessing
 
         public int Position { get; }
 
-        public int Length => 4;
+        public uint Length => 4;
 
         public DataProcessingInstruction(int position, byte condition, bool i, bool s, uint operand2, byte rn, byte rd)
         {
